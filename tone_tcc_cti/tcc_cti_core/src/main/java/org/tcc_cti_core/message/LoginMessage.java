@@ -19,7 +19,7 @@ import org.tcc_cti_core.model.Login;
  * CompanyID：企业编号
  * OPID：工号
  * OPNumber：座席号
- * PassWord：登录密码
+ * PassWord：登录密码 32位
  * AutoLogin：？？？
  * 
  * {@code 是线程安全类}
@@ -28,7 +28,8 @@ import org.tcc_cti_core.model.Login;
 
 public class LoginMessage implements CtiMessageable{
 	private static final Logger logger = LoggerFactory.getLogger(LoginMessage.class);
-	
+	private static final int MESSAGE_MAX_LENGTH = 2048;
+	private static final String DEFAULT_MESSAGE_LENGTH = "00000";
 	private static final String HEAD_FORMAT = "<head>%s</head>";
 	private static final String MSG_FORMAT = "<msg>%s</msg>";
 	private static final String SEQ_FORMAT = "<seq>%s</seq>"; 
@@ -36,7 +37,7 @@ public class LoginMessage implements CtiMessageable{
 	private static final String COMPANY_ID_FORMAT = "<CompanyID>%s</CompanyID>";
 	private static final String OPID_FORMAT = "<OPID>%s</OPID>";
 	private static final String OPNUMBER_FORMAT = "<OPNumber>%s</OPNumber>";
-	private static final String PASSWORD_FORMAT = "<Password>%s</Password>";
+	private static final String PASSWORD_FORMAT = "<PassWord>%s</PassWord>";
 	
 	private final String message;
 	
@@ -62,9 +63,9 @@ public class LoginMessage implements CtiMessageable{
 
 	@Override
 	public String getMessage() {
-		String charsetName = "UTF-8";
-		byte[] bytes = getMessage(charsetName);
-		return new String(bytes,Charset.forName(charsetName));
+		String charset = "UTF-8";
+		byte[] bytes = getMessage(charset);
+		return new String(bytes,Charset.forName(charset));
 	}
 	
 
@@ -74,9 +75,25 @@ public class LoginMessage implements CtiMessageable{
 	}
 	
     private byte[] headCompletion (String charset){
-		//TODO 实现补全消息头
-    	return null;
+    	Charset c = Charset.forName(charset);
+    	byte[] bytes = message.getBytes(c);
+    	int length = bytes.length;
+    	if(length > MESSAGE_MAX_LENGTH){
+    		logger.error("Login message is {},but upper limit {}",
+    				length,MESSAGE_MAX_LENGTH);
+    		throw new IllegalStateException("Login message is too length");
+    	}
+    	
+    	String m = getHeadSegment(length) + message;
+    	return m.getBytes(c);
 	}
+    
+    private String getHeadSegment(int length){
+    	String ds = DEFAULT_MESSAGE_LENGTH;
+    	String rs = String.valueOf(length);
+    	String ls = ds.substring(0,ds.length() - rs.length()) + rs;
+    	return String.format(HEAD_FORMAT, ls);
+    }
 
 	@Override
 	public byte[] getMessageISO() {
