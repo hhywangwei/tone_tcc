@@ -1,4 +1,4 @@
-package org.tcc_cti_core.client;
+package org.tcc.cti.core.client;
 
 public class ClientException extends Exception {
 

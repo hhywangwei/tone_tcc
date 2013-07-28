@@ -1,4 +1,4 @@
-package org.tcc_cti_core.common;
+package org.tcc.cti.core.common;
 
 /**
  * 密码处理工具类，密码在互联网上传统，使用明码传递有非常大安全隐患，所以密码在传递使用SHA加密方法。

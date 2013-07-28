@@ -1,6 +1,6 @@
-package org.tcc_cti_core.client;
+package org.tcc.cti.core.client;
 
-import org.tcc_cti_core.message.CtiMessageable;
+import org.tcc.cti.core.message.CtiMessageable;
 
 /**
  * cti服务客户端连接类，一个用户一个客户端

@@ -1,12 +1,12 @@
-package org.tcc_cti_core.client;
+package org.tcc.cti.core.client;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-import org.tcc_cti_core.message.CtiMessageable;
-import org.tcc_cti_core.model.ServerConfigure;
+import org.tcc.cti.core.message.CtiMessageable;
+import org.tcc.cti.core.model.ServerConfigure;
 
 /**
  * 通过tcp协议实现客户端与cti服务器消息通信

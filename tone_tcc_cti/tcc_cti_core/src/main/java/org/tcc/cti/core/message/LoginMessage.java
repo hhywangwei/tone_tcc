@@ -1,10 +1,10 @@
-package org.tcc_cti_core.message;
+package org.tcc.cti.core.message;
 
 import java.nio.charset.Charset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tcc_cti_core.model.Login;
+import org.tcc.cti.core.model.Login;
 
 /**
  * 实现登录cti消息生成.

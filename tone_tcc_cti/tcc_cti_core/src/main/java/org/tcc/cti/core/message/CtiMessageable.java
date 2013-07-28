@@ -1,4 +1,4 @@
-package org.tcc_cti_core.message;
+package org.tcc.cti.core.message;
 
 /**
  * 根据cti服务要求,生成cti服务请求消息接口。

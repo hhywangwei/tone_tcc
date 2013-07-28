@@ -1,4 +1,4 @@
-package org.tcc_cti_core.model;
+package org.tcc.cti.core.model;
 
 /**
  * 登录用户信息对象
