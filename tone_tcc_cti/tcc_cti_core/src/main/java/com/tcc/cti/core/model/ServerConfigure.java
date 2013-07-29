@@ -1,4 +1,4 @@
-package org.tcc.cti.core.model;
+package com.tcc.cti.core.model;
 
 /**
  * CTI服务器配置信息

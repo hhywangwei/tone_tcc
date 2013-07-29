@@ -1,10 +1,11 @@
-package org.tcc.cti.core.message;
+package com.tcc.cti.core.message;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
-import org.tcc.cti.core.message.LoginMessage;
-import org.tcc.cti.core.model.Login;
+
+import com.tcc.cti.core.message.LoginMessage;
+import com.tcc.cti.core.model.Login;
 
 public class LoginMessageTest {
 
