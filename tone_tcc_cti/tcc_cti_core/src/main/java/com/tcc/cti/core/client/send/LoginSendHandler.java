@@ -1,11 +1,11 @@
-package com.tcc.cti.core.message;
+package com.tcc.cti.core.client.send;
 
 import java.nio.charset.Charset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tcc.cti.core.model.Login;
+import com.tcc.cti.core.message.Login;
 
 /**
  * 实现登录cti消息生成.
@@ -27,9 +27,9 @@ import com.tcc.cti.core.model.Login;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 
-public class LoginMessage implements CtiMessageable{
-	private static final Logger logger = LoggerFactory.getLogger(LoginMessage.class);
-	private static final int MESSAGE_MAX_LENGTH = 2048;
+public class LoginSendHandler extends AbstractSendHandler<Login>{
+	private static final Logger logger = LoggerFactory.getLogger(LoginSendHandler.class);
+	
 	private static final String DEFAULT_MESSAGE_LENGTH = "00000";
 	private static final String HEAD_FORMAT = "<head>%s</head>";
 	private static final String MSG_FORMAT = "<msg>%s</msg>";
@@ -40,10 +40,11 @@ public class LoginMessage implements CtiMessageable{
 	private static final String OPNUMBER_FORMAT = "<OPNumber>%s</OPNumber>";
 	private static final String PASSWORD_FORMAT = "<PassWord>%s</PassWord>";
 	
-	private final String message;
-	
-	public LoginMessage(Login login,Long seq){
-		message = buildMessage(login,seq);
+	@Override
+	protected byte[] getMessage(Login login,String charset) {
+		long seq = 1l;
+		String m = buildMessage(login,seq);
+	    return headCompletion(m,charset);
 	}
 	
 	private String buildMessage(Login login,Long seq){
@@ -61,21 +62,8 @@ public class LoginMessage implements CtiMessageable{
 		logger.debug("Build message is {}",m);
 		return m;
 	}
-
-	@Override
-	public String getMessage() {
-		String charset = "UTF-8";
-		byte[] bytes = getMessage(charset);
-		return new String(bytes,Charset.forName(charset));
-	}
 	
-
-	@Override
-	public byte[] getMessage(String charset) {
-		return headCompletion(charset);
-	}
-	
-    private byte[] headCompletion (String charset){
+    private byte[] headCompletion (String message,String charset){
     	Charset c = Charset.forName(charset);
     	byte[] bytes = message.getBytes(c);
     	int length = bytes.length;
@@ -96,8 +84,5 @@ public class LoginMessage implements CtiMessageable{
     	return String.format(HEAD_FORMAT, ls);
     }
 
-	@Override
-	public byte[] getMessageISO() {
-		return getMessage("ISO-8859-1");
-	}
+	 
 }

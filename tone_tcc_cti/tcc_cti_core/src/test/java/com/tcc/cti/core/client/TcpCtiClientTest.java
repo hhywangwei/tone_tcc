@@ -5,9 +5,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.tcc.cti.core.client.TcpCtiClient;
-import com.tcc.cti.core.message.CtiMessageable;
-import com.tcc.cti.core.message.LoginMessage;
-import com.tcc.cti.core.model.Login;
+import com.tcc.cti.core.client.send.SendHandler;
+import com.tcc.cti.core.client.send.LoginSendHandler;
+import com.tcc.cti.core.message.Login;
 import com.tcc.cti.core.model.ServerConfigure;
 
 public class TcpCtiClientTest {
@@ -17,7 +17,7 @@ public class TcpCtiClientTest {
 	@Before
 	public void before()throws Exception{
 		ServerConfigure configure = new ServerConfigure();
-		configure.setHost("211.136.173.132");
+		configure.setHost("211.136.173.135");
 		configure.setPort(9999);
 		client = new TcpCtiClient("1","8001",configure);
 		client.start();
@@ -30,10 +30,10 @@ public class TcpCtiClientTest {
 	
 	@Test
 	public void testSend()throws Exception{
-		Login login = initLoginInfo();
-		CtiMessageable message = new LoginMessage(login,1l);
-		client.send(message);
-		Thread.sleep(3000);
+//		Login login = initLoginInfo();
+//		SendHandler message = new LoginSendHandler(login,1l);
+//		client.send(message);
+//		Thread.sleep(3000);
 	}
 
     private Login initLoginInfo(){

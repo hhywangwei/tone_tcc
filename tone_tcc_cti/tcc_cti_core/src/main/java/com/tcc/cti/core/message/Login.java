@@ -1,4 +1,4 @@
-package com.tcc.cti.core.model;
+package com.tcc.cti.core.message;
 
 /**
  * 登录用户信息对象
@@ -10,11 +10,11 @@ package com.tcc.cti.core.model;
  * password:用户密码使用（sh1）加密传输
  * type:用户类型 
  * 
- * 详细参考{@link LoginMessage}
+ * 详细参考{@link LoginSendHandler}
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class Login {
+public class Login extends CtiMessage{
 	private String compayId;
 	private String opId;
 	private String opNumber;

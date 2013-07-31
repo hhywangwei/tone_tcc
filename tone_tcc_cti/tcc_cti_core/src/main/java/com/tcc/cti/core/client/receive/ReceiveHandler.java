@@ -1,4 +1,4 @@
-package com.tcc.cti.core.client.receive.handler;
+package com.tcc.cti.core.client.receive;
 
 import com.tcc.cti.core.client.ClientException;
 

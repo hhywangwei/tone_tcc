@@ -2,16 +2,17 @@ package com.tcc.cti.core.client;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tcc.cti.core.message.CtiMessageable;
+import com.tcc.cti.core.client.receive.ReceiveHandler;
+import com.tcc.cti.core.client.send.SendHandler;
+import com.tcc.cti.core.message.CtiMessage;
 import com.tcc.cti.core.model.ServerConfigure;
 
 /**
@@ -28,6 +29,10 @@ public class TcpCtiClient implements CtiClientable{
 	
 	private SocketChannel channel = null;
 	
+	private List<SendHandler<CtiMessage>> sendHandlers;
+	
+	private List<ReceiveHandler> receiveHandlers;
+		
 	public TcpCtiClient(String companyId,String opId,
 			ServerConfigure configure){
 		
@@ -56,10 +61,9 @@ public class TcpCtiClient implements CtiClientable{
 			channel.configureBlocking(false);
 			Selector selector = Selector.open();
 			channel.register(selector, SelectionKey.OP_READ);
-			 
-			Thread t = new Thread(new ReadRun(selector));
+			CtiReceiveRunner runner = new CtiReceiveRunner(selector,receiveHandlers);
+			Thread t = new Thread(runner);
 			t.start();
-			 
 		} catch (IOException e) {
 			logger.error("Tcp client start is error \"{}\"",e);
 			throw new ClientException(e);
@@ -78,42 +82,19 @@ public class TcpCtiClient implements CtiClientable{
 	}
 
 	@Override
-	public void send(CtiMessageable message)throws ClientException {
-		try {
-			ByteBuffer buffer = ByteBuffer.wrap(message.getMessageISO());
-			channel.write(buffer);
-		} catch (IOException e) {
-			logger.error("Tcp client send message is error \"{}\"",e);
+	public void send(CtiMessage message)throws ClientException {
+		for(SendHandler<CtiMessage> handler : sendHandlers){
+			handler.send(channel, message);
 		}
 	}
-	
-	public static class ReadRun implements Runnable{
-		private final Selector selector;
-		
-		public ReadRun(Selector selector){
-			this.selector = selector;
-		}
 
-		public void run() {
-			try{
-				while(selector.select() > 0){
-					for(SelectionKey sk : selector.selectedKeys()){
-						if(!sk.isReadable()) continue;
-						ByteBuffer buffer = ByteBuffer.allocate(1024);
-						SocketChannel sc =(SocketChannel) sk.channel();
-						sc.read(buffer);
-						buffer.flip();
-						
-						String r = Charset.forName("iso-8859-1").newDecoder().decode(buffer).toString();
-						
-						System.out.println(r);
-					}
-				}
-			}catch(Exception e){
-				
-			}
-			
-		}
-		
+	@Override
+	public void setReceiveHandlers(List<ReceiveHandler> handlers) {
+		this.receiveHandlers = handlers;
+	}
+
+	@Override
+	public void setSendHandlers(List<SendHandler<CtiMessage>> handlers) {
+		this.sendHandlers = handlers;
 	}
 }
