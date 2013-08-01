@@ -10,7 +10,7 @@ import com.tcc.cti.core.message.CtiMessage;
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public interface SendHandler<T extends CtiMessage> {
+public interface SendHandler {
 	/**
 	 * 发送消息缺省编码
 	 */
@@ -28,7 +28,7 @@ public interface SendHandler<T extends CtiMessage> {
 	 * @param message 发送的消息
 	 * @return
 	 */
-	void send(SocketChannel channel,T message)throws ClientException;
+	void send(SocketChannel channel,CtiMessage message)throws ClientException;
 	
 	/**
 	 * 根据指定编码发送消息
@@ -38,6 +38,6 @@ public interface SendHandler<T extends CtiMessage> {
 	 * @param charset 发送对象字符集
 	 * @throws ClientException
 	 */
-	void send(SocketChannel channel,T message,String charset)throws ClientException;
+	void send(SocketChannel channel,CtiMessage message,String charset)throws ClientException;
 	
 }

@@ -61,5 +61,5 @@ public interface CtiClientable {
 	 * 
 	 * @param handlers
 	 */
-	void setSendHandlers(List<SendHandler<CtiMessage>> handlers);
+	void setSendHandlers(List<SendHandler> handlers);
 }

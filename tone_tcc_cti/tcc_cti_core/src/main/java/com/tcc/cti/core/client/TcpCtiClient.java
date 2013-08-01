@@ -29,7 +29,7 @@ public class TcpCtiClient implements CtiClientable{
 	
 	private SocketChannel channel = null;
 	
-	private List<SendHandler<CtiMessage>> sendHandlers;
+	private List<SendHandler> sendHandlers;
 	
 	private List<ReceiveHandler> receiveHandlers;
 		
@@ -83,7 +83,7 @@ public class TcpCtiClient implements CtiClientable{
 
 	@Override
 	public void send(CtiMessage message)throws ClientException {
-		for(SendHandler<CtiMessage> handler : sendHandlers){
+		for(SendHandler handler : sendHandlers){
 			handler.send(channel, message);
 		}
 	}
@@ -94,7 +94,7 @@ public class TcpCtiClient implements CtiClientable{
 	}
 
 	@Override
-	public void setSendHandlers(List<SendHandler<CtiMessage>> handlers) {
+	public void setSendHandlers(List<SendHandler> handlers) {
 		this.sendHandlers = handlers;
 	}
 }

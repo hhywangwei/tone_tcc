@@ -5,10 +5,11 @@ import java.nio.charset.Charset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tcc.cti.core.message.CtiMessage;
 import com.tcc.cti.core.message.Login;
 
 /**
- * 实现登录cti消息生成.
+ * 实现发送登录cti消息
  * 
  * <pre>消息格式如下:
  * {@literal <head>00185</head><msg>login</msg><seq>2</seq><Type>1</Type><CompanyID>1</CompanyID><OPID>8001</OPID><OPNumber>8002</OPNumber><PassWord>md5加密</PassWord><AutoLogin>0</AutoLogin>}
@@ -27,7 +28,7 @@ import com.tcc.cti.core.message.Login;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 
-public class LoginSendHandler extends AbstractSendHandler<Login>{
+public class LoginSendHandler extends AbstractSendHandler{
 	private static final Logger logger = LoggerFactory.getLogger(LoginSendHandler.class);
 	
 	private static final String DEFAULT_MESSAGE_LENGTH = "00000";
@@ -41,9 +42,17 @@ public class LoginSendHandler extends AbstractSendHandler<Login>{
 	private static final String PASSWORD_FORMAT = "<PassWord>%s</PassWord>";
 	
 	@Override
-	protected byte[] getMessage(Login login,String charset) {
+	protected boolean isSend(CtiMessage message) {
+		if(message == null){
+			return false;
+		}
+		return message.getClass().equals(Login.class);
+	}
+
+	@Override
+	protected byte[] getMessage(CtiMessage message,String charset) {
 		long seq = 1l;
-		String m = buildMessage(login,seq);
+		String m = buildMessage((Login)message,seq);
 	    return headCompletion(m,charset);
 	}
 	
@@ -83,6 +92,4 @@ public class LoginSendHandler extends AbstractSendHandler<Login>{
     	String ls = ds.substring(0,ds.length() - rs.length()) + rs;
     	return String.format(HEAD_FORMAT, ls);
     }
-
-	 
 }

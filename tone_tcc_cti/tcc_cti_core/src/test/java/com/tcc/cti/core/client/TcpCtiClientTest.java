@@ -30,7 +30,7 @@ public class TcpCtiClientTest {
 	
 	@Test
 	public void testSend()throws Exception{
-//		Login login = initLoginInfo();
+		Login login = initLoginInfo();
 //		SendHandler message = new LoginSendHandler(login,1l);
 //		client.send(message);
 //		Thread.sleep(3000);
