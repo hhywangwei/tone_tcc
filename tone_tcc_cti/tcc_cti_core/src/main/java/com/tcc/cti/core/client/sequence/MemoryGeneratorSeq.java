@@ -3,9 +3,9 @@ package com.tcc.cti.core.client.sequence;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 生成发送消息序列号,格式 = 公司编号 × 10000
+ * 生成发送消息序列号 ，序号为从0开始递增的整数
  * 
- * @author wang
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
  *
  */
 public class MemoryGeneratorSeq implements GeneratorSeq{
@@ -21,7 +21,14 @@ public class MemoryGeneratorSeq implements GeneratorSeq{
 
 	@Override
 	public String next() {
-		return companyId + opId +String.valueOf(count.decrementAndGet());
+		return String.valueOf(count.decrementAndGet());
 	}
-
+	
+	public String getCompanyId(){
+		return this.companyId;
+	}
+	
+	public String getOpId(){
+		return this.opId;
+	}
 }

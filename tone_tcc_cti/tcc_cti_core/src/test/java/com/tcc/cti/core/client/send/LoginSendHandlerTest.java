@@ -1,10 +1,13 @@
 package com.tcc.cti.core.client.send;
 
-import junit.framework.Assert;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.tcc.cti.core.client.send.LoginSendHandler;
+import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.Login;
 
 public class LoginSendHandlerTest {
@@ -16,20 +19,11 @@ public class LoginSendHandlerTest {
 	@Test
 	public void testGetMessage()throws Exception{
 		Login login = initLoginInfo();
-		LoginSendHandler lm = new LoginSendHandler();
-		byte[] bytes = lm.getMessage(login,LoginSendHandler.DEFAULT_CHARTSET);
+		LoginSendHandler send = new LoginSendHandler();
+		GeneratorSeq generator = mock(GeneratorSeq.class);
+		when(generator.next()).thenReturn("1");
+		byte[] bytes = send.getMessage(login,generator,LoginSendHandler.DEFAULT_CHARTSET);
 		Assert.assertEquals(MESSAGE, new String(bytes,LoginSendHandler.DEFAULT_CHARTSET));
-	}
-	
-	@Test
-	public void testGetMessageByte()throws Exception{
-		Login login = initLoginInfo();
-		LoginSendHandler lm = new LoginSendHandler();
-		String charset = "UTF-8";
-		byte[] bytes = lm.getMessage(login,charset);
-		Assert.assertEquals(179, bytes.length);
-		String s = new String(bytes,charset);
-		Assert.assertEquals(MESSAGE, s);
 	}
 	 
 	private Login initLoginInfo(){

@@ -3,6 +3,7 @@ package com.tcc.cti.core.client.send;
 import java.nio.channels.SocketChannel;
 
 import com.tcc.cti.core.client.ClientException;
+import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.CtiMessage;
 
 /**
@@ -39,5 +40,12 @@ public interface SendHandler {
 	 * @throws ClientException
 	 */
 	void send(SocketChannel channel,CtiMessage message,String charset)throws ClientException;
+	
+	/**
+	 * 设置发送消息序号生成对象
+	 * 
+	 * @param generatorSeq
+	 */
+	void setGeneratorSeq(GeneratorSeq generatorSeq);
 	
 }

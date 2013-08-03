@@ -8,10 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.ClientException;
+import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.CtiMessage;
 
 public abstract class AbstractSendHandler implements SendHandler{
 	private static final Logger logger = LoggerFactory.getLogger(AbstractSendHandler.class);
+	
+	protected GeneratorSeq _generator;
 	
 	@Override
 	public void send(SocketChannel channel,CtiMessage message)throws ClientException{
@@ -22,12 +25,13 @@ public abstract class AbstractSendHandler implements SendHandler{
 	public void send(SocketChannel channel,CtiMessage message,String charset)throws ClientException {
 		try {
 			if(isSend(message)) {
-				byte[] m = getMessage(message,charset);
+				byte[] m = getMessage(message,_generator,charset);
 				ByteBuffer buffer = ByteBuffer.wrap(m);
 				channel.write(buffer);	
 			}
 		} catch (IOException e) {
 			logger.error("Tcp client send message is error \"{}\"",e);
+			throw new ClientException(e);
 		}
 	}
 	
@@ -43,8 +47,15 @@ public abstract class AbstractSendHandler implements SendHandler{
 	 * 得到指定编码的发送信息
 	 *
 	 * @param message 消息对象
+	 * @param generator 消息序号生成对象
 	 * @param charset 字符集
 	 * @return
 	 */
-	protected abstract byte[] getMessage(CtiMessage message,String charset);
+	protected abstract byte[] getMessage(
+			CtiMessage message,GeneratorSeq generator,String charset);
+	
+	@Override
+	public void setGeneratorSeq(GeneratorSeq generator){
+		_generator = generator;
+	}
 }

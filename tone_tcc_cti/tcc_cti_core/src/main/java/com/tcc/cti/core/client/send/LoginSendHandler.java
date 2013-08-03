@@ -1,10 +1,13 @@
 package com.tcc.cti.core.client.send;
 
+import static com.tcc.cti.core.message.MessageType.*;
+
 import java.nio.charset.Charset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.CtiMessage;
 import com.tcc.cti.core.message.Login;
 
@@ -50,16 +53,18 @@ public class LoginSendHandler extends AbstractSendHandler{
 	}
 
 	@Override
-	protected byte[] getMessage(CtiMessage message,String charset) {
-		long seq = 1l;
+	protected byte[] getMessage(
+			CtiMessage message,GeneratorSeq generator,String charset) {
+		
+		String seq = generator.next();
 		String m = buildMessage((Login)message,seq);
 	    return headCompletion(m,charset);
 	}
 	
-	private String buildMessage(Login login,Long seq){
+	private String buildMessage(Login login,String seq){
 		StringBuilder sb = new StringBuilder(128);
-		sb.append(String.format(MSG_FORMAT, "login"));
-		sb.append(String.format(SEQ_FORMAT, String.valueOf(seq)));
+		sb.append(String.format(MSG_FORMAT, Login.getType()));
+		sb.append(String.format(SEQ_FORMAT, seq));
 		sb.append(String.format(TYPE_FORMAT, login.getType()));
 		sb.append(String.format(COMPANY_ID_FORMAT,login.getCompayId()));
 		sb.append(String.format(OPID_FORMAT, login.getOpId()));

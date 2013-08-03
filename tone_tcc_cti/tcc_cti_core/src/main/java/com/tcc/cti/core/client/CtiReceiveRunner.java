@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.receive.ReceiveHandler;
+import com.tcc.cti.core.message.pool.CtiMessagePool;
 
 public class CtiReceiveRunner implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(CtiReceiveRunner.class);
@@ -22,17 +23,19 @@ public class CtiReceiveRunner implements Runnable {
 	
 	private final Selector selector;
 	private final List<ReceiveHandler> handlers;
+	private final CtiMessagePool pool;
 	private final String charset;
 	private final int bufferSize ;
 	private boolean checkCompletion = false;
 	
-	public CtiReceiveRunner(Selector selector,List<ReceiveHandler> handlers){
-		this(selector,handlers,DEFAULT_CHARSET,DEFAULT_BUFFER_SIZE);
+	public CtiReceiveRunner(Selector selector,List<ReceiveHandler> handlers,CtiMessagePool pool){
+		this(selector,handlers,pool,DEFAULT_CHARSET,DEFAULT_BUFFER_SIZE);
 	}
 	
-	public CtiReceiveRunner(Selector selector,List<ReceiveHandler> handlers,String charset,int bufferSize){
+	public CtiReceiveRunner(Selector selector,List<ReceiveHandler> handlers,CtiMessagePool pool,String charset,int bufferSize){
 		this.selector = selector;
 		this.handlers = handlers;
+		this.pool = pool;
 		this.charset = charset;
 		this.bufferSize = bufferSize;
 	}
@@ -56,7 +59,7 @@ public class CtiReceiveRunner implements Runnable {
 					
 					if(checkCompletion && isCompletion(message)) {
 						for(ReceiveHandler handler :handlers){
-							handler.receive(message);
+							handler.receive(message,pool);
 						}
 					}
 				}

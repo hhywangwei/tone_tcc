@@ -61,7 +61,8 @@ public class TcpCtiClient implements CtiClientable{
 			channel.configureBlocking(false);
 			Selector selector = Selector.open();
 			channel.register(selector, SelectionKey.OP_READ);
-			CtiReceiveRunner runner = new CtiReceiveRunner(selector,receiveHandlers);
+			//TODO 设置消息池
+			CtiReceiveRunner runner = new CtiReceiveRunner(selector,receiveHandlers,null);
 			Thread t = new Thread(runner);
 			t.start();
 		} catch (IOException e) {

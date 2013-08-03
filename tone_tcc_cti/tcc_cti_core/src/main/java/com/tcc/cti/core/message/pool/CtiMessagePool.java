@@ -1,6 +1,6 @@
 package com.tcc.cti.core.message.pool;
 
-public interface CitMessagePool {
+public interface CtiMessagePool {
 	
 	void push(String companyId,String opId,Object message);
 	
