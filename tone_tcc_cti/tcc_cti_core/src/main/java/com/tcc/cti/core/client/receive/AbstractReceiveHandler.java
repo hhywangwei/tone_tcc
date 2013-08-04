@@ -1,6 +1,7 @@
 package com.tcc.cti.core.client.receive;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,16 +13,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 
+/**
+ * 实现消息接受处理，实现了消息处理主要流程。
+ * 
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ */
 public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	private static final Logger logger = LoggerFactory.getLogger(AbstractReceiveHandler.class);
 	private static final String ROOT = "root";
-	private static final String XML_FULL_PATTER = "<root>%s</root>";
+	private static final String XML_FULL_PATTER = "<?xml version=\"1.0\"?>\n<root>%s</root>";
 	private static final String MESSAGE_TYPE = "msg";
 	
 	@Override
@@ -54,7 +61,11 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 		try {
 			SAXParser sp = spf.newSAXParser();
 			String xml = String.format(XML_FULL_PATTER, message);
-			sp.parse(xml, new XmlHandler(content));
+			
+			logger.debug("message xml is \"{}\"",xml);
+			
+			StringReader reader = new StringReader(xml);
+			sp.parse(new InputSource(reader), new XmlHandler(content));
 		} catch (ParserConfigurationException e) {
 			//none instance
 			logger.error("ParserConfigurationException is exception:{}",e);
@@ -91,7 +102,7 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	protected static class XmlHandler extends DefaultHandler{
 		
 		private final Map<String,String> _content;
-		private StringBuilder value =new StringBuilder();
+		private StringBuilder _value =new StringBuilder();
 		
 		public XmlHandler(Map<String,String> content){
 			_content = content;
@@ -99,24 +110,24 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 		
 		@Override
 		public void startElement(String uri,String localName,String qName,Attributes attributes)throws SAXException{
-			int len = value.length();
+			int len = _value.length();
 			if(len != 0){
-				value.delete(0, len);
+				_value.delete(0, len);
 			}
 		}
 		
 		@Override
 		public void characters(char[] ch, int start, int length)throws SAXException{
-			value.append(new String(ch,start,length));
+			_value.append(new String(ch,start,length));
 		}
 		
 		@Override
 		public void endElement(String uri,String localName,String qName)throws SAXException{
-			if(ROOT.equals(localName)) return ;
+			if(ROOT.equals(qName)) return ;
 			
-			String v = value.toString();
-			logger.debug("element is \"{}\",value is \"{}\"",localName,v);
-			_content.put(localName, v);
+			String v = _value.toString();
+			logger.debug("element is \"{}\",_value is \"{}\"",qName,v);
+			_content.put(qName, v);
 		}
 	}
 	

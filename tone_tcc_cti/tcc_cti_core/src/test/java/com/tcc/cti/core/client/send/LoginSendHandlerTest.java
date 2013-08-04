@@ -10,6 +10,11 @@ import com.tcc.cti.core.client.send.LoginSendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.Login;
 
+/**
+ * 单元测试 {@link LoginSendHandler}
+ * 
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ */
 public class LoginSendHandlerTest {
 
 	private final String MESSAGE = "<head>00161</head><msg>login</msg>"

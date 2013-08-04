@@ -37,7 +37,7 @@ public enum ReceiveCode {
 			p.load(reader);
 			for(Entry<Object,Object> e : p.entrySet()){
 				String k = (String) e.getKey();
-				String v = (String) e.getKey();
+				String v = (String) e.getValue();
 				_content.put(k, v);
 			}
 		}catch(Exception e){
