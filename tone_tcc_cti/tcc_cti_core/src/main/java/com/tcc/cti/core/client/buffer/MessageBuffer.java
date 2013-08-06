@@ -13,7 +13,7 @@ public interface MessageBuffer {
 	 * @return
 	 * @exception InterruptedException
 	 */
-	String getNext()throws InterruptedException;
+	String next()throws InterruptedException;
 	
 	/**
 	 * 添加网络接受消息到缓存中等待处理
