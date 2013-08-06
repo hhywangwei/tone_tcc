@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 通过{@link ByteBuffer}实现{@link MessageBuffer}
+ * 使用{@link ByteBuffer}为容器，实现{@link MessageBuffer}功能
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
@@ -74,6 +74,11 @@ public class ByteMessageBuffer implements MessageBuffer{
 		}
 	}
 	
+	/**
+	 * 从消息头得到消息长度
+	 * 
+	 * @return
+	 */
 	private int getMessageLength(){
 		
 		int headLength = 18;

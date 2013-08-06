@@ -3,6 +3,11 @@ package com.tcc.cti.core.client.buffer;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * 单元测试{@link ByteMessageBuffer}
+ * 
+ * @author <a href="hhywangwei@gmail.com">wangewei</a>
+ */
 public class ByteMessageBufferTest {
 	
 	@Test
@@ -42,7 +47,7 @@ public class ByteMessageBufferTest {
 			@Override
 			public void run() {
 				try{
-					Thread.sleep(1000);
+					Thread.sleep(500);
 					buffer.next();
 				}catch(Exception e){
 					Assert.fail(e.getMessage());
@@ -65,7 +70,7 @@ public class ByteMessageBufferTest {
 			@Override
 			public void run() {
 				try{
-					Thread.sleep(1000);
+					Thread.sleep(500);
 					String mes = "<head>00005</head>12345";
 					buffer.append(mes.getBytes());
 				}catch(Exception e){
@@ -74,6 +79,28 @@ public class ByteMessageBufferTest {
 			}
 		});
 		t.start();
+		String m = buffer.next();
+		Assert.assertEquals("<head>00005</head>12345", m);
+	}
+	
+	@Test
+	public void testBufferNotCompletionNext()throws Exception{
+		final ByteMessageBuffer buffer = new ByteMessageBuffer(40);
+		Thread t = new Thread(new Runnable(){
+			@Override
+			public void run() {
+				try{
+					Thread.sleep(500);
+					String mes = "345";
+					buffer.append(mes.getBytes());
+				}catch(Exception e){
+					Assert.fail(e.getMessage());
+				}
+			}
+		});
+		t.start();
+		String mes = "<head>00005</head>12";
+		buffer.append(mes.getBytes());
 		String m = buffer.next();
 		Assert.assertEquals("<head>00005</head>12345", m);
 	}
