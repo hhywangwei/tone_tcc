@@ -2,6 +2,8 @@ package com.tcc.cti.core.client.buffer;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,10 +16,19 @@ import org.slf4j.LoggerFactory;
 public class ByteMessageBuffer implements MessageBuffer{
 	private static final Logger logger = LoggerFactory.getLogger(ByteMessageBuffer.class);
 	
+	private static final int HEAD_LENGTH = 18;
+	private static final int HEAD_VALUE_LENGTH = 5;
+	private static final int HEAD_VALUE_OFFSET = 6;
+	private static final int MAX_MESSAGE_LENGTH = 32 * 1024;
+	
+	private static final Pattern DEFAULT_HEAD_PATTERN = Pattern.compile("<head>\\d{5}</head>");
 	private static final int DEFAULT_CAPACITY = 2 * 1024 * 1024;
 	private static final String DEFAULT_CHARSET_NAME = "ISO-8859-1";
+	
 	protected final ByteBuffer _buffer;
 	private final Charset _charset;
+	private final Pattern headPatter = DEFAULT_HEAD_PATTERN;
+	
 	
 	/**
 	 * 实例{@link ByteMessageBuffer}对象
@@ -56,13 +67,19 @@ public class ByteMessageBuffer implements MessageBuffer{
 			int len = 0;
 			while(true){
 				len = getMessageLength();
-				_buffer.reset();
-				if(len == -1 || len > _buffer.remaining()){
+				if(len > MAX_MESSAGE_LENGTH){
+					clearBuffer();
+					_buffer.wait();
+					continue;
+				}
+				int remaining = _buffer.reset().remaining();
+				if(len == -1 || len > remaining){
 					_buffer.wait();
 				}else{
 					break;
 				}
 			}
+			
 			byte[] m = new byte[len];
 			_buffer.get(m);
 			_buffer.mark();
@@ -75,28 +92,98 @@ public class ByteMessageBuffer implements MessageBuffer{
 	}
 	
 	/**
+	 * 清除缓存区
+	 */
+	private void clearBuffer(){
+		_buffer.position(0).limit(0).mark();
+	}
+	
+	/**
 	 * 从消息头得到消息长度
 	 * 
 	 * @return
 	 */
 	private int getMessageLength(){
 		
-		int headLength = 18;
-		if(_buffer.remaining() < headLength){
+		int headLength = HEAD_LENGTH;
+		int remaining = _buffer.reset().remaining();
+		if(remaining < headLength){
 			return -1;
 		}
 		byte[] head = new byte[headLength];
 		_buffer.get(head);
-		int headValueLength = 5;
-		byte[] lenValues = new byte[headValueLength];
-		int headValueOffset = 6;
-		System.arraycopy(head, headValueOffset, lenValues, 0, headValueLength);
-		
+		boolean enable = isHead(head);
+		if(enable){
+			return parseMessageLength(head,headLength);
+		}else{
+			positionNextHead();
+			return getMessageLength();
+		}
+	}
+	
+	/**
+	 * 判断读取的消息头是否正确
+	 * <pre>
+	 * 消息头格式：<head>00001</head>
+	 * <pre>
+	 * @param bytes 读取的消息头
+	 * @return
+	 */
+	private boolean isHead(byte[] bytes){
+		String s = new String(bytes,_charset);
+		Matcher matcher = headPatter.matcher(s);
+		return matcher.matches();
+	}
+	
+	/**
+	 * 解析消息头得到消息长度
+	 * 
+	 * @param bytes 消息头
+	 * @param headLength 消息头长度
+	 * @return
+	 */
+	private int parseMessageLength(byte[] bytes,int headLength){
+		int len = HEAD_VALUE_LENGTH;
+		byte[] lenValues = new byte[len];
+		int offset = HEAD_VALUE_OFFSET;
+		System.arraycopy(bytes, offset, lenValues, 0, len);
 		String l = new String(lenValues,_charset);
 		logger.debug("Message len is \"{}\"",l);
 		return Integer.valueOf(l) + headLength;
 	}
-
+	
+	/**
+	 * 指定下一个消息头位置
+	 */
+	private void positionNextHead(){
+		int remaining = _buffer.reset().remaining();
+		if(remaining > MAX_MESSAGE_LENGTH){
+			clearBuffer();
+			return;
+		}
+		byte[] bytes = new byte[remaining];
+		String s = new String(bytes,_charset);
+		Matcher matcher = headPatter.matcher(s);
+		if(matcher.matches()){
+			int start = matcher.start();
+			int position = getBytesLength(s,0,start) - 1;
+			_buffer.position(position).mark();
+		}
+	}
+	
+	/**
+	 * 通过得字符转换byte数据组长度，得到字符在{@link ByteBuffer}中所占长度。
+	 * 
+	 * @param s 字符串
+	 * @param offset 起始位置
+	 * @param len 长度
+	 * @return
+	 */
+	private int getBytesLength(String s,int offset,int len){
+		return s.substring(offset, len).getBytes(_charset).length;
+	}
+	
+	
 	@Override
 	public void append(byte[] bytes) throws InterruptedException {
 		synchronized (_buffer) {
@@ -118,7 +205,6 @@ public class ByteMessageBuffer implements MessageBuffer{
 			int limit = _buffer.limit();
 			_buffer.position(limit).limit(limit + len);
 			_buffer.put(bytes);
-			_buffer.reset();
 			_buffer.notifyAll();
 		}
 	}

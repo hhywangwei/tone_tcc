@@ -15,12 +15,12 @@ public class ByteMessageBufferTest {
 		ByteMessageBuffer buffer = new ByteMessageBuffer(100);
 		byte[] bytes = "abcd123456".getBytes();
 		buffer.append(bytes);
-		Assert.assertEquals(0, buffer.getPosition());
+		Assert.assertEquals(10, buffer.getPosition());
 		Assert.assertEquals(10, buffer.getLimit());
 		
 		bytes = "efg".getBytes();
 		buffer.append(bytes);
-		Assert.assertEquals(0, buffer.getPosition());
+		Assert.assertEquals(13, buffer.getPosition());
 		Assert.assertEquals(13, buffer.getLimit());
 	}
 	
