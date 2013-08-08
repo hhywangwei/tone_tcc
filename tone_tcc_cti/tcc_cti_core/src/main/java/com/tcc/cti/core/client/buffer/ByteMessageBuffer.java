@@ -19,11 +19,12 @@ public class ByteMessageBuffer implements MessageBuffer{
 	private static final int HEAD_LENGTH = 18;
 	private static final int HEAD_VALUE_LENGTH = 5;
 	private static final int HEAD_VALUE_OFFSET = 6;
-	private static final int MAX_MESSAGE_LENGTH = 32 * 1024;
+	private static final int MESSAGE_MAX_LENGTH = 32 * 1024;
+	private static final int MISS_MESSAGE_MAX_LENGTH = 8 * 1024;
 	
-	private static final Pattern DEFAULT_HEAD_PATTERN = Pattern.compile("<head>\\d{5}</head>");
 	private static final int DEFAULT_CAPACITY = 2 * 1024 * 1024;
 	private static final String DEFAULT_CHARSET_NAME = "ISO-8859-1";
+	private static final Pattern DEFAULT_HEAD_PATTERN = Pattern.compile("<head>\\d{5}</head>");
 	
 	protected final ByteBuffer _buffer;
 	private final Charset _charset;
@@ -67,7 +68,7 @@ public class ByteMessageBuffer implements MessageBuffer{
 			int len = 0;
 			while(true){
 				len = getMessageLength();
-				if(len > MAX_MESSAGE_LENGTH){
+				if(len > MESSAGE_MAX_LENGTH){
 					clearBuffer();
 					_buffer.wait();
 					continue;
@@ -103,8 +104,7 @@ public class ByteMessageBuffer implements MessageBuffer{
 	 * 
 	 * @return
 	 */
-	private int getMessageLength(){
-		
+	private int getMessageLength(){		
 		int headLength = HEAD_LENGTH;
 		int remaining = _buffer.reset().remaining();
 		if(remaining < headLength){
@@ -116,8 +116,8 @@ public class ByteMessageBuffer implements MessageBuffer{
 		if(enable){
 			return parseMessageLength(head,headLength);
 		}else{
-			positionNextHead();
-			return getMessageLength();
+			boolean hasNext = positionNextHead();
+			return hasNext ? getMessageLength() : -1;
 		}
 	}
 	
@@ -155,20 +155,24 @@ public class ByteMessageBuffer implements MessageBuffer{
 	/**
 	 * 指定下一个消息头位置
 	 */
-	private void positionNextHead(){
+	private boolean positionNextHead(){
 		int remaining = _buffer.reset().remaining();
-		if(remaining > MAX_MESSAGE_LENGTH){
-			clearBuffer();
-			return;
-		}
 		byte[] bytes = new byte[remaining];
+		_buffer.get(bytes);
 		String s = new String(bytes,_charset);
 		Matcher matcher = headPatter.matcher(s);
-		if(matcher.matches()){
+		boolean hasNext = false;
+		if(matcher.find()){
 			int start = matcher.start();
-			int position = getBytesLength(s,0,start) - 1;
+			int position = getBytesLength(s,0,start) ;
 			_buffer.position(position).mark();
+			hasNext = true;
+		}else{
+			if(remaining > MISS_MESSAGE_MAX_LENGTH){
+				clearBuffer();
+			}			
 		}
+		return hasNext;
 	}
 	
 	/**
@@ -204,6 +208,7 @@ public class ByteMessageBuffer implements MessageBuffer{
 			
 			int limit = _buffer.limit();
 			_buffer.position(limit).limit(limit + len);
+			logger.debug("Append message is \"{}\"",new String(bytes,_charset));
 			_buffer.put(bytes);
 			_buffer.notifyAll();
 		}

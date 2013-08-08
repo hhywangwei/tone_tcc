@@ -104,4 +104,35 @@ public class ByteMessageBufferTest {
 		String m = buffer.next();
 		Assert.assertEquals("<head>00005</head>12345", m);
 	}
+	
+	@Test
+	public void testMAXLengthNext()throws Exception{
+		final ByteMessageBuffer buffer = new ByteMessageBuffer(400);
+		Thread t = new Thread(new Runnable(){
+			@Override
+			public void run() {
+				try{
+					Thread.sleep(500);
+					String mes = "<head>00005</head>12345";
+					buffer.append(mes.getBytes());
+				}catch(Exception e){
+					Assert.fail(e.getMessage());
+				}
+			}
+		});
+		t.start();
+		String mes = "<head>32769</head>dddddd";
+		buffer.append(mes.getBytes());
+		String s = buffer.next();
+		Assert.assertEquals("<head>00005</head>12345", s);
+	}
+	
+	@Test
+	public void testMissHead()throws Exception{
+		final ByteMessageBuffer buffer = new ByteMessageBuffer(400);
+		String mes = "12345678<head>00005</head>12345";
+		buffer.append(mes.getBytes());
+		String s = buffer.next();
+		Assert.assertEquals("<head>00005</head>12345", s);
+	}
 }
