@@ -16,6 +16,7 @@ import com.tcc.cti.core.client.buffer.MessageBuffer;
 import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.message.CtiMessage;
+import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.model.ServerConfigure;
 
 /**
@@ -29,18 +30,20 @@ public class TcpCtiClient implements CtiClientable{
 	private final String _companyId;
 	private final String _opId;
 	private final ServerConfigure _configure;
+	private final CtiMessagePool _messagePool;
 	
 	private SocketChannel _channel = null;
 	private List<SendHandler> _sendHandlers;
 	private List<ReceiveHandler> _receiveHandlers;
 	private StocketReceive _stocketReceive ;
+	private MessageReceive _messageReceive;
 		
 	public TcpCtiClient(String companyId,String opId,
-			ServerConfigure configure){
-		
+			ServerConfigure configure,CtiMessagePool messagePool){
 		_companyId = companyId;
 		_opId = opId;
 		_configure = configure;
+		_messagePool = messagePool;
 	}
 
 	@Override
@@ -56,11 +59,17 @@ public class TcpCtiClient implements CtiClientable{
 			_channel.register(selector, SelectionKey.OP_READ);
 			MessageBuffer messageBuffer = new ByteMessageBuffer();
 			
-			_stocketReceive = new StocketReceive(selector,messageBuffer);
+			_stocketReceive = new StocketReceive(selector, messageBuffer);
 			Thread t = new Thread(_stocketReceive);
 			t.start();
+			
+			_messageReceive = new MessageReceive(
+					messageBuffer,_receiveHandlers,_messagePool);
+			Thread m = new Thread(_messageReceive);
+			m.start();
+			
 		} catch (IOException e) {
-			logger.error("Tcp client start is error \"{}\"",e);
+			logger.error("Tcp client start is error {}",e);
 			throw new ClientException(e);
 		}			
 	}
@@ -72,7 +81,7 @@ public class TcpCtiClient implements CtiClientable{
 				_channel.close();				
 			}
 		} catch (IOException e) {
-			logger.error("Tcp client close is error \"{}\"",e);
+			logger.error("Tcp client close is error {}",e);
 		}
 	}
 
@@ -104,7 +113,6 @@ public class TcpCtiClient implements CtiClientable{
 	}
 	
 	static class StocketReceive implements Runnable {
-		private static final Logger logger = LoggerFactory.getLogger(StocketReceive.class);
 		private static final int DEFAULT_BUFFER_SIZE = 1024 * 8;
 		
 		private final Selector _selector;
@@ -142,5 +150,33 @@ public class TcpCtiClient implements CtiClientable{
 				logger.error("Recevice message is error {}",e);
 			}
 		}
+	}
+	
+	static class MessageReceive implements Runnable{
+		private final MessageBuffer _messageBuffer;
+		private final List<ReceiveHandler> _receiveHandlers;
+		private final CtiMessagePool _messagePool;
+		
+		public MessageReceive(MessageBuffer messageBuffer,
+				List<ReceiveHandler> handlers,CtiMessagePool pool){
+			_messageBuffer = messageBuffer;
+			_receiveHandlers = handlers;
+			_messagePool = pool;
+		}
+		
+		@Override
+		public void run() {
+			try{
+				while(true){
+					String m = _messageBuffer.next();
+					for(ReceiveHandler handler: _receiveHandlers){
+						handler.receive(m, _messagePool);
+					}
+				}	
+			}catch(Exception e){
+				//TODO 异常处理，特别注意阻塞问题
+			}
+		}
+		
 	}
 }

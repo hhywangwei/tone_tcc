@@ -4,10 +4,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.tcc.cti.core.client.TcpCtiClient;
-import com.tcc.cti.core.client.send.SendHandler;
-import com.tcc.cti.core.client.send.LoginSendHandler;
 import com.tcc.cti.core.message.Login;
+import com.tcc.cti.core.message.pool.NoneMessagePool;
 import com.tcc.cti.core.model.ServerConfigure;
 
 public class TcpCtiClientTest {
@@ -19,7 +17,7 @@ public class TcpCtiClientTest {
 		ServerConfigure configure = new ServerConfigure();
 		configure.setHost("211.136.173.135");
 		configure.setPort(9999);
-		client = new TcpCtiClient("1","8001",configure);
+		client = new TcpCtiClient("1","8001",configure,new NoneMessagePool());
 		client.start();
 	}
 	
@@ -31,9 +29,8 @@ public class TcpCtiClientTest {
 	@Test
 	public void testSend()throws Exception{
 		Login login = initLoginInfo();
-//		SendHandler message = new LoginSendHandler(login,1l);
-//		client.send(message);
-//		Thread.sleep(3000);
+		client.send(login);
+		Thread.sleep(3000);
 	}
 
     private Login initLoginInfo(){
@@ -42,7 +39,7 @@ public class TcpCtiClientTest {
 		login.setCompayId("1");
 		login.setOpId("8002");
 		login.setOpNumber("8002");
-		login.setPassword("c4ca4238a0b923820dcc509a6f75849b");
+		login.setPassword("1");
 		login.setType("1");
 		
 		return login;

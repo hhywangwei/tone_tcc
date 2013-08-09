@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
+import com.tcc.cti.core.common.PasswordUtils;
 import com.tcc.cti.core.message.CtiMessage;
 import com.tcc.cti.core.message.Login;
 
@@ -69,8 +70,8 @@ public class LoginSendHandler extends AbstractSendHandler{
 		sb.append(String.format(COMPANY_ID_FORMAT,login.getCompayId()));
 		sb.append(String.format(OPID_FORMAT, login.getOpId()));
 		sb.append(String.format(OPNUMBER_FORMAT, login.getOpNumber()));
-		//TODO 密码需要解密
-		sb.append(String.format(PASSWORD_FORMAT, login.getPassword()));
+		String password = PasswordUtils.encodeMD5(login.getPassword());
+		sb.append(String.format(PASSWORD_FORMAT, password));
 		
 		String m = sb.toString();
 		logger.debug("Build message is {}",m);
