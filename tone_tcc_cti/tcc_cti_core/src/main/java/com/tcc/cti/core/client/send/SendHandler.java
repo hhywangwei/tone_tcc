@@ -27,25 +27,20 @@ public interface SendHandler {
 	 * 
 	 * @param channel {@link SocketChannel}
 	 * @param message 发送的消息
+	 * @param generator 生成消息序列号
 	 * @return
 	 */
-	void send(SocketChannel channel,CtiMessage message)throws ClientException;
+	void send(SocketChannel channel, CtiMessage message, GeneratorSeq generator)throws ClientException;
 	
 	/**
 	 * 根据指定编码发送消息
 	 * 
 	 * @param channel {@link SocketChannel}
 	 * @param message 发送的消息对象
+	 * @param generator 生成消息序列号
 	 * @param charset 发送对象字符集
 	 * @throws ClientException
 	 */
-	void send(SocketChannel channel,CtiMessage message,String charset)throws ClientException;
-	
-	/**
-	 * 设置发送消息序号生成对象
-	 * 
-	 * @param generatorSeq
-	 */
-	void setGeneratorSeq(GeneratorSeq generatorSeq);
+	void send(SocketChannel channel, CtiMessage message, GeneratorSeq generator, String charset)throws ClientException;
 	
 }

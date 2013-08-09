@@ -20,7 +20,7 @@ public class LoginSendHandlerTest {
 	private final String MESSAGE = "<head>00161</head><msg>login</msg>"
 			+ "<seq>1</seq><Type>1</Type><CompanyID>1</CompanyID>"
 			+ "<OPID>8001</OPID><OPNumber>8002</OPNumber>"
-			+ "<PassWord>c4ca4238a0b923820dcc509a6f75849b</PassWord>"; 
+			+ "<PassWord>28c8edde3d61a0411511d3b1866f0636</PassWord>"; 
 	@Test
 	public void testGetMessage()throws Exception{
 		Login login = initLoginInfo();

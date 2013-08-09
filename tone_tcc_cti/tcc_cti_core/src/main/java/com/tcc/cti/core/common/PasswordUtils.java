@@ -20,8 +20,7 @@ public class PasswordUtils {
 	/**
 	 * MD5加密
 	 * 
-	 * @param source
-	 *            密码
+	 * @param source 密码
 	 * @return
 	 */
 	public static String encodeMD5(String source) {

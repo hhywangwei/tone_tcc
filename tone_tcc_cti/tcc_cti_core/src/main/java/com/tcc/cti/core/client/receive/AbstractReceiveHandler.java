@@ -126,7 +126,7 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 			if(ROOT.equals(qName)) return ;
 			
 			String v = _value.toString();
-			logger.debug("element is \"{}\",_value is \"{}\"",qName,v);
+			logger.debug("element is \"{}\" value is \"{}\"",qName,v);
 			_content.put(qName, v);
 		}
 	}

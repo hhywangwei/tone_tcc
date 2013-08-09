@@ -21,7 +21,7 @@ public class MemoryGeneratorSeq implements GeneratorSeq{
 
 	@Override
 	public String next() {
-		return String.valueOf(count.decrementAndGet());
+		return String.valueOf(count.incrementAndGet());
 	}
 	
 	public String getCompanyId(){

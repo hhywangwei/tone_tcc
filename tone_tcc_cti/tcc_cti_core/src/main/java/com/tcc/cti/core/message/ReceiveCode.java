@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 /**
  * 接受消息返回代码定义，读取cti_receive_code.propertites属性文件得到返回代码定义
  * 
- * @author wang
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 public enum ReceiveCode {
 	codeInstance(LoggerFactory.getLogger(ReceiveCode.class));

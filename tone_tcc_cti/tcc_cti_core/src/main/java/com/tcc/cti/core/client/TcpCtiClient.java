@@ -15,6 +15,8 @@ import com.tcc.cti.core.client.buffer.ByteMessageBuffer;
 import com.tcc.cti.core.client.buffer.MessageBuffer;
 import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
+import com.tcc.cti.core.client.sequence.GeneratorSeq;
+import com.tcc.cti.core.client.sequence.MemoryGeneratorSeq;
 import com.tcc.cti.core.message.CtiMessage;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.model.ServerConfigure;
@@ -31,6 +33,7 @@ public class TcpCtiClient implements CtiClientable{
 	private final String _opId;
 	private final ServerConfigure _configure;
 	private final CtiMessagePool _messagePool;
+	private final GeneratorSeq _generator;
 	
 	private SocketChannel _channel = null;
 	private List<SendHandler> _sendHandlers;
@@ -44,6 +47,7 @@ public class TcpCtiClient implements CtiClientable{
 		_opId = opId;
 		_configure = configure;
 		_messagePool = messagePool;
+		_generator = new MemoryGeneratorSeq(companyId,opId);
 	}
 
 	@Override
@@ -69,7 +73,7 @@ public class TcpCtiClient implements CtiClientable{
 			m.start();
 			
 		} catch (IOException e) {
-			logger.error("Tcp client start is error {}",e);
+			logger.error("Tcp client start is error {}",e.toString());
 			throw new ClientException(e);
 		}			
 	}
@@ -88,7 +92,7 @@ public class TcpCtiClient implements CtiClientable{
 	@Override
 	public void send(CtiMessage message)throws ClientException {
 		for(SendHandler handler : _sendHandlers){
-			handler.send(_channel, message);
+			handler.send(_channel, message, _generator);
 		}
 	}
 

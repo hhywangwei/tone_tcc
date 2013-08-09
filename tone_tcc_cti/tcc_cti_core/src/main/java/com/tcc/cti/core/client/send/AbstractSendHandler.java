@@ -14,18 +14,16 @@ import com.tcc.cti.core.message.CtiMessage;
 public abstract class AbstractSendHandler implements SendHandler{
 	private static final Logger logger = LoggerFactory.getLogger(AbstractSendHandler.class);
 	
-	protected GeneratorSeq _generator;
-	
 	@Override
-	public void send(SocketChannel channel,CtiMessage message)throws ClientException{
-		send(channel,message,DEFAULT_CHARTSET);
+	public void send(SocketChannel channel,CtiMessage message,GeneratorSeq generator)throws ClientException{
+		send(channel,message,generator,DEFAULT_CHARTSET);
 	}
 	
 	@Override
-	public void send(SocketChannel channel,CtiMessage message,String charset)throws ClientException {
+	public void send(SocketChannel channel,CtiMessage message,GeneratorSeq generator,String charset)throws ClientException {
 		try {
 			if(isSend(message)) {
-				byte[] m = getMessage(message,_generator,charset);
+				byte[] m = getMessage(message, generator, charset);
 				ByteBuffer buffer = ByteBuffer.wrap(m);
 				channel.write(buffer);	
 			}
@@ -54,8 +52,4 @@ public abstract class AbstractSendHandler implements SendHandler{
 	protected abstract byte[] getMessage(
 			CtiMessage message,GeneratorSeq generator,String charset);
 	
-	@Override
-	public void setGeneratorSeq(GeneratorSeq generator){
-		_generator = generator;
-	}
 }
