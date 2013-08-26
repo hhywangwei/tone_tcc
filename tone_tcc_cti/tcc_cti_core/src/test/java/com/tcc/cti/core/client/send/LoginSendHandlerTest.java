@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import com.tcc.cti.core.client.send.LoginSendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
+import com.tcc.cti.core.message.CtiMessage;
 import com.tcc.cti.core.message.Login;
 
 /**
@@ -23,7 +24,7 @@ public class LoginSendHandlerTest {
 			+ "<PassWord>28c8edde3d61a0411511d3b1866f0636</PassWord>"; 
 	@Test
 	public void testGetMessage()throws Exception{
-		Login login = initLoginInfo();
+		CtiMessage login = initLoginInfo();
 		LoginSendHandler send = new LoginSendHandler();
 		GeneratorSeq generator = mock(GeneratorSeq.class);
 		when(generator.next()).thenReturn("1");
@@ -31,7 +32,7 @@ public class LoginSendHandlerTest {
 		Assert.assertEquals(MESSAGE, new String(bytes,LoginSendHandler.DEFAULT_CHARTSET));
 	}
 	 
-	private Login initLoginInfo(){
+	private CtiMessage initLoginInfo(){
 		
 		Login login = new Login();
 		login.setCompayId("1");

@@ -6,7 +6,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,8 +18,6 @@ import com.tcc.cti.core.client.buffer.ByteMessageBuffer;
 import com.tcc.cti.core.client.buffer.MessageBuffer;
 import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
-import com.tcc.cti.core.client.sequence.GeneratorSeq;
-import com.tcc.cti.core.client.sequence.MemoryGeneratorSeq;
 import com.tcc.cti.core.message.CtiMessage;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.model.ServerConfigure;
@@ -29,83 +30,81 @@ import com.tcc.cti.core.model.ServerConfigure;
 public class TcpCtiClient implements CtiClientable{
 	private static final Logger logger = LoggerFactory.getLogger(TcpCtiClient.class);
 	
-	private final String _companyId;
-	private final String _opId;
 	private final ServerConfigure _configure;
 	private final CtiMessagePool _messagePool;
-	private final GeneratorSeq _generator;
+	private final Map<OperatorChannel.OperatorKey, OperatorChannel> _channelPool = 
+			Collections.synchronizedMap(new HashMap<OperatorChannel.OperatorKey, OperatorChannel>());
 	
-	private SocketChannel _channel = null;
 	private List<SendHandler> _sendHandlers;
 	private List<ReceiveHandler> _receiveHandlers;
 	private StocketReceive _stocketReceive ;
-	private MessageReceive _messageReceive;
+	private Selector _selector;
 		
-	public TcpCtiClient(String companyId,String opId,
-			ServerConfigure configure,CtiMessagePool messagePool){
-		_companyId = companyId;
-		_opId = opId;
+	public TcpCtiClient(ServerConfigure configure,CtiMessagePool messagePool){
 		_configure = configure;
 		_messagePool = messagePool;
-		_generator = new MemoryGeneratorSeq(companyId,opId);
 	}
 
 	@Override
 	public synchronized void start()throws ClientException {
 		
 		try {
-			InetSocketAddress address = new InetSocketAddress(
-					_configure.getHost(), _configure.getPort());
-			_channel = SocketChannel.open(address);
-			_channel.configureBlocking(false);
 			
-			Selector selector = Selector.open();
-			_channel.register(selector, SelectionKey.OP_READ);
+			_selector = Selector.open();
 			MessageBuffer messageBuffer = new ByteMessageBuffer();
-			
-			_stocketReceive = new StocketReceive(selector, messageBuffer);
+			_stocketReceive = new StocketReceive(_selector, messageBuffer);
 			Thread t = new Thread(_stocketReceive);
 			t.start();
-			
-			_messageReceive = new MessageReceive(
-					messageBuffer,_receiveHandlers,_messagePool);
-			Thread m = new Thread(_messageReceive);
-			m.start();
 			
 		} catch (IOException e) {
 			logger.error("Tcp client start is error {}",e.toString());
 			throw new ClientException(e);
 		}			
 	}
+	
+
+	public void register(String companyId,String opId)throws ClientException{
+		try {
+			InetSocketAddress address = new InetSocketAddress(
+					_configure.getHost(), _configure.getPort());
+			SocketChannel channel = SocketChannel.open(address);
+			channel.configureBlocking(false);	
+			OperatorChannel.OperatorKey key = 
+					new OperatorChannel.OperatorKey(companyId, opId);
+			channel.register(_selector, SelectionKey.OP_READ,key);
+			OperatorChannel operatorChannel = new OperatorChannel(
+					key,channel,_sendHandlers,_receiveHandlers,_messagePool);
+			synchronized (_channelPool) {
+				_channelPool.put(key, operatorChannel);
+			}
+		}catch(IOException e){
+			logger.error("Tcp client start is error {}",e.toString());
+			throw new ClientException(e);
+		}
+	}
 
 	@Override
 	public void close()throws ClientException {
-		try {
-			if(_channel != null && _channel.isOpen()){
-				_channel.close();				
-			}
-		} catch (IOException e) {
-			logger.error("Tcp client close is error {}",e);
-		}
+//		try {
+//			if(_channel != null && _channel.isOpen()){
+//				_channel.close();				
+//			}
+//		} catch (IOException e) {
+//			logger.error("Tcp client close is error {}",e);
+//		}
 	}
 
 	@Override
 	public void send(CtiMessage message)throws ClientException {
-		for(SendHandler handler : _sendHandlers){
-			handler.send(_channel, message, _generator);
+		OperatorChannel channel = null;
+		OperatorChannel.OperatorKey key = 
+				new OperatorChannel.OperatorKey(message.getCompayId(), message.getOpId());
+		synchronized (_channelPool) {
+			channel = _channelPool.get(key);
 		}
+		channel.send(message);
 	}
 
-	@Override
-	public String getCompanyId() {
-		return _companyId;
-	}
-
-	@Override
-	public String getOPId() {
-		return _opId;
-	}
-	
 	@Override
 	public void setReceiveHandlers(List<ReceiveHandler> handlers) {
 		this._receiveHandlers = handlers;
@@ -154,33 +153,5 @@ public class TcpCtiClient implements CtiClientable{
 				logger.error("Recevice message is error {}",e);
 			}
 		}
-	}
-	
-	static class MessageReceive implements Runnable{
-		private final MessageBuffer _messageBuffer;
-		private final List<ReceiveHandler> _receiveHandlers;
-		private final CtiMessagePool _messagePool;
-		
-		public MessageReceive(MessageBuffer messageBuffer,
-				List<ReceiveHandler> handlers,CtiMessagePool pool){
-			_messageBuffer = messageBuffer;
-			_receiveHandlers = handlers;
-			_messagePool = pool;
-		}
-		
-		@Override
-		public void run() {
-			try{
-				while(true){
-					String m = _messageBuffer.next();
-					for(ReceiveHandler handler: _receiveHandlers){
-						handler.receive(m, _messagePool);
-					}
-				}	
-			}catch(Exception e){
-				//TODO 异常处理，特别注意阻塞问题
-			}
-		}
-		
 	}
 }

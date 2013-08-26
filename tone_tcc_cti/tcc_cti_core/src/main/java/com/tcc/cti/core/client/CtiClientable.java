@@ -13,19 +13,6 @@ import com.tcc.cti.core.message.CtiMessage;
  */
 public interface CtiClientable {
 	
-	/**
-	 * 用户公司编号
-	 * 
-	 * @return
-	 */
-	String getCompanyId();
-	
-	/**
-	 * 用户编号
-	 * 
-	 * @return
-	 */
-	String getOPId();
 	
 	/**
 	 * 开始客户端连接服务

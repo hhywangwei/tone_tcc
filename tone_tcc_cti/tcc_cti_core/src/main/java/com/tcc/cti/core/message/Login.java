@@ -4,52 +4,36 @@ package com.tcc.cti.core.message;
  * 登录用户信息对象
  * 
  * <pre>
- * compayId:公司编号
- * opId:用户编号与公司编号组合决定员工唯一性
- * opNumber:座席号
- * password:用户密码使用（sh1）加密传输
- * type:用户类型 
+ * _opNumber:座席号
+ * _password:用户密码使用（sh1）加密传输
+ * _type:用户类型 
  * 
  * 详细参考{@link LoginSendHandler}
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 public class Login extends CtiMessage{
-	private String compayId;
-	private String opId;
-	private String opNumber;
-	private String password;
-	private String type;
+	private String _opNumber;
+	private String _password;
+	private String _type;
 	
-	public String getCompayId() {
-		return compayId;
-	}
-	public void setCompayId(String compayId) {
-		this.compayId = compayId;
-	}
-	public String getOpId() {
-		return opId;
-	}
-	public void setOpId(String opId) {
-		this.opId = opId;
-	}
 	public String getOpNumber() {
-		return opNumber;
+		return _opNumber;
 	}
 	public void setOpNumber(String opNumber) {
-		this.opNumber = opNumber;
+		this._opNumber = opNumber;
 	}
 	public String getPassword() {
-		return password;
+		return _password;
 	}
 	public void setPassword(String password) {
-		this.password = password;
+		this._password = password;
 	}
 	public String getType() {
-		return type;
+		return _type;
 	}
 	public void setType(String type) {
-		this.type = type;
+		this._type = type;
 	}
 	
 	@Override
@@ -57,8 +41,8 @@ public class Login extends CtiMessage{
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ ((compayId == null) ? 0 : compayId.hashCode());
-		result = prime * result + ((opId == null) ? 0 : opId.hashCode());
+				+ ((_compayId == null) ? 0 : _compayId.hashCode());
+		result = prime * result + ((_opId == null) ? 0 : _opId.hashCode());
 		return result;
 	}
 	
@@ -70,16 +54,16 @@ public class Login extends CtiMessage{
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Login other = (Login) obj;
-		if (compayId == null) {
-			if (other.compayId != null)
+		CtiMessage other = (CtiMessage) obj;
+		if (_compayId == null) {
+			if (other._compayId != null)
 				return false;
-		} else if (!compayId.equals(other.compayId))
+		} else if (!_compayId.equals(other._compayId))
 			return false;
-		if (opId == null) {
-			if (other.opId != null)
+		if (_opId == null) {
+			if (other._opId != null)
 				return false;
-		} else if (!opId.equals(other.opId))
+		} else if (!_opId.equals(other._opId))
 			return false;
 		return true;
 	}
@@ -87,16 +71,16 @@ public class Login extends CtiMessage{
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("Login [compayId=");
-		builder.append(compayId);
-		builder.append(", opId=");
-		builder.append(opId);
-		builder.append(", opNumber=");
-		builder.append(opNumber);
-		builder.append(", password=");
-		builder.append(password);
-		builder.append(", type=");
-		builder.append(type);
+		builder.append("Login [_compayId=");
+		builder.append(_compayId);
+		builder.append(", _opId=");
+		builder.append(_opId);
+		builder.append(", _opNumber=");
+		builder.append(_opNumber);
+		builder.append(", _password=");
+		builder.append(_password);
+		builder.append(", _type=");
+		builder.append(_type);
 		builder.append("]");
 		return builder.toString();
 	}

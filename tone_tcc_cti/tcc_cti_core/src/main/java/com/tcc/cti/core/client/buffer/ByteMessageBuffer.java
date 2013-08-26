@@ -22,7 +22,7 @@ public class ByteMessageBuffer implements MessageBuffer{
 	private static final int MESSAGE_MAX_LENGTH = 32 * 1024;
 	private static final int MISS_MESSAGE_MAX_LENGTH = 8 * 1024;
 	
-	private static final int DEFAULT_CAPACITY = 2 * 1024 * 1024;
+	private static final int DEFAULT_CAPACITY = 256 * 1024;
 	private static final String DEFAULT_CHARSET_NAME = "ISO-8859-1";
 	private static final Pattern DEFAULT_HEAD_PATTERN = Pattern.compile("<head>\\d{5}</head>");
 	
