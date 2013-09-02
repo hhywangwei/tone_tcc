@@ -1,16 +1,15 @@
 package com.tcc.cti.core.client;
 
+import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.List;
 
 import com.tcc.cti.core.client.buffer.ByteMessageBuffer;
 import com.tcc.cti.core.client.buffer.MessageBuffer;
-import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.sequence.MemoryGeneratorSeq;
 import com.tcc.cti.core.message.CtiMessage;
-import com.tcc.cti.core.message.pool.CtiMessagePool;
 
 public class OperatorChannel {
 	private final OperatorKey _operatorKey;
@@ -18,30 +17,24 @@ public class OperatorChannel {
 	private final SocketChannel _channel;
 	private final MessageBuffer _messageBuffer;
 	private final List<SendHandler> _sendHandlers;
-	private final List<ReceiveHandler> _receiveHandlers;
-	private final CtiMessagePool _messagePool;
-	
-	private volatile boolean _startReceive = false;
+	private final String _charset;
 
 	public OperatorChannel(OperatorKey operatorKey,SocketChannel channel,
-			List<SendHandler> sendHandlers,List<ReceiveHandler> receiveHandlers,
-			CtiMessagePool messagePool) {
+			List<SendHandler> sendHandlers,String charset) {
 
-		this(operatorKey, channel, new MemoryGeneratorSeq(operatorKey._companyId, operatorKey._opId),
-				sendHandlers,receiveHandlers,messagePool);
+		this(operatorKey, channel, sendHandlers, charset,
+				new MemoryGeneratorSeq(operatorKey._companyId, operatorKey._opId));
 	}
 
-	public OperatorChannel(OperatorKey operatorKey, SocketChannel channel,GeneratorSeq generator,
-			List<SendHandler> sendHandlers,List<ReceiveHandler> receiveHandlers,
-			CtiMessagePool messagePool){
+	public OperatorChannel(OperatorKey operatorKey, SocketChannel channel,
+			List<SendHandler> sendHandlers,String charset,GeneratorSeq generator){
 		
 		_operatorKey = operatorKey;
 		_channel = channel;
 		_generator = generator;
-		_messageBuffer = new ByteMessageBuffer();
+		_messageBuffer = new ByteMessageBuffer(charset);
 		_sendHandlers = sendHandlers;
-		_receiveHandlers = receiveHandlers;
-		_messagePool = messagePool;
+		_charset = charset;
 	}
 
 	public SocketChannel getChannel() {
@@ -60,37 +53,30 @@ public class OperatorChannel {
 		_messageBuffer.append(bytes);
 	}
 	
-	public void startReceive(){
-		Thread t = new Thread(new Runnable(){
-			@Override
-			public void run() {
-				try{
-					while(true){
-						String m = _messageBuffer.next();
-						for(ReceiveHandler handler: _receiveHandlers){
-							handler.receive(m, _messagePool);
-						}
-					}	
-				}catch(Exception e){
-					//TODO 异常处理，特别注意阻塞问题
-				}
-			}
-		});
-		t.start();
-		
-		_startReceive = true;
+	public String next(){
+		return _messageBuffer.next();
+	}
+	
+	public boolean isOpen(){
+		return _channel.isOpen();
 	}
 	
 	public void send(CtiMessage message)throws ClientException {
 		for(SendHandler handler : _sendHandlers){
-			handler.send(_channel, message, _generator);
+			handler.send(_channel, message, _generator,_charset);
 		}
 	}
 	
-	public boolean isStartReceive(){
-		return _startReceive;
+	public void close()throws ClientException{
+		try{
+			if(_channel.isOpen()){
+				_channel.close();
+			}
+		}catch(IOException e){
+			throw new ClientException(e);
+		}
 	}
-
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -142,6 +128,38 @@ public class OperatorChannel {
 
 		public String getOpId() {
 			return _opId;
+		}
+		
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((_companyId == null) ? 0 : _companyId.hashCode());
+			result = prime * result + ((_opId == null) ? 0 : _opId.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			OperatorKey other = (OperatorKey) obj;
+			if (_companyId == null) {
+				if (other._companyId != null)
+					return false;
+			} else if (!_companyId.equals(other._companyId))
+				return false;
+			if (_opId == null) {
+				if (other._opId != null)
+					return false;
+			} else if (!_opId.equals(other._opId))
+				return false;
+			return true;
 		}
 
 		@Override

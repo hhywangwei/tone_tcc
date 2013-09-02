@@ -7,4 +7,8 @@ public class ClientException extends Exception {
 	public ClientException(Throwable t){
 		super(t);
 	}
+	
+	public ClientException(String m){
+		
+	}
 }

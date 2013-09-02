@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.tcc.cti.core.client.ClientException;
+import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 
 /**
@@ -46,8 +47,8 @@ public class AbstractReceiveHandlerTest {
 		}
 
 		@Override
-		protected void receiveHandler(Map<String, String> content,
-				CtiMessagePool pool) throws ClientException {
+		protected void receiveHandler(CtiMessagePool pool,
+				OperatorChannel.OperatorKey key, Map<String, String> content) throws ClientException {
 			// none instance
 		}
 		

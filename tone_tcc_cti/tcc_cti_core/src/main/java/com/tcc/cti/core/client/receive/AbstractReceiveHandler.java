@@ -18,6 +18,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.tcc.cti.core.client.ClientException;
+import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 
 /**
@@ -32,7 +33,7 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	private static final String MESSAGE_TYPE = "msg";
 	
 	@Override
-	public void receive(String message,CtiMessagePool pool)throws ClientException{
+	public void receive(CtiMessagePool pool,OperatorChannel.OperatorKey key, String message)throws ClientException{
 		
 		logger.debug("receive message is \"{}\"",message);
 		
@@ -40,7 +41,7 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 			Map<String,String> content = parseMessage(message);
 			String msgType = content.get(MESSAGE_TYPE);
 			if(StringUtils.isNotBlank(msgType) && isReceive(msgType)){
-				receiveHandler(content, pool);
+				receiveHandler(pool, null, content);
 			}
 		}catch(SAXException e){
 			throw new ClientException(e);
@@ -87,12 +88,13 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	
 	/**
 	 * 处理接受消息
-	 * 
-	 * @param content 接受消息内容
 	 * @param pool 消息接收池
+	 * @param newParam TODO
+	 * @param content 接受消息内容
+	 * 
 	 * @throws ClientException
 	 */
-	protected abstract void receiveHandler(Map<String,String> content,CtiMessagePool pool)throws ClientException;
+	protected abstract void receiveHandler(CtiMessagePool pool,OperatorChannel.OperatorKey key, Map<String,String> content)throws ClientException;
 	
 	/**
 	 * 接受消息解析处理类，使用SAX解析器处理

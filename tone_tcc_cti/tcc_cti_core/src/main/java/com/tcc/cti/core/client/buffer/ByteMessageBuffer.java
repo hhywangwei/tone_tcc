@@ -23,38 +23,32 @@ public class ByteMessageBuffer implements MessageBuffer{
 	private static final int MISS_MESSAGE_MAX_LENGTH = 8 * 1024;
 	
 	private static final int DEFAULT_CAPACITY = 256 * 1024;
-	private static final String DEFAULT_CHARSET_NAME = "ISO-8859-1";
 	private static final Pattern DEFAULT_HEAD_PATTERN = Pattern.compile("<head>\\d{5}</head>");
 	
-	protected final ByteBuffer _buffer;
+	
+	private final int _maxLength; 
 	private final Charset _charset;
+	private final ByteBuffer _buffer;
+	
 	private final Pattern headPatter = DEFAULT_HEAD_PATTERN;
 	
 	
 	/**
 	 * 实例{@link ByteMessageBuffer}对象
 	 */
-	public ByteMessageBuffer(){
-		this(DEFAULT_CAPACITY,DEFAULT_CHARSET_NAME);
-	}
-	
-	/**
-	 * 实例{@link ByteMessageBuffer}对象
-	 * 
-	 * @param capacity 缓存区大小
-	 */
-	public ByteMessageBuffer(int capacity){
-		this(capacity,DEFAULT_CHARSET_NAME);
+	public ByteMessageBuffer(String charset){
+		this(DEFAULT_CAPACITY,charset);
 	}
 	
 	/**
 	 * 实例{@link ByteMessageBuffer}对象
 	 * 
 	 * @param capacity 缓冲区大小
-	 * @param 消息字符集
+	 * @param charsetName 消息字符集
 	 */
-	public ByteMessageBuffer(int capacity,String charsetName){
-		_charset = Charset.forName(charsetName);
+	public ByteMessageBuffer(int capacity,String charset){
+		_maxLength = (capacity < MESSAGE_MAX_LENGTH)? capacity: MESSAGE_MAX_LENGTH;
+		_charset = Charset.forName(charset);
 		_buffer =(ByteBuffer)ByteBuffer.
 				allocate(capacity).
 				position(0).
@@ -63,28 +57,23 @@ public class ByteMessageBuffer implements MessageBuffer{
 	}
 
 	@Override
-	public String next() throws InterruptedException{
+	public String next() {
 		synchronized (_buffer) {
-			int len = 0;
-			while(true){
-				len = getMessageLength();
-				if(len > MESSAGE_MAX_LENGTH){
-					clearBuffer();
-					_buffer.wait();
-					continue;
-				}
-				int remaining = _buffer.reset().remaining();
-				if(len == -1 || len > remaining){
-					_buffer.wait();
-				}else{
-					break;
-				}
+			int len =  getMessageLength();
+			if(len > _maxLength){
+				logger.debug("message {} too length",len);
+				clearBuffer();
+				return null;
+			}
+			int remaining = _buffer.reset().remaining();
+			if(len == -1 || len > remaining){
+				logger.debug("message is not complate");
+				return null;
 			}
 			
 			byte[] m = new byte[len];
 			_buffer.get(m);
 			_buffer.mark();
-			_buffer.notifyAll();
 			
 			String message = new String(m,_charset);
 			logger.debug("Message is \"{}\"",message);
@@ -189,20 +178,25 @@ public class ByteMessageBuffer implements MessageBuffer{
 	
 	
 	@Override
-	public void append(byte[] bytes) throws InterruptedException {
+	public void append(byte[] bytes) {
+		
+		if(bytes.length > _maxLength){
+			logger.warn("Append message \"{}\" is too length",new String(bytes,_charset));
+			return ;
+		}
+		
 		synchronized (_buffer) {
 			int len = bytes.length;
-			while(true){
-				int free= _buffer.capacity() - _buffer.limit() ;
-				if(free < len ){
-					if((free + _buffer.position()) > len){
-						_buffer.compact();
-						_buffer.flip().mark();
-						break;
-					}
-					_buffer.wait();
+			int free= _buffer.capacity() - _buffer.limit() ;
+			
+			if(free < len ){
+				int position = _buffer.reset().position();
+				if((free + position) > len){
+					_buffer.compact();
+					_buffer.flip().mark();
 				}else{
-					break;
+					logger.warn("Message buffer is full");
+					clearBuffer();
 				}
 			}
 			
@@ -210,7 +204,6 @@ public class ByteMessageBuffer implements MessageBuffer{
 			_buffer.position(limit).limit(limit + len);
 			logger.debug("Append message is \"{}\"",new String(bytes,_charset));
 			_buffer.put(bytes);
-			_buffer.notifyAll();
 		}
 	}
 	
