@@ -8,7 +8,6 @@ import org.junit.Test;
 
 import com.tcc.cti.core.client.send.LoginSendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
-import com.tcc.cti.core.message.CtiMessage;
 import com.tcc.cti.core.message.Login;
 
 /**
@@ -17,22 +16,23 @@ import com.tcc.cti.core.message.Login;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 public class LoginSendHandlerTest {
-
+	private static final String DEFAULT_CHARSET_NAME = "ISO-8859-1";
+	
 	private final String MESSAGE = "<head>00161</head><msg>login</msg>"
 			+ "<seq>1</seq><Type>1</Type><CompanyID>1</CompanyID>"
 			+ "<OPID>8001</OPID><OPNumber>8002</OPNumber>"
 			+ "<PassWord>28c8edde3d61a0411511d3b1866f0636</PassWord>"; 
 	@Test
 	public void testGetMessage()throws Exception{
-		CtiMessage login = initLoginInfo();
+		Login login = initLoginInfo();
 		LoginSendHandler send = new LoginSendHandler();
 		GeneratorSeq generator = mock(GeneratorSeq.class);
 		when(generator.next()).thenReturn("1");
-		byte[] bytes = send.getMessage(login,generator,LoginSendHandler.DEFAULT_CHARTSET);
-		Assert.assertEquals(MESSAGE, new String(bytes,LoginSendHandler.DEFAULT_CHARTSET));
+		byte[] bytes = send.getMessage(login,generator,DEFAULT_CHARSET_NAME);
+		Assert.assertEquals(MESSAGE, new String(bytes,DEFAULT_CHARSET_NAME));
 	}
 	 
-	private CtiMessage initLoginInfo(){
+	private Login initLoginInfo(){
 		
 		Login login = new Login();
 		login.setCompayId("1");
