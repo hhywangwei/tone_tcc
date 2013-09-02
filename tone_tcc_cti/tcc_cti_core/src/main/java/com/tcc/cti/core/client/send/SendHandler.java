@@ -12,25 +12,11 @@ import com.tcc.cti.core.message.CtiMessage;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 public interface SendHandler {
-	/**
-	 * 发送消息缺省编码
-	 */
-	static final String DEFAULT_CHARTSET = "ISO-8859-1";
 	
 	/**
 	 * 最大消息长度
 	 */
 	static final int MESSAGE_MAX_LENGTH = 2048;
-	
-	/**
-	 * 发送的消息，
-	 * 
-	 * @param channel {@link SocketChannel}
-	 * @param message 发送的消息
-	 * @param generator 生成消息序列号
-	 * @return
-	 */
-	void send(SocketChannel channel, CtiMessage message, GeneratorSeq generator)throws ClientException;
 	
 	/**
 	 * 根据指定编码发送消息

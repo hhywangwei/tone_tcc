@@ -15,11 +15,6 @@ public abstract class AbstractSendHandler implements SendHandler{
 	private static final Logger logger = LoggerFactory.getLogger(AbstractSendHandler.class);
 	
 	@Override
-	public void send(SocketChannel channel,CtiMessage message,GeneratorSeq generator)throws ClientException{
-		send(channel,message,generator,DEFAULT_CHARTSET);
-	}
-	
-	@Override
 	public void send(SocketChannel channel,CtiMessage message,GeneratorSeq generator,String charset)throws ClientException {
 		try {
 			if(isSend(message)) {
