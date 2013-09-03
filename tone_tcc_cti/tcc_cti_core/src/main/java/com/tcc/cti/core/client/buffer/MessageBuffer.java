@@ -11,7 +11,6 @@ public interface MessageBuffer {
 	 * 得到下一条消息
 	 * 
 	 * @return
-	 * @exception InterruptedException
 	 */
 	String next();
 	
@@ -19,7 +18,6 @@ public interface MessageBuffer {
 	 * 添加网络接受消息到缓存中等待处理
 	 * 
 	 * @param bytes
-	 * @exception InterruptedException
 	 */
 	void append(byte[] bytes);
 

@@ -11,6 +11,11 @@ import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.sequence.MemoryGeneratorSeq;
 import com.tcc.cti.core.message.CtiMessage;
 
+/**
+ * 每个操作员与通过一个socket与cti服务器连接
+ * 
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ */
 public class OperatorChannel {
 	private final OperatorKey _operatorKey;
 	private final GeneratorSeq _generator;

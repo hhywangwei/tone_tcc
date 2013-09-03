@@ -150,7 +150,7 @@ public class TcpCtiClient implements CtiClientable{
 			}
 		}
 		
-		if(channel.isConnectionPending()){
+		if(channel.isOpen()){
 			channel.close();
 		}
 		return false;
