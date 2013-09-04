@@ -14,9 +14,13 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.OperatorChannel;
 
+/**
+ * 实现心跳程序
+ * 
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ */
 public class ScheduledHeartbeatKeep implements HeartbeatKeepable{
 	private static final Logger logger = LoggerFactory.getLogger(ScheduledHeartbeatKeep.class);
 	private static final int DEFAULT_POOL_SIZE = 1;
@@ -28,6 +32,7 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable{
 	public ScheduledHeartbeatKeep(){
 		_executorService = Executors.newScheduledThreadPool(DEFAULT_POOL_SIZE);
 	}
+	
 	@Override
 	public void start() {
 		HeartbeatRunner runner = new HeartbeatRunner(_channels);
@@ -35,9 +40,13 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable{
 	}
 
 	@Override
-	public void register(OperatorChannel channel) {
+	public boolean register(OperatorChannel channel) {
 		synchronized (_channels) {
+			if(_channels.contains(channel) && channel.isOpen()){
+				return false;	
+			}
 			_channels.add(channel);
+			return true;
 		}
 	}
 
@@ -46,20 +55,22 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable{
 		synchronized (_channels) {
 			_channels.remove(channel);
 		}
-		try{
-			if(channel.isOpen()){
-				channel.close();
-			}
-		}catch(ClientException e){
-			logger.debug("Operator channel close is error:{}",e.getMessage());
-		}
 	}
 	
 	@Override
 	public void shutdown() {
+		synchronized (_channels) {
+			_channels.clear();
+		}
 		_executorService.shutdown();
 	}
 	
+	/**
+	 * 发送心跳运行
+	 * 
+	 * @author <a href="hhywangwei@gmail.com">wangwei</a>
+	 *
+	 */
 	private static class HeartbeatRunner implements Runnable{
 		private static final String DEFAULT_CHARSET_NAME = "ISO-8859-1";
 		private final String heartbeatMessage = "<head>00013</head><msg>hb</msg>";
@@ -77,21 +88,24 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable{
 		public void run() {
 			synchronized (_channels) {
 				for(OperatorChannel channel : _channels){
-					if(!channel.isOpen()){
-						continue;
-					}
-					try{
-						SocketChannel socketChannel = channel.getChannel();
-						socketChannel.write(_buffer);	
-					}catch(IOException e){
-						String companyId = channel.getOperatorKey().getCompanyId();
-						String opId = channel.getOperatorKey().getOpId();
-						logger.error("companyId={} opId={} Heartbeat send is error:{}",
-								companyId,opId,e.getMessage());						
-					}
+					sendHeartbeat(channel);
 				}
 			}
 		}
+		
+		private void sendHeartbeat(OperatorChannel channel){
+			try{
+				if(!channel.isOpen()){
+					return;
+				}
+				SocketChannel socketChannel = channel.getChannel();
+				socketChannel.write(_buffer);	
+			}catch(IOException e){
+				String companyId = channel.getOperatorKey().getCompanyId();
+				String opId = channel.getOperatorKey().getOpId();
+				logger.error("companyId={} opId={} Heartbeat send is error:{}",
+						companyId,opId,e.getMessage());						
+			}
+		}
 	}
-
 }

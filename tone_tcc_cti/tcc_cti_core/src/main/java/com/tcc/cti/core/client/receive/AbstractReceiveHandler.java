@@ -33,7 +33,7 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	private static final String MESSAGE_TYPE = "msg";
 	
 	@Override
-	public void receive(CtiMessagePool pool,OperatorChannel.OperatorKey key, String message)throws ClientException{
+	public void receive(CtiMessagePool pool,OperatorChannel channel, String message)throws ClientException{
 		
 		logger.debug("receive message is \"{}\"",message);
 		
@@ -41,7 +41,7 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 			Map<String,String> content = parseMessage(message);
 			String msgType = content.get(MESSAGE_TYPE);
 			if(StringUtils.isNotBlank(msgType) && isReceive(msgType)){
-				receiveHandler(pool, null, content);
+				receiveHandler(pool, channel, content);
 			}
 		}catch(SAXException e){
 			throw new ClientException(e);
@@ -89,12 +89,12 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	/**
 	 * 处理接受消息
 	 * @param pool 消息接收池
-	 * @param newParam TODO
+	 * @param channel 操作频道
 	 * @param content 接受消息内容
 	 * 
 	 * @throws ClientException
 	 */
-	protected abstract void receiveHandler(CtiMessagePool pool,OperatorChannel.OperatorKey key, Map<String,String> content)throws ClientException;
+	protected abstract void receiveHandler(CtiMessagePool pool, OperatorChannel channel, Map<String,String> content)throws ClientException;
 	
 	/**
 	 * 接受消息解析处理类，使用SAX解析器处理

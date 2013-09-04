@@ -14,11 +14,11 @@ public interface ReceiveHandler {
 	/**
 	 * 接受消息处理
 	 * @param pool 存放接受消息池{@link CtiMessagePool}
-	 * @param key 操作键{@link OperatorChannel.OperatorKey}
+	 * @param channel 操作频道{@link OperatorChannel}
 	 * @param message 接受消息字符串
 	 * 
 	 * @throws ClientException
 	 */
-	void receive(CtiMessagePool pool,OperatorChannel.OperatorKey key, String message)throws ClientException;
+	void receive(CtiMessagePool pool,OperatorChannel channel, String message)throws ClientException;
 	
 }

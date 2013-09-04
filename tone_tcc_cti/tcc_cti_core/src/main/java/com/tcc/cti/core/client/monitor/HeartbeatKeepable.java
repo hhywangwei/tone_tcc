@@ -20,8 +20,9 @@ public interface HeartbeatKeepable {
 	 * 注册操作channel
 	 * 
 	 * @param channel 操作频道
+	 * @return true:注册成功 false:已经存在不注册
 	 */
-	void register(OperatorChannel channel);
+	boolean register(OperatorChannel channel);
 	
 	/**
 	 * 卸载操作channel

@@ -48,7 +48,7 @@ public class AbstractReceiveHandlerTest {
 
 		@Override
 		protected void receiveHandler(CtiMessagePool pool,
-				OperatorChannel.OperatorKey key, Map<String, String> content) throws ClientException {
+				OperatorChannel channel, Map<String, String> content) throws ClientException {
 			// none instance
 		}
 		

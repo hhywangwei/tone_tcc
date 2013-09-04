@@ -323,10 +323,11 @@ public class TcpCtiClient implements CtiClientable{
 					if(o != null){
 						m = o.next();
 					}
-					if( StringUtils.isNotBlank(m)){
-						for(ReceiveHandler handler : _receiveHandlers){
-							handler.receive(_messagePool, key, m);
-						}
+					if( StringUtils.isBlank(m)){
+						continue;
+					}
+					for(ReceiveHandler handler : _receiveHandlers){
+						handler.receive(_messagePool, o, m);
 					}
 				}catch(Exception e){
 					//TODO 异常处理
