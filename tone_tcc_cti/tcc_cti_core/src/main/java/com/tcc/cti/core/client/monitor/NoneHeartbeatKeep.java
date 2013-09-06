@@ -24,4 +24,10 @@ public class NoneHeartbeatKeep implements HeartbeatKeepable{
 	public void shutdown() {
 		//none instance		
 	}
+
+	@Override
+	public boolean contains(OperatorChannel channel) {
+		//none instance
+		return false;
+	}
 }

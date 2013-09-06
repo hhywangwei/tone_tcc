@@ -32,6 +32,14 @@ public interface HeartbeatKeepable {
 	void unRegister(OperatorChannel channel);
 	
 	/**
+	 * 是否包含操作channel
+	 * 
+	 * @param channel 操作频道
+	 * @return true 包含该操作频道
+	 */
+	boolean contains(OperatorChannel channel);
+	
+	/**
 	 * 停止心跳
 	 */
 	void shutdown();
