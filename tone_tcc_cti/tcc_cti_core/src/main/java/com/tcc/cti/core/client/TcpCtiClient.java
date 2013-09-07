@@ -7,8 +7,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -134,17 +136,23 @@ public class TcpCtiClient implements CtiClientable{
 				continue;
 			}
 			
-			for(SelectionKey sk : selector.selectedKeys()){
-				if(sk.attachment().equals(key) && sk.isConnectable()){
-					try{
-						if(channel.finishConnect()){
-							logger.debug("{}.{} connection success", i, sk.attachment());
-							channel.register(selector, SelectionKey.OP_READ, key);
-							return true;
-						}	
-					}catch(ConnectException e){
-						logger.error("{}.{} connection fail", i, sk.attachment());
-						throw e;
+			while(true){
+				Set<SelectionKey> selectedKeys = selector.selectedKeys();
+				Iterator<SelectionKey> iterator = selectedKeys.iterator();
+				while(iterator.hasNext()){
+					SelectionKey sk = iterator.next();
+					if(sk.attachment().equals(key) && sk.isConnectable()){
+						try{
+							if(channel.isConnectionPending() && channel.finishConnect()){
+								logger.debug("{}.{} connection success", i, sk.attachment());
+								channel.register(selector, SelectionKey.OP_READ, key);
+								return true;
+							}	
+						}catch(ConnectException e){
+							logger.error("{}.{} connection fail", i, sk.attachment());
+							throw e;
+						}
+						iterator.remove();
 					}
 				}
 			}
@@ -250,7 +258,10 @@ public class TcpCtiClient implements CtiClientable{
 						continue;
 					}
 					
-					for(SelectionKey sk : _selector.selectedKeys()){
+					Set<SelectionKey> selectedKeys = _selector.selectedKeys();
+					Iterator<SelectionKey> iterator = selectedKeys.iterator();					
+					while(iterator.hasNext()){
+						SelectionKey sk = iterator.next();
 						if(!sk.isReadable()) continue;
 						SocketChannel sc =(SocketChannel) sk.channel();
 						sc.read(buffer);
@@ -263,6 +274,7 @@ public class TcpCtiClient implements CtiClientable{
 						channel.append(bytes);
 						_notifyReadQueue.add(key);
 						buffer.clear();
+						iterator.remove();
 					}
 				}
 			}catch(InterruptedException e){
