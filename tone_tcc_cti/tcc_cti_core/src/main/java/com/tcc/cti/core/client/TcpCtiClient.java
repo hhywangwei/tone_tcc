@@ -23,6 +23,7 @@ import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.message.CtiMessage;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
+import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
 import com.tcc.cti.core.model.ServerConfigure;
 
 /**
@@ -49,10 +50,15 @@ public class TcpCtiClient implements CtiClientable{
 	private Selector _selector;
 	private int _timeOut = DEFAULT_TIMEOUT;
 	private String _charset = DEFAULT_CHARSET_NAME;
+	
+	public TcpCtiClient(ServerConfigure configure){
+		this(configure,new OperatorCtiMessagePool());
+	}
 		
 	public TcpCtiClient(ServerConfigure configure,CtiMessagePool messagePool){
 		_messagePool = messagePool;
-		_address = new InetSocketAddress(configure.getHost(), configure.getPort());
+		_address = new InetSocketAddress(
+				configure.getHost(), configure.getPort());
 	}
 
 	@Override

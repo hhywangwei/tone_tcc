@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 public class OperatorCtiMessagePool implements CtiMessagePool {
 	private static final Logger logger = LoggerFactory.getLogger(OperatorCtiMessagePool.class);
 	private static final int DEFAULT_TTL = 2 * 60 * 1000;
-	private static final int DEFAULT_AUTO_CLEAR_DELAY = 1 * 60;
+	private static final int DEFAULT_AUTO_CLEAR_DELAY = 30 * 1000;
     private static final int POOL_SIZE = 1;
 	
     private final int _ttl;
@@ -43,7 +43,10 @@ public class OperatorCtiMessagePool implements CtiMessagePool {
 	@Override
 	public void push(String companyId, String opId, Object message) {
 		MessagePoolKey key = new MessagePoolKey(companyId,opId,_ttl);
-		Queue<Object> q = _pool.putIfAbsent(key, new ConcurrentLinkedQueue<Object>());
+		Queue<Object> q = _pool.putIfAbsent(key,new ConcurrentLinkedQueue<Object>());
+		if(q == null){
+			q = _pool.get(key);
+		}
 		q.offer(message);
 	}
 
@@ -65,7 +68,7 @@ public class OperatorCtiMessagePool implements CtiMessagePool {
 		if(!_run){
 			_run = true;
 			ClearExpireRunner runner = new ClearExpireRunner(_pool);
-			_executorService.scheduleWithFixedDelay(runner, 2, _autoClearDelay, TimeUnit.SECONDS);
+			_executorService.scheduleWithFixedDelay(runner, 2, _autoClearDelay, TimeUnit.MILLISECONDS);
 		}
 	}
 
@@ -77,7 +80,7 @@ public class OperatorCtiMessagePool implements CtiMessagePool {
 		}
 	}
 
-	private static class MessagePoolKey{
+	static class MessagePoolKey{
 		private final String _companyId;
 		private final String _opId;
 		private final int _ttl;
@@ -132,12 +135,13 @@ public class OperatorCtiMessagePool implements CtiMessagePool {
 	private static class ClearExpireRunner implements Runnable{
 		private ConcurrentHashMap<MessagePoolKey, Queue<Object>> _pool;
 		
-		public ClearExpireRunner(ConcurrentHashMap<MessagePoolKey, Queue<Object>> pool){
+		ClearExpireRunner(ConcurrentHashMap<MessagePoolKey, Queue<Object>> pool){
 			_pool = pool;
 		}
 		
 		@Override
 		public void run() {
+			logger.debug("Start clear expire...");
 			Iterator<MessagePoolKey> iterator = _pool.keySet().iterator();
 			while(iterator.hasNext()){
 				removeExpire(iterator);
@@ -147,9 +151,9 @@ public class OperatorCtiMessagePool implements CtiMessagePool {
 		private void removeExpire(Iterator<MessagePoolKey> iterator){
 			MessagePoolKey key = iterator.next();
 			if(key.expire()){
+				iterator.remove();
 				logger.debug("Remove companyId={} and opId={}",
 						key._companyId,key._opId);
-				iterator.remove();
 			}
 		}
 	}
