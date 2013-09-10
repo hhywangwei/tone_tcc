@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
-import com.tcc.cti.core.message.CtiMessage;
+import com.tcc.cti.core.message.send.SendMessage;
 
 /**
  * cti服务客户端连接
@@ -51,7 +51,7 @@ public interface CtiClientable {
 	 * @param message 消息对象
 	 * @throws ClientException
 	 */
-	void send(CtiMessage message)throws ClientException;
+	void send(SendMessage message)throws ClientException;
 	
 	/**
 	 * 设置接收消息处理

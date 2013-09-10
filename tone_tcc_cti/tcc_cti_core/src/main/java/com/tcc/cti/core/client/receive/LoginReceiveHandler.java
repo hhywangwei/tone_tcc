@@ -9,6 +9,7 @@ import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.client.monitor.HeartbeatKeepable;
 import com.tcc.cti.core.client.monitor.NoneHeartbeatKeep;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
+import com.tcc.cti.core.message.receive.ReceiveMessage;
 
 /**
  * 接受登陆返回信息，登录成功开始发送心跳消息
@@ -29,12 +30,14 @@ public class LoginReceiveHandler extends AbstractReceiveHandler{
 			OperatorChannel channel, Map<String, String> content) throws ClientException {
 		String result = content.get(RESULT_PARAMETER);
 		if(loginSuccess(result)){
-			if(_heartbeat.register(channel)){
-				//TODO 发送到消息池
+			if(!_heartbeat.register(channel)){
+				return ;
 			}
-		}else{
-			//TODO 发送到消息池
-		}
+		} 
+		String companyId = channel.getOperatorKey().getCompanyId();
+		String opId = channel.getOperatorKey().getOpId();
+		ReceiveMessage m = new ReceiveMessage(companyId,opId,Login.getType(),result);
+		pool.push(companyId, opId, m);
 	}
 	
 	private boolean loginSuccess(String result){

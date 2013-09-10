@@ -4,7 +4,7 @@ import java.nio.channels.SocketChannel;
 
 import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
-import com.tcc.cti.core.message.CtiMessage;
+import com.tcc.cti.core.message.send.SendMessage;
 
 /**
  * 发送消息到cti服务端处理。
@@ -27,6 +27,6 @@ public interface SendHandler {
 	 * @param charset 发送对象字符集
 	 * @throws ClientException
 	 */
-	void send(SocketChannel channel, CtiMessage message, GeneratorSeq generator, String charset)throws ClientException;
+	void send(SocketChannel channel, SendMessage message, GeneratorSeq generator, String charset)throws ClientException;
 	
 }

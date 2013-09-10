@@ -9,7 +9,7 @@ import com.tcc.cti.core.client.buffer.MessageBuffer;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.sequence.MemoryGeneratorSeq;
-import com.tcc.cti.core.message.CtiMessage;
+import com.tcc.cti.core.message.send.SendMessage;
 
 /**
  * 每个操作员与通过一个socket与cti服务器连接
@@ -66,7 +66,7 @@ public class OperatorChannel {
 		return _channel.isOpen();
 	}
 	
-	public void send(CtiMessage message)throws ClientException {
+	public void send(SendMessage message)throws ClientException {
 		for(SendHandler handler : _sendHandlers){
 			handler.send(_channel, message, _generator,_charset);
 		}

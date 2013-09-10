@@ -4,6 +4,8 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import com.tcc.cti.core.message.receive.ReceiveMessage;
+
 /**
  * {@link OperatorCtiMessagePool}单元测试
  * 
@@ -27,7 +29,7 @@ public class OperatorCtiMessagePoolTest {
 		String companyId = "1";
 		String opId = "1";
 		
-		Object m = new Object();
+		ReceiveMessageImpl m = new ReceiveMessageImpl();
 		pool.push(companyId, opId, m);
 		
 		Object om = pool.task(companyId, opId);
@@ -41,7 +43,7 @@ public class OperatorCtiMessagePoolTest {
 		String companyId = "1";
 		String opId = "1";
 		
-		Object m = new Object();
+		ReceiveMessageImpl m = new ReceiveMessageImpl();
 		pool.push(companyId, opId, m);
 		
 		pool.remove(companyId, opId);
@@ -54,7 +56,7 @@ public class OperatorCtiMessagePoolTest {
 		OperatorCtiMessagePool pool = new OperatorCtiMessagePool(20 * 1000);
 		String companyId = "1";
 		String opId = "1";
-		Object m = new Object();
+		ReceiveMessageImpl m = new ReceiveMessageImpl();
 		pool.push(companyId, opId, m);
 		
 		try{
@@ -64,6 +66,12 @@ public class OperatorCtiMessagePoolTest {
 			Assert.assertNull(om);
 		}finally{
 			pool.closeAutoClearExpire();
+		}
+	}
+	
+	private class ReceiveMessageImpl extends ReceiveMessage{
+		public ReceiveMessageImpl(){
+			super("1","1","login");
 		}
 	}
 }

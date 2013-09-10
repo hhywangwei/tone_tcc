@@ -1,4 +1,4 @@
-package com.tcc.cti.core.message;
+package com.tcc.cti.core.message.receive;
 
 import java.io.IOException;
 import java.io.InputStream;

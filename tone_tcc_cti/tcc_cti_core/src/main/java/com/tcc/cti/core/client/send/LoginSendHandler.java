@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.common.PasswordUtils;
-import com.tcc.cti.core.message.CtiMessage;
-import com.tcc.cti.core.message.Login;
+import com.tcc.cti.core.message.send.SendMessage;
+import com.tcc.cti.core.message.send.LoginSendMessage;
 
 /**
  * 实现发送登录cti消息
@@ -46,23 +46,23 @@ public class LoginSendHandler extends AbstractSendHandler{
 	private static final String PASSWORD_FORMAT = "<PassWord>%s</PassWord>";
 	
 	@Override
-	protected boolean isSend(CtiMessage message) {
+	protected boolean isSend(SendMessage message) {
 		if(message == null){
 			return false;
 		}
-		return message.getClass().equals(Login.class);
+		return message.getClass().equals(LoginSendMessage.class);
 	}
 
 	@Override
 	protected byte[] getMessage(
-			CtiMessage message,GeneratorSeq generator,String charset) {
+			SendMessage message,GeneratorSeq generator,String charset) {
 		
 		String seq = generator.next();
-		String m = buildMessage((Login)message,seq);
+		String m = buildMessage((LoginSendMessage)message,seq);
 	    return headCompletion(m,charset);
 	}
 	
-	private String buildMessage(Login login,String seq){
+	private String buildMessage(LoginSendMessage login,String seq){
 		StringBuilder sb = new StringBuilder(128);
 		sb.append(String.format(MSG_FORMAT, Login.getType()));
 		sb.append(String.format(SEQ_FORMAT, seq));

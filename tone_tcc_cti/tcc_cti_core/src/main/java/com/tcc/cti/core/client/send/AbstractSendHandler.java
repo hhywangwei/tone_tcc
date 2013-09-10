@@ -9,13 +9,13 @@ import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
-import com.tcc.cti.core.message.CtiMessage;
+import com.tcc.cti.core.message.send.SendMessage;
 
 public abstract class AbstractSendHandler implements SendHandler{
 	private static final Logger logger = LoggerFactory.getLogger(AbstractSendHandler.class);
 	
 	@Override
-	public void send(SocketChannel channel,CtiMessage message,GeneratorSeq generator,String charset)throws ClientException {
+	public void send(SocketChannel channel,SendMessage message,GeneratorSeq generator,String charset)throws ClientException {
 		try {
 			if(isSend(message)) {
 				byte[] m = getMessage(message, generator, charset);
@@ -34,7 +34,7 @@ public abstract class AbstractSendHandler implements SendHandler{
 	 * @param message 消息对象
 	 * @return true:发送
 	 */
-	protected abstract boolean isSend(CtiMessage message);
+	protected abstract boolean isSend(SendMessage message);
 	
 	/**
 	 * 得到指定编码的发送信息
@@ -45,6 +45,6 @@ public abstract class AbstractSendHandler implements SendHandler{
 	 * @return
 	 */
 	protected abstract byte[] getMessage(
-			CtiMessage message,GeneratorSeq generator,String charset);
+			SendMessage message,GeneratorSeq generator,String charset);
 	
 }

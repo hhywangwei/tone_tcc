@@ -21,9 +21,9 @@ import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
-import com.tcc.cti.core.message.CtiMessage;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
+import com.tcc.cti.core.message.send.SendMessage;
 import com.tcc.cti.core.model.ServerConfigure;
 
 /**
@@ -190,7 +190,7 @@ public class TcpCtiClient implements CtiClientable{
 	}
 
 	@Override
-	public void send(CtiMessage message)throws ClientException {
+	public void send(SendMessage message)throws ClientException {
 		OperatorChannel.OperatorKey key = 
 				new OperatorChannel.OperatorKey(
 						message.getCompayId(), message.getOpId());

@@ -1,7 +1,8 @@
-package com.tcc.cti.core.message;
+package com.tcc.cti.core.message.send;
+
 
 /**
- * 登录用户信息对象
+ * 发送登录信息
  * 
  * <pre>
  * _opNumber:座席号
@@ -12,7 +13,7 @@ package com.tcc.cti.core.message;
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class Login extends CtiMessage{
+public class LoginSendMessage extends SendMessage{
 	private String _opNumber;
 	private String _password;
 	private String _type;
@@ -34,38 +35,6 @@ public class Login extends CtiMessage{
 	}
 	public void setType(String type) {
 		this._type = type;
-	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((_compayId == null) ? 0 : _compayId.hashCode());
-		result = prime * result + ((_opId == null) ? 0 : _opId.hashCode());
-		return result;
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		CtiMessage other = (CtiMessage) obj;
-		if (_compayId == null) {
-			if (other._compayId != null)
-				return false;
-		} else if (!_compayId.equals(other._compayId))
-			return false;
-		if (_opId == null) {
-			if (other._opId != null)
-				return false;
-		} else if (!_opId.equals(other._opId))
-			return false;
-		return true;
 	}
 	
 	@Override

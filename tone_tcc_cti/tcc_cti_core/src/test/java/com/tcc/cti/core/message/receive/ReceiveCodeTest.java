@@ -1,7 +1,9 @@
-package com.tcc.cti.core.message;
+package com.tcc.cti.core.message.receive;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.tcc.cti.core.message.receive.ReceiveCode;
 
 /**
  * 单元测试 {@link ReceiveCode}
