@@ -1,16 +1,15 @@
 package com.tcc.cti.core.client.send;
 
-import static com.tcc.cti.core.message.MessageType.*;
-
-import java.nio.charset.Charset;
+import static com.tcc.cti.core.message.MessageType.Login;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.common.PasswordUtils;
-import com.tcc.cti.core.message.send.SendMessage;
+import com.tcc.cti.core.message.MessageType;
 import com.tcc.cti.core.message.send.LoginSendMessage;
+import com.tcc.cti.core.message.send.SendMessage;
 
 /**
  * 实现发送登录cti消息
@@ -35,8 +34,6 @@ import com.tcc.cti.core.message.send.LoginSendMessage;
 public class LoginSendHandler extends AbstractSendHandler{
 	private static final Logger logger = LoggerFactory.getLogger(LoginSendHandler.class);
 	
-	private static final String DEFAULT_MESSAGE_LENGTH = "00000";
-	private static final String HEAD_FORMAT = "<head>%s</head>";
 	private static final String MSG_FORMAT = "<msg>%s</msg>";
 	private static final String SEQ_FORMAT = "<seq>%s</seq>"; 
 	private static final String TYPE_FORMAT = "<Type>%s</Type>";
@@ -50,22 +47,15 @@ public class LoginSendHandler extends AbstractSendHandler{
 		if(message == null){
 			return false;
 		}
-		return message.getClass().equals(LoginSendMessage.class);
+		return MessageType.Login.getType().equals(message.getMessageType());
 	}
 
 	@Override
-	protected byte[] getMessage(
-			SendMessage message,GeneratorSeq generator,String charset) {
-		
-		String seq = generator.next();
-		String m = buildMessage((LoginSendMessage)message,seq);
-	    return headCompletion(m,charset);
-	}
-	
-	private String buildMessage(LoginSendMessage login,String seq){
+	protected String buildMessage(SendMessage message,GeneratorSeq generator){
+		LoginSendMessage login = (LoginSendMessage)message;
 		StringBuilder sb = new StringBuilder(128);
 		sb.append(String.format(MSG_FORMAT, Login.getType()));
-		sb.append(String.format(SEQ_FORMAT, seq));
+		sb.append(String.format(SEQ_FORMAT, generator.next()));
 		sb.append(String.format(TYPE_FORMAT, login.getType()));
 		sb.append(String.format(COMPANY_ID_FORMAT,login.getCompayId()));
 		sb.append(String.format(OPID_FORMAT, login.getOpId()));
@@ -78,24 +68,4 @@ public class LoginSendHandler extends AbstractSendHandler{
 		return m;
 	}
 	
-    private byte[] headCompletion (String message,String charset){
-    	Charset c = Charset.forName(charset);
-    	byte[] bytes = message.getBytes(c);
-    	int length = bytes.length;
-    	if(length > MESSAGE_MAX_LENGTH){
-    		logger.error("Login message is {},but upper limit {}",
-    				length,MESSAGE_MAX_LENGTH);
-    		throw new IllegalStateException("Login message is too length");
-    	}
-    	
-    	String m = getHeadSegment(length) + message;
-    	return m.getBytes(c);
-	}
-    
-    private String getHeadSegment(int length){
-    	String ds = DEFAULT_MESSAGE_LENGTH;
-    	String rs = String.valueOf(length);
-    	String ls = ds.substring(0,ds.length() - rs.length()) + rs;
-    	return String.format(HEAD_FORMAT, ls);
-    }
 }

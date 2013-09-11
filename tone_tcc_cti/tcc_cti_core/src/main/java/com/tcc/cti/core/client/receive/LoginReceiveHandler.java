@@ -22,7 +22,7 @@ public class LoginReceiveHandler extends AbstractReceiveHandler{
 	
 	@Override
 	protected boolean isReceive(String msgType) {
-		return msgType.equals(Login.getType());
+		return msgType != null && msgType.equals(Login.getType());
 	}
 
 	@Override
@@ -30,7 +30,8 @@ public class LoginReceiveHandler extends AbstractReceiveHandler{
 			OperatorChannel channel, Map<String, String> content) throws ClientException {
 		String result = content.get(RESULT_PARAMETER);
 		if(loginSuccess(result)){
-			if(!_heartbeat.register(channel)){
+			boolean success= _heartbeat.register(channel);
+			if(!success){
 				return ;
 			}
 		} 

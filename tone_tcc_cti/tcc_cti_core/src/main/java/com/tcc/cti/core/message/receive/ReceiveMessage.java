@@ -51,6 +51,21 @@ public class ReceiveMessage {
 	public String getDetail(){
 		return _detail;
 	}
-	
-	
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("ReceiveMessage [_companyId=");
+		builder.append(_companyId);
+		builder.append(", _opId=");
+		builder.append(_opId);
+		builder.append(", _type=");
+		builder.append(_type);
+		builder.append(", _result=");
+		builder.append(_result);
+		builder.append(", _detail=");
+		builder.append(_detail);
+		builder.append("]");
+		return builder.toString();
+	}
 }

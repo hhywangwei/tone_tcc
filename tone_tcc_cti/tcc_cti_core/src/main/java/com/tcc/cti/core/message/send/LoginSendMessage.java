@@ -1,5 +1,7 @@
 package com.tcc.cti.core.message.send;
 
+import com.tcc.cti.core.message.MessageType;
+
 
 /**
  * 发送登录信息
@@ -17,6 +19,10 @@ public class LoginSendMessage extends SendMessage{
 	private String _opNumber;
 	private String _password;
 	private String _type;
+	
+	public LoginSendMessage(){
+		super(MessageType.Login.getType());
+	}
 	
 	public String getOpNumber() {
 		return _opNumber;

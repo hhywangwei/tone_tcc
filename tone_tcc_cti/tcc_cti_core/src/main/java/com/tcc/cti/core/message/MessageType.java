@@ -7,7 +7,7 @@ package com.tcc.cti.core.message;
  */
 public enum MessageType {
 	
-	Login("login");
+	Login("login"),SelfInfo("per_worker_info");
 	
 	private final String _type;
 	

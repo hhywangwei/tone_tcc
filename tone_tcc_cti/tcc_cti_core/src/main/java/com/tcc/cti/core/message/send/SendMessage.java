@@ -10,10 +10,15 @@ package com.tcc.cti.core.message.send;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  *
  */
-public abstract class SendMessage {
+public class SendMessage {
 
+	protected final String _messageType;
 	protected String _compayId;
 	protected String _opId;
+	
+	public SendMessage(String messageType){
+		_messageType = messageType;
+	}
 	
 	public String getCompayId() {
 		return _compayId;
@@ -27,36 +32,7 @@ public abstract class SendMessage {
 	public void setOpId(String opId) {
 		this._opId = opId;
 	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((_compayId == null) ? 0 : _compayId.hashCode());
-		result = prime * result + ((_opId == null) ? 0 : _opId.hashCode());
-		return result;
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		SendMessage other = (SendMessage) obj;
-		if (_compayId == null) {
-			if (other._compayId != null)
-				return false;
-		} else if (!_compayId.equals(other._compayId))
-			return false;
-		if (_opId == null) {
-			if (other._opId != null)
-				return false;
-		} else if (!_opId.equals(other._opId))
-			return false;
-		return true;
+	public String getMessageType(){
+		return _messageType;
 	}
 }
