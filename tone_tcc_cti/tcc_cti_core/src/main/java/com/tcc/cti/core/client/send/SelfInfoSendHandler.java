@@ -23,7 +23,8 @@ public class SelfInfoSendHandler extends AbstractSendHandler  {
 	
 	@Override
 	protected boolean isSend(SendMessage message) {
-		return MessageType.SelfInfo.getType().equals(message.getMessageType());
+		return message != null &&
+				MessageType.SelfInfo.getType().equals(message.getMessageType());
 	}
 
 	@Override

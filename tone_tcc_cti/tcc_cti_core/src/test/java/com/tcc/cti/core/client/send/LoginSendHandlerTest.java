@@ -6,9 +6,9 @@ import static org.mockito.Mockito.when;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.tcc.cti.core.client.send.LoginSendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.send.LoginSendMessage;
+import com.tcc.cti.core.message.send.SendMessage;
 
 /**
  * 单元测试 {@link LoginSendHandler}
@@ -16,20 +16,30 @@ import com.tcc.cti.core.message.send.LoginSendMessage;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 public class LoginSendHandlerTest {
-	private static final String DEFAULT_CHARSET_NAME = "ISO-8859-1";
 	
-	private final String MESSAGE = "<head>00161</head><msg>login</msg>"
+	private final String MESSAGE = "<msg>login</msg>"
 			+ "<seq>1</seq><Type>1</Type><CompanyID>1</CompanyID>"
 			+ "<OPID>8001</OPID><OPNumber>8002</OPNumber>"
 			+ "<PassWord>28c8edde3d61a0411511d3b1866f0636</PassWord>"; 
+	
 	@Test
-	public void testGetMessage()throws Exception{
+	public void testIsSend(){
+		LoginSendHandler handler =new LoginSendHandler();
+		SendMessage m = new LoginSendMessage();
+		Assert.assertTrue(handler.isSend(m));
+		
+		SendMessage not = new SendMessage("not");
+		Assert.assertFalse(handler.isSend(not));
+	}
+	
+	@Test
+	public void testBuildMessage()throws Exception{
 		LoginSendMessage login = initLoginInfo();
 		LoginSendHandler send = new LoginSendHandler();
 		GeneratorSeq generator = mock(GeneratorSeq.class);
 		when(generator.next()).thenReturn("1");
-		byte[] bytes = send.getMessage(login,generator,DEFAULT_CHARSET_NAME);
-		Assert.assertEquals(MESSAGE, new String(bytes,DEFAULT_CHARSET_NAME));
+		String m = send.buildMessage(login, generator);
+		Assert.assertEquals(MESSAGE, m);
 	}
 	 
 	private LoginSendMessage initLoginInfo(){

@@ -44,10 +44,8 @@ public class LoginSendHandler extends AbstractSendHandler{
 	
 	@Override
 	protected boolean isSend(SendMessage message) {
-		if(message == null){
-			return false;
-		}
-		return MessageType.Login.getType().equals(message.getMessageType());
+		return message != null && 
+				MessageType.Login.getType().equals(message.getMessageType());
 	}
 
 	@Override
