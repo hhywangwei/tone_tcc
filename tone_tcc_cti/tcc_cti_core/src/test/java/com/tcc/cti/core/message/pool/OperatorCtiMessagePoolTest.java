@@ -71,7 +71,7 @@ public class OperatorCtiMessagePoolTest {
 	
 	private class ReceiveMessageImpl extends ReceiveMessage{
 		public ReceiveMessageImpl(){
-			super("1","1","login");
+			super("1","1","login","1");
 		}
 	}
 }

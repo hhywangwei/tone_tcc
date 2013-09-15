@@ -32,6 +32,11 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	private static final String XML_FULL_PATTER = "<?xml version=\"1.0\"?>\n<root>%s</root>";
 	private static final String MESSAGE_TYPE = "msg";
 	
+	protected static final String COMPANY_ID_PARAMETER = "CompanyID";
+	protected static final String OP_ID_PARAMETER = "OPID";
+	protected static final String WORK_ID_PARAMETER = "WorkId";
+	protected static final String SEQ_PARAMETER = "seq";
+	
 	@Override
 	public void receive(CtiMessagePool pool,OperatorChannel channel, String message)throws ClientException{
 		

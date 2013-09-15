@@ -37,7 +37,8 @@ public class LoginReceiveHandler extends AbstractReceiveHandler{
 		} 
 		String companyId = channel.getOperatorKey().getCompanyId();
 		String opId = channel.getOperatorKey().getOpId();
-		ReceiveMessage m = new ReceiveMessage(companyId,opId,Login.getType(),result);
+		String seq = content.get(SEQ_PARAMETER);
+		ReceiveMessage m = new ReceiveMessage(companyId,opId,Login.getType(),seq,result);
 		pool.push(companyId, opId, m);
 	}
 	
