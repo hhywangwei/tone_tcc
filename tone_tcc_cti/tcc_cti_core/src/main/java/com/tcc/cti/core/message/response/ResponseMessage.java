@@ -16,24 +16,16 @@ package com.tcc.cti.core.message.response;
  */
 public class ResponseMessage {
 	
-	private final String _companyId;
-	private final String _opId;
-	private final String _messageType;
-	private final String _seq;
-	private final String _result;
-	private final String _detail;
+	protected final String _companyId;
+	protected final String _opId;
+	protected final String _messageType;
+	protected final String _seq;
 	
 	public ResponseMessage(String companyId,String opId,String messageType,String seq){
-		this(companyId,opId,messageType,seq,"");
-	}
-	
-	public ResponseMessage(String companyId,String opId,String messageType,String seq,String result){
 		_companyId = companyId;
 		_opId = opId;
 		_messageType = messageType;
 		_seq = seq;
-		_result = result;
-		_detail = ResponseCode.codeInstance.getDetail(result);
 	}
 	
 	public String getCompanyId(){
@@ -52,13 +44,6 @@ public class ResponseMessage {
 		return _seq;
 	}
 	
-	public String getResult(){
-		return _result;
-	}
-	
-	public String getDetail(){
-		return _detail;
-	}
 
 	@Override
 	public String toString() {
@@ -71,10 +56,6 @@ public class ResponseMessage {
 		builder.append(_messageType);
 		builder.append(", _seq=");
 		builder.append(_seq);
-		builder.append(", _result=");
-		builder.append(_result);
-		builder.append(", _detail=");
-		builder.append(_detail);
 		builder.append("]");
 		return builder.toString();
 	}

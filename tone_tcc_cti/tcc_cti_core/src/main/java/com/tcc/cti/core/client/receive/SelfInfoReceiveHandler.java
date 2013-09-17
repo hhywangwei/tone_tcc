@@ -6,7 +6,6 @@ import java.util.Map;
 
 import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.OperatorChannel;
-import com.tcc.cti.core.message.MessageType;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.response.SelfInfoResponse;
 
@@ -41,19 +40,18 @@ public class SelfInfoReceiveHandler extends AbstractReceiveHandler{
 		
 		String companyId = channel.getOperatorKey().getCompanyId();
 		String opId = channel.getOperatorKey().getOpId();
-		String messageType = MessageType.SelfInfo.requestType();
 		String seq = content.get(SEQ_PARAMETER);
 		
 		SelfInfoResponse message = 
-				buildMessage(companyId,opId,messageType,seq,content);
+				buildMessage(companyId,opId,seq,content);
 		
 		pool.push(companyId, opId, message);
 	}
 	
 	protected SelfInfoResponse buildMessage(String companyId,String opId,
-			String messageType,String seq,Map<String,String> content){
+			String seq,Map<String,String> content){
 		
-		return	new SelfInfoResponse.Builder(companyId,opId,messageType,seq).
+		return	new SelfInfoResponse.Builder(companyId,opId,seq).
 				setBindState(content.get(BIND_STATE_PARAMETER)).
 				setCallState(content.get(CALL_STATE_PARAMETER)).
 				setGroupAttribute(content.get(GROUP_ATTRIBUTE_PARAMETER)).

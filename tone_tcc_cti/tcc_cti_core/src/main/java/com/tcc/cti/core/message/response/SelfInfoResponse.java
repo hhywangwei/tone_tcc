@@ -1,5 +1,6 @@
 package com.tcc.cti.core.message.response;
 
+import static com.tcc.cti.core.message.MessageType.SelfInfo;
 /**
  * 接收座席信息
  * 
@@ -39,10 +40,10 @@ public class SelfInfoResponse extends ResponseMessage {
 		private String _mobileNumber;
 		private String _workModel;
 		
-		public Builder(String companyId,String opId,String messageType,String seq){
+		public Builder(String companyId,String opId,String seq){
 			_companyId = companyId;
 			_opId = opId;
-			_messageType = messageType;
+			_messageType = SelfInfo.responseType();
 			_seq = seq;
 		}
 		

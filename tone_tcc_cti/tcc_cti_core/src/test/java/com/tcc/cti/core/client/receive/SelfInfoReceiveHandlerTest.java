@@ -34,11 +34,10 @@ public class SelfInfoReceiveHandlerTest {
 		
 		String companyId = "1";
 		String opId = "1";
-		String messageType = "per_worker_info";
 		String seq = "4";
 		
 		SelfInfoResponse message = handler.buildMessage(
-				companyId, opId, messageType, seq, content);
+				companyId, opId,  seq, content);
 		
 		Assert.assertEquals("1", message.getCompanyId());
 		Assert.assertEquals("1", message.getOpId());

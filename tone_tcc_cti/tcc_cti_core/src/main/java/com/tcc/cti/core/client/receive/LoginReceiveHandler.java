@@ -9,6 +9,7 @@ import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.client.monitor.HeartbeatKeepable;
 import com.tcc.cti.core.client.monitor.NoneHeartbeatKeep;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
+import com.tcc.cti.core.message.response.LoginResponse;
 import com.tcc.cti.core.message.response.ResponseMessage;
 
 /**
@@ -38,7 +39,7 @@ public class LoginReceiveHandler extends AbstractReceiveHandler{
 		String companyId = channel.getOperatorKey().getCompanyId();
 		String opId = channel.getOperatorKey().getOpId();
 		String seq = content.get(SEQ_PARAMETER);
-		ResponseMessage m = new ResponseMessage(companyId,opId,Login.requestType(),seq,result);
+		ResponseMessage m = new LoginResponse(companyId,opId,seq,result);
 		pool.push(companyId, opId, m);
 	}
 	
