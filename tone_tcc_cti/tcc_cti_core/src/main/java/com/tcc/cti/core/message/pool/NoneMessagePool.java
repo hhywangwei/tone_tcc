@@ -1,6 +1,6 @@
 package com.tcc.cti.core.message.pool;
 
-import com.tcc.cti.core.message.receive.ReceiveMessage;
+import com.tcc.cti.core.message.response.ResponseMessage;
 
 /**
  * 实现消息缓存池，该是一个空类什么也不处理。
@@ -10,12 +10,12 @@ import com.tcc.cti.core.message.receive.ReceiveMessage;
 public class NoneMessagePool implements CtiMessagePool{
 
 	@Override
-	public void push(String companyId, String opId, ReceiveMessage message) {
+	public void push(String companyId, String opId, ResponseMessage message) {
 		//none instance
 	}
 
 	@Override
-	public ReceiveMessage task(String companyId, String opId) {
+	public ResponseMessage task(String companyId, String opId) {
 		return null;
 	}
 

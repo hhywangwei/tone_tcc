@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
-import com.tcc.cti.core.message.send.SendMessage;
+import com.tcc.cti.core.message.request.RequestMessage;
 
 public abstract class AbstractSendHandler implements SendHandler {
 	private static final Logger logger = LoggerFactory
@@ -19,7 +19,7 @@ public abstract class AbstractSendHandler implements SendHandler {
 	private static final String HEAD_FORMAT = "<head>%s</head>";
 
 	@Override
-	public void send(SocketChannel channel, SendMessage message, GeneratorSeq generator,
+	public void send(SocketChannel channel, RequestMessage message, GeneratorSeq generator,
 			String charset) throws ClientException {
 		try {
 			if (isSend(message)) {
@@ -40,7 +40,7 @@ public abstract class AbstractSendHandler implements SendHandler {
 	 *            消息对象
 	 * @return true:发送
 	 */
-	protected abstract boolean isSend(SendMessage message);
+	protected abstract boolean isSend(RequestMessage message);
 
 	/**
 	 * 得到指定编码的发送信息
@@ -54,7 +54,7 @@ public abstract class AbstractSendHandler implements SendHandler {
 	 * @return
 	 */
 	protected byte[] getMessage(
-			SendMessage message,GeneratorSeq generator,String charset) {
+			RequestMessage message,GeneratorSeq generator,String charset) {
 		
 		String m = buildMessage(message,generator);
 	    return headCompletion(m,charset);
@@ -67,7 +67,7 @@ public abstract class AbstractSendHandler implements SendHandler {
 	 * @param generator 创建序列对象
 	 * @return
 	 */
-	protected abstract String buildMessage(SendMessage message,GeneratorSeq generator);
+	protected abstract String buildMessage(RequestMessage message,GeneratorSeq generator);
 	
 	/**
 	 * 替补消息头

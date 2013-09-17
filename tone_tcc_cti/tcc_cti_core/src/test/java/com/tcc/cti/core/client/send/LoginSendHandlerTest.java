@@ -7,8 +7,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
-import com.tcc.cti.core.message.send.LoginSendMessage;
-import com.tcc.cti.core.message.send.SendMessage;
+import com.tcc.cti.core.message.request.LoginRequest;
+import com.tcc.cti.core.message.request.RequestMessage;
 
 /**
  * 单元测试 {@link LoginSendHandler}
@@ -25,16 +25,16 @@ public class LoginSendHandlerTest {
 	@Test
 	public void testIsSend(){
 		LoginSendHandler handler =new LoginSendHandler();
-		SendMessage m = new LoginSendMessage();
+		RequestMessage m = new LoginRequest();
 		Assert.assertTrue(handler.isSend(m));
 		
-		SendMessage not = new SendMessage("not");
+		RequestMessage not = new RequestMessage("not");
 		Assert.assertFalse(handler.isSend(not));
 	}
 	
 	@Test
 	public void testBuildMessage()throws Exception{
-		LoginSendMessage login = initLoginInfo();
+		LoginRequest login = initLoginInfo();
 		LoginSendHandler send = new LoginSendHandler();
 		GeneratorSeq generator = mock(GeneratorSeq.class);
 		when(generator.next()).thenReturn("1");
@@ -42,9 +42,9 @@ public class LoginSendHandlerTest {
 		Assert.assertEquals(MESSAGE, m);
 	}
 	 
-	private LoginSendMessage initLoginInfo(){
+	private LoginRequest initLoginInfo(){
 		
-		LoginSendMessage login = new LoginSendMessage();
+		LoginRequest login = new LoginRequest();
 		login.setCompayId("1");
 		login.setOpId("8001");
 		login.setOpNumber("8002");

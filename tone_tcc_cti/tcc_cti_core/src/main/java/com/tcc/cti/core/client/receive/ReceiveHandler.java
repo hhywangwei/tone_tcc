@@ -5,7 +5,7 @@ import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 
 /**
- * 消息处理接口
+ * 接收消息处理接口
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */

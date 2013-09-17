@@ -1,12 +1,14 @@
 package com.tcc.cti.core.client.receive;
 
+import static com.tcc.cti.core.message.MessageType.SelfInfo;
+
 import java.util.Map;
 
 import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.message.MessageType;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
-import com.tcc.cti.core.message.receive.SelfInfoReceiveMessage;
+import com.tcc.cti.core.message.response.SelfInfoResponse;
 
 /**
  * 接收服务端发送的坐席信息
@@ -30,7 +32,7 @@ public class SelfInfoReceiveHandler extends AbstractReceiveHandler{
 
 	@Override
 	protected boolean isReceive(String msgType) {
-		return MessageType.SelfInfo.getType().equals(msgType);
+		return SelfInfo.responseType().equals(msgType);
 	}
 
 	@Override
@@ -39,19 +41,19 @@ public class SelfInfoReceiveHandler extends AbstractReceiveHandler{
 		
 		String companyId = channel.getOperatorKey().getCompanyId();
 		String opId = channel.getOperatorKey().getOpId();
-		String messageType = MessageType.SelfInfo.getType();
+		String messageType = MessageType.SelfInfo.requestType();
 		String seq = content.get(SEQ_PARAMETER);
 		
-		SelfInfoReceiveMessage message = 
+		SelfInfoResponse message = 
 				buildMessage(companyId,opId,messageType,seq,content);
 		
 		pool.push(companyId, opId, message);
 	}
 	
-	protected SelfInfoReceiveMessage buildMessage(String companyId,String opId,
+	protected SelfInfoResponse buildMessage(String companyId,String opId,
 			String messageType,String seq,Map<String,String> content){
 		
-		return	new SelfInfoReceiveMessage.Builder(companyId,opId,messageType,seq).
+		return	new SelfInfoResponse.Builder(companyId,opId,messageType,seq).
 				setBindState(content.get(BIND_STATE_PARAMETER)).
 				setCallState(content.get(CALL_STATE_PARAMETER)).
 				setGroupAttribute(content.get(GROUP_ATTRIBUTE_PARAMETER)).

@@ -4,7 +4,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import com.tcc.cti.core.message.receive.ReceiveMessage;
+import com.tcc.cti.core.message.response.ResponseMessage;
 
 /**
  * {@link OperatorCtiMessagePool}单元测试
@@ -69,7 +69,7 @@ public class OperatorCtiMessagePoolTest {
 		}
 	}
 	
-	private class ReceiveMessageImpl extends ReceiveMessage{
+	private class ReceiveMessageImpl extends ResponseMessage{
 		public ReceiveMessageImpl(){
 			super("1","1","login","1");
 		}

@@ -1,4 +1,4 @@
-package com.tcc.cti.core.message.receive;
+package com.tcc.cti.core.message.response;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,22 +16,22 @@ import org.slf4j.LoggerFactory;
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public enum ReceiveCode {
-	codeInstance(LoggerFactory.getLogger(ReceiveCode.class));
+public enum ResponseCode {
+	codeInstance(LoggerFactory.getLogger(ResponseCode.class));
 	
-	private static final String FILE_NAME = "cti_receive_code.propertites";
+	private static final String FILE_NAME = "cti_response_code.propertites";
 	private static final String CODE_PREFIX = "return_code_";
 	private static final String CHARSET = "UTF-8";
 	
 	private final Logger _logger;
 	private final Map<String,String> _content;
 	
-	private ReceiveCode(Logger logger){
+	private ResponseCode(Logger logger){
 		_logger = logger;
 		_content = new HashMap<String,String>();
 		InputStream in = null;
 		try{
-			in = ReceiveCode.class.getResourceAsStream(FILE_NAME);
+			in = ResponseCode.class.getResourceAsStream(FILE_NAME);
 			InputStreamReader reader = new InputStreamReader(in,CHARSET);
 			Properties p = new Properties();
 			p.load(reader);

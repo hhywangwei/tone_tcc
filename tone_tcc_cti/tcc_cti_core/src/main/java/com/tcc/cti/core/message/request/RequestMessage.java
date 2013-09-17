@@ -1,4 +1,4 @@
-package com.tcc.cti.core.message.send;
+package com.tcc.cti.core.message.request;
 
 /**
  * 发送消息
@@ -10,13 +10,13 @@ package com.tcc.cti.core.message.send;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  *
  */
-public class SendMessage {
+public class RequestMessage {
 
 	protected final String _messageType;
 	protected String _compayId;
 	protected String _opId;
 	
-	public SendMessage(String messageType){
+	public RequestMessage(String messageType){
 		_messageType = messageType;
 	}
 	

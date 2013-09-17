@@ -1,10 +1,10 @@
-package com.tcc.cti.core.message.send;
+package com.tcc.cti.core.message.request;
 
-import com.tcc.cti.core.message.MessageType;
+import static com.tcc.cti.core.message.MessageType.Login;
 
 
 /**
- * 发送登录信息
+ * 请求登录信息对象
  * 
  * <pre>
  * _opNumber:座席号
@@ -15,13 +15,13 @@ import com.tcc.cti.core.message.MessageType;
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class LoginSendMessage extends SendMessage{
+public class LoginRequest extends RequestMessage{
 	private String _opNumber;
 	private String _password;
 	private String _type;
 	
-	public LoginSendMessage(){
-		super(MessageType.Login.getType());
+	public LoginRequest(){
+		super(Login.responseType());
 	}
 	
 	public String getOpNumber() {

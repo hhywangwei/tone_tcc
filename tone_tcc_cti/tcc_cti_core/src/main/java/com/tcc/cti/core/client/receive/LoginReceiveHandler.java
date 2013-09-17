@@ -9,7 +9,7 @@ import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.client.monitor.HeartbeatKeepable;
 import com.tcc.cti.core.client.monitor.NoneHeartbeatKeep;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
-import com.tcc.cti.core.message.receive.ReceiveMessage;
+import com.tcc.cti.core.message.response.ResponseMessage;
 
 /**
  * 接受登陆返回信息，登录成功开始发送心跳消息
@@ -22,7 +22,7 @@ public class LoginReceiveHandler extends AbstractReceiveHandler{
 	
 	@Override
 	protected boolean isReceive(String msgType) {
-		return msgType != null && msgType.equals(Login.getType());
+		return Login.responseType().equals(msgType);
 	}
 
 	@Override
@@ -38,7 +38,7 @@ public class LoginReceiveHandler extends AbstractReceiveHandler{
 		String companyId = channel.getOperatorKey().getCompanyId();
 		String opId = channel.getOperatorKey().getOpId();
 		String seq = content.get(SEQ_PARAMETER);
-		ReceiveMessage m = new ReceiveMessage(companyId,opId,Login.getType(),seq,result);
+		ResponseMessage m = new ResponseMessage(companyId,opId,Login.requestType(),seq,result);
 		pool.push(companyId, opId, m);
 	}
 	

@@ -11,7 +11,7 @@ import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.message.MessageType;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
-import com.tcc.cti.core.message.receive.SelfInfoReceiveMessage;
+import com.tcc.cti.core.message.response.SelfInfoResponse;
 
 public class SelfInfoReceiveHandlerTest {
 
@@ -23,7 +23,7 @@ public class SelfInfoReceiveHandlerTest {
 		not = handler.isReceive("login");
 		Assert.assertFalse(not);
 		
-		boolean is = handler.isReceive(MessageType.SelfInfo.getType());
+		boolean is = handler.isReceive(MessageType.SelfInfo.requestType());
 		Assert.assertTrue(is);
 	}
 	
@@ -37,7 +37,7 @@ public class SelfInfoReceiveHandlerTest {
 		String messageType = "per_worker_info";
 		String seq = "4";
 		
-		SelfInfoReceiveMessage message = handler.buildMessage(
+		SelfInfoResponse message = handler.buildMessage(
 				companyId, opId, messageType, seq, content);
 		
 		Assert.assertEquals("1", message.getCompanyId());
@@ -94,6 +94,6 @@ public class SelfInfoReceiveHandlerTest {
 		
 		handler.receiveHandler(pool, channel, content);
 		Mockito.verify(pool,Mockito.atLeastOnce()).
-		push(Mockito.eq(companyId), Mockito.eq(opId), Mockito.any(SelfInfoReceiveMessage.class));
+		push(Mockito.eq(companyId), Mockito.eq(opId), Mockito.any(SelfInfoResponse.class));
 	}
 }

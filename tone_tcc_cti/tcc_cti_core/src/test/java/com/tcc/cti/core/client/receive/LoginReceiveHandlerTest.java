@@ -12,7 +12,7 @@ import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.client.monitor.HeartbeatKeepable;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
-import com.tcc.cti.core.message.receive.ReceiveMessage;
+import com.tcc.cti.core.message.response.ResponseMessage;
 
 /**
  * {@link LoginReceiveHandler}单元测试
@@ -45,7 +45,7 @@ public class LoginReceiveHandlerTest {
 		m.put("result", "1");
 		handler.receiveHandler(pool, oc, m);
 		Mockito.verify(pool, Mockito.timeout(1)).push(
-				Mockito.anyString(), Mockito.anyString(), Mockito.any(ReceiveMessage.class));
+				Mockito.anyString(), Mockito.anyString(), Mockito.any(ResponseMessage.class));
 	}
 	
 	@Test
@@ -59,7 +59,7 @@ public class LoginReceiveHandlerTest {
 		m.put("result", "0");
 		handler.receiveHandler(pool, null, m);
 		Mockito.verify(pool, Mockito.never()).push(
-				Mockito.anyString(), Mockito.anyString(), Mockito.any(ReceiveMessage.class));
+				Mockito.anyString(), Mockito.anyString(), Mockito.any(ResponseMessage.class));
 	}
 	
 	@Test
@@ -76,6 +76,6 @@ public class LoginReceiveHandlerTest {
 		m.put("result", "0");
 		handler.receiveHandler(pool, oc, m);
 		Mockito.verify(pool, Mockito.timeout(1)).push(
-				Mockito.anyString(), Mockito.anyString(), Mockito.any(ReceiveMessage.class));
+				Mockito.anyString(), Mockito.anyString(), Mockito.any(ResponseMessage.class));
 	}
 }

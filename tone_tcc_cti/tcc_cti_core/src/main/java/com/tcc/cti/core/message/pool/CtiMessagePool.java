@@ -1,12 +1,12 @@
 package com.tcc.cti.core.message.pool;
 
-import com.tcc.cti.core.message.receive.ReceiveMessage;
+import com.tcc.cti.core.message.response.ResponseMessage;
 
 public interface CtiMessagePool {
 	
-	void push(String companyId,String opId,ReceiveMessage message);
+	void push(String companyId,String opId,ResponseMessage message);
 	
-	ReceiveMessage task(String companyId,String opId);
+	ResponseMessage task(String companyId,String opId);
 	
 	void remove(String companyId,String opId);
 	

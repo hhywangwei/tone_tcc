@@ -7,15 +7,23 @@ package com.tcc.cti.core.message;
  */
 public enum MessageType {
 	
-	Login("login"),SelfInfo("per_worker_info");
+	Login("login","login"),
+	SelfInfo("per_worker_info","per_worker_info"),
+	ObtainMember("worker_number_info","add_op");
 	
-	private final String _type;
+	private final String _requestType;
+	private final String _reponseType;
 	
-	private MessageType(String type){
-		_type = type;
+	private MessageType(String requestType,String reponseType){
+		_requestType = requestType;
+		_reponseType = reponseType;
 	}
 	
-	public String getType(){
-		return this._type;
+	public String requestType(){
+		return _requestType;
+	}
+	
+	public String responseType(){
+		return _reponseType;
 	}
 }

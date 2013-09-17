@@ -17,8 +17,8 @@ import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.LoginSendHandler;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.message.pool.NoneMessagePool;
-import com.tcc.cti.core.message.send.SendMessage;
-import com.tcc.cti.core.message.send.LoginSendMessage;
+import com.tcc.cti.core.message.request.LoginRequest;
+import com.tcc.cti.core.message.request.RequestMessage;
 import com.tcc.cti.core.model.ServerConfigure;
 
 public class TcpCtiClientTest {
@@ -94,16 +94,16 @@ public class TcpCtiClientTest {
 		client.setReceiveHandlers(receiveHandlers);
 		client.start();
 		
-		SendMessage login = initLoginInfo();
+		RequestMessage login = initLoginInfo();
 		client.register(login.getCompayId(), login.getOpId());
 		client.send(login);
 		Thread.sleep(3000);
 		client.close();
 	}
 
-    private SendMessage initLoginInfo(){
+    private RequestMessage initLoginInfo(){
 		
-		LoginSendMessage login = new LoginSendMessage();
+		LoginRequest login = new LoginRequest();
 		login.setCompayId("1");
 		login.setOpId("8002");
 		login.setOpNumber("8002");

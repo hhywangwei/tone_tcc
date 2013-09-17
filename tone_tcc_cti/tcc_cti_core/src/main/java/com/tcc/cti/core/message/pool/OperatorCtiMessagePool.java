@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tcc.cti.core.message.receive.ReceiveMessage;
+import com.tcc.cti.core.message.response.ResponseMessage;
 
 /**
  * 实现以话务员为单位的消息池,每个话务员消息池有最大存活时间{@code ttl}，超过最大存活时间{@code ttl}消息池自动回收。
@@ -27,8 +27,8 @@ public class OperatorCtiMessagePool implements CtiMessagePool {
 	
     private final int _ttl;
 	private final ScheduledExecutorService _executorService;
-	private final ConcurrentHashMap<MessagePoolKey, Queue<ReceiveMessage>> _pool = 
-			new ConcurrentHashMap<MessagePoolKey,Queue<ReceiveMessage>>();
+	private final ConcurrentHashMap<MessagePoolKey, Queue<ResponseMessage>> _pool = 
+			new ConcurrentHashMap<MessagePoolKey,Queue<ResponseMessage>>();
 	
 	private volatile boolean _run = false;
 	private volatile int _autoClearDelay = DEFAULT_AUTO_CLEAR_DELAY;
@@ -43,9 +43,9 @@ public class OperatorCtiMessagePool implements CtiMessagePool {
 	}
 
 	@Override
-	public void push(String companyId, String opId, ReceiveMessage message) {
+	public void push(String companyId, String opId, ResponseMessage message) {
 		MessagePoolKey key = new MessagePoolKey(companyId,opId,_ttl);
-		Queue<ReceiveMessage> q = _pool.putIfAbsent(key,new ConcurrentLinkedQueue<ReceiveMessage>());
+		Queue<ResponseMessage> q = _pool.putIfAbsent(key,new ConcurrentLinkedQueue<ResponseMessage>());
 		if(q == null){
 			q = _pool.get(key);
 		}
@@ -53,9 +53,9 @@ public class OperatorCtiMessagePool implements CtiMessagePool {
 	}
 
 	@Override
-	public ReceiveMessage task(String companyId, String opId) {
+	public ResponseMessage task(String companyId, String opId) {
 		MessagePoolKey key = new MessagePoolKey(companyId,opId,_ttl);
-		Queue<ReceiveMessage> q = _pool.get(key);
+		Queue<ResponseMessage> q = _pool.get(key);
 		return q == null ? null : q.poll();
 	}
 	
@@ -135,9 +135,9 @@ public class OperatorCtiMessagePool implements CtiMessagePool {
 	}
 	
 	private static class ClearExpireRunner implements Runnable{
-		private ConcurrentHashMap<MessagePoolKey, Queue<ReceiveMessage>> _pool;
+		private ConcurrentHashMap<MessagePoolKey, Queue<ResponseMessage>> _pool;
 		
-		ClearExpireRunner(ConcurrentHashMap<MessagePoolKey, Queue<ReceiveMessage>> pool){
+		ClearExpireRunner(ConcurrentHashMap<MessagePoolKey, Queue<ResponseMessage>> pool){
 			_pool = pool;
 		}
 		

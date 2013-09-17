@@ -1,8 +1,9 @@
 package com.tcc.cti.core.client.send;
 
+import static com.tcc.cti.core.message.MessageType.SelfInfo;
+
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
-import com.tcc.cti.core.message.MessageType;
-import com.tcc.cti.core.message.send.SendMessage;
+import com.tcc.cti.core.message.request.RequestMessage;
 
 /**
  * 发送读取本座席信息
@@ -22,13 +23,12 @@ public class SelfInfoSendHandler extends AbstractSendHandler  {
 	private static final String MESSAGE_PATTER = "<msg>per_worker_info</msg><seq>%s</seq><WorkID></WorkID>";
 	
 	@Override
-	protected boolean isSend(SendMessage message) {
-		return message != null &&
-				MessageType.SelfInfo.getType().equals(message.getMessageType());
+	protected boolean isSend(RequestMessage message) {
+		return message != null && SelfInfo.requestType().equals(message.getMessageType());
 	}
 
 	@Override
-	protected String buildMessage(SendMessage message,GeneratorSeq generator) {
+	protected String buildMessage(RequestMessage message,GeneratorSeq generator) {
 		String m = String.format(MESSAGE_PATTER, generator.next());
 		return m;
 	}

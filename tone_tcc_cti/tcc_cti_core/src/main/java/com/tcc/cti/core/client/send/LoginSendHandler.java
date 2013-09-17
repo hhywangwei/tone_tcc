@@ -7,9 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.common.PasswordUtils;
-import com.tcc.cti.core.message.MessageType;
-import com.tcc.cti.core.message.send.LoginSendMessage;
-import com.tcc.cti.core.message.send.SendMessage;
+import com.tcc.cti.core.message.request.LoginRequest;
+import com.tcc.cti.core.message.request.RequestMessage;
 
 /**
  * 实现发送登录cti消息
@@ -43,16 +42,15 @@ public class LoginSendHandler extends AbstractSendHandler{
 	private static final String PASSWORD_FORMAT = "<PassWord>%s</PassWord>";
 	
 	@Override
-	protected boolean isSend(SendMessage message) {
-		return message != null && 
-				MessageType.Login.getType().equals(message.getMessageType());
+	protected boolean isSend(RequestMessage message) {
+		return Login.requestType().equals(message.getMessageType());
 	}
 
 	@Override
-	protected String buildMessage(SendMessage message,GeneratorSeq generator){
-		LoginSendMessage login = (LoginSendMessage)message;
+	protected String buildMessage(RequestMessage message,GeneratorSeq generator){
+		LoginRequest login = (LoginRequest)message;
 		StringBuilder sb = new StringBuilder(128);
-		sb.append(String.format(MSG_FORMAT, Login.getType()));
+		sb.append(String.format(MSG_FORMAT, Login.requestType()));
 		sb.append(String.format(SEQ_FORMAT, generator.next()));
 		sb.append(String.format(TYPE_FORMAT, login.getType()));
 		sb.append(String.format(COMPANY_ID_FORMAT,login.getCompayId()));

@@ -7,7 +7,7 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
-import com.tcc.cti.core.message.send.SendMessage;
+import com.tcc.cti.core.message.request.RequestMessage;
 
 /**
  * 单元测试{@link AbstractSendHandler}
@@ -35,13 +35,13 @@ public class AbstractSendHanlderTest {
 	private class SendHandlerImpl extends AbstractSendHandler{
 
 		@Override
-		protected boolean isSend(SendMessage message) {
+		protected boolean isSend(RequestMessage message) {
 			//none instance
 			return false;
 		}
 
 		@Override
-		protected String buildMessage(SendMessage message,
+		protected String buildMessage(RequestMessage message,
 				GeneratorSeq generator) {
 			//none instance
 			return null;

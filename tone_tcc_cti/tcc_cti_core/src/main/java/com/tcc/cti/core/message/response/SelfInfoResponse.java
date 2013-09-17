@@ -1,4 +1,4 @@
-package com.tcc.cti.core.message.receive;
+package com.tcc.cti.core.message.response;
 
 /**
  * 接收座席信息
@@ -18,7 +18,7 @@ package com.tcc.cti.core.message.receive;
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class SelfInfoReceiveMessage extends ReceiveMessage {
+public class SelfInfoResponse extends ResponseMessage {
 	
 	public static class Builder{
 		private final String _companyId;
@@ -111,8 +111,8 @@ public class SelfInfoReceiveMessage extends ReceiveMessage {
 			return this;
 		}
 		
-		public SelfInfoReceiveMessage build(){
-			SelfInfoReceiveMessage m = new SelfInfoReceiveMessage(
+		public SelfInfoResponse build(){
+			SelfInfoResponse m = new SelfInfoResponse(
 					_companyId,_opId,_messageType,_seq);
 			
 			m.setBindState(_bindState);
@@ -147,7 +147,7 @@ public class SelfInfoReceiveMessage extends ReceiveMessage {
 	private String _mobileNumber;
 	private String _workModel;
 
-	private SelfInfoReceiveMessage(String companyId, 
+	private SelfInfoResponse(String companyId, 
 			String opId, String messageType,String seq) {
 		
 		super(companyId, opId, messageType,seq);
