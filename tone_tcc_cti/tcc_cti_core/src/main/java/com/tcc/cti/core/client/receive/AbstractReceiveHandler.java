@@ -20,6 +20,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
+import com.tcc.cti.core.message.response.ResponseMessage;
 
 /**
  * 实现消息接受处理，实现了消息处理主要流程。
@@ -46,7 +47,7 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 			Map<String,String> content = parseMessage(message);
 			String msgType = content.get(MESSAGE_TYPE);
 			if(StringUtils.isNotBlank(msgType) && isReceive(msgType)){
-				receiveHandler(pool, channel, content);
+				receiveHandler(pool,channel,content);
 			}
 		}catch(SAXException e){
 			throw new ClientException(e);
@@ -99,7 +100,30 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	 * 
 	 * @throws ClientException
 	 */
-	protected abstract void receiveHandler(CtiMessagePool pool, OperatorChannel channel, Map<String,String> content)throws ClientException;
+	protected void receiveHandler(CtiMessagePool pool, OperatorChannel channel,
+			Map<String, String> content) throws ClientException {
+		
+		String companyId = channel.getOperatorKey().getCompanyId();
+		String opId = channel.getOperatorKey().getOpId();
+		String seq = content.get(SEQ_PARAMETER);
+		
+		ResponseMessage message = 
+				buildMessage(companyId,opId,seq,content);
+		
+		pool.push(companyId, opId, message);
+	}
+	
+	/**
+	 * 通过接收消息构建消息对象
+	 * 
+	 * @param companyId 公司编号
+	 * @param opId      操作员编号
+	 * @param seq       消息序列号
+	 * @param content   接收类容
+	 * @return
+	 */
+	protected abstract ResponseMessage buildMessage(String companyId,String opId,
+			String seq,Map<String,String> content);
 	
 	/**
 	 * 接受消息解析处理类，使用SAX解析器处理

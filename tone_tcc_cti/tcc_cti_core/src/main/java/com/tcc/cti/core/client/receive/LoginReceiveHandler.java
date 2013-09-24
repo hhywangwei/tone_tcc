@@ -19,6 +19,7 @@ import com.tcc.cti.core.message.response.ResponseMessage;
  */
 public class LoginReceiveHandler extends AbstractReceiveHandler{
 	private static final String RESULT_PARAMETER = "result";
+	private static final String LOGIN_SUCCESS = "0";
 	private HeartbeatKeepable _heartbeat = new NoneHeartbeatKeep();
 	
 	@Override
@@ -29,6 +30,7 @@ public class LoginReceiveHandler extends AbstractReceiveHandler{
 	@Override
 	protected void receiveHandler(CtiMessagePool pool,
 			OperatorChannel channel, Map<String, String> content) throws ClientException {
+		
 		String result = content.get(RESULT_PARAMETER);
 		if(loginSuccess(result)){
 			boolean success= _heartbeat.register(channel);
@@ -36,15 +38,20 @@ public class LoginReceiveHandler extends AbstractReceiveHandler{
 				return ;
 			}
 		} 
-		String companyId = channel.getOperatorKey().getCompanyId();
-		String opId = channel.getOperatorKey().getOpId();
-		String seq = content.get(SEQ_PARAMETER);
-		ResponseMessage m = new LoginResponse(companyId,opId,seq,result);
-		pool.push(companyId, opId, m);
+		
+		super.receiveHandler(pool, channel, content);
 	}
 	
 	private boolean loginSuccess(String result){
-		return result.equals("0");
+		return result.equals(LOGIN_SUCCESS);
+	}
+	
+	@Override
+	protected ResponseMessage buildMessage(String companyId, String opId,
+			String seq, Map<String, String> content) {
+		
+		String result = content.get(RESULT_PARAMETER);
+		return new LoginResponse(companyId,opId,seq,result);
 	}
 	
 	public void setHeartbeatKeep(HeartbeatKeepable heartbeat){

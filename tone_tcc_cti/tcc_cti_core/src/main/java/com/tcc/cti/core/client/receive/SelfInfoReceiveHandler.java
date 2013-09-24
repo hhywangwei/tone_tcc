@@ -1,12 +1,9 @@
-package com.tcc.cti.core.client.receive;
+ package com.tcc.cti.core.client.receive;
 
 import static com.tcc.cti.core.message.MessageType.SelfInfo;
 
 import java.util.Map;
 
-import com.tcc.cti.core.client.ClientException;
-import com.tcc.cti.core.client.OperatorChannel;
-import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.response.SelfInfoResponse;
 
 /**
@@ -33,21 +30,7 @@ public class SelfInfoReceiveHandler extends AbstractReceiveHandler{
 	protected boolean isReceive(String msgType) {
 		return SelfInfo.responseType().equals(msgType);
 	}
-
-	@Override
-	protected void receiveHandler(CtiMessagePool pool, OperatorChannel channel,
-			Map<String, String> content) throws ClientException {
-		
-		String companyId = channel.getOperatorKey().getCompanyId();
-		String opId = channel.getOperatorKey().getOpId();
-		String seq = content.get(SEQ_PARAMETER);
-		
-		SelfInfoResponse message = 
-				buildMessage(companyId,opId,seq,content);
-		
-		pool.push(companyId, opId, message);
-	}
-	
+    
 	protected SelfInfoResponse buildMessage(String companyId,String opId,
 			String seq,Map<String,String> content){
 		

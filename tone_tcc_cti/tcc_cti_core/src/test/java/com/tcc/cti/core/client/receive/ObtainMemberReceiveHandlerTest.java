@@ -3,41 +3,45 @@ package com.tcc.cti.core.client.receive;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
+import junit.framework.Assert;
+
 import org.junit.Test;
 
 import com.tcc.cti.core.message.MessageType;
-import com.tcc.cti.core.message.response.SelfInfoResponse;
+import com.tcc.cti.core.message.response.ObtainMemberResponse;
 
-public class SelfInfoReceiveHandlerTest {
+/**
+ * 单元测试{@link ObtainMemberHandler}
+ * 
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ */
+public class ObtainMemberReceiveHandlerTest {
 
 	@Test
 	public void testIsReceive(){
-		SelfInfoReceiveHandler handler = new SelfInfoReceiveHandler();
-		boolean not=handler.isReceive(null);
-		Assert.assertFalse(not);
-		not = handler.isReceive("login");
-		Assert.assertFalse(not);
+		ObtainMemberReceiveHandler handler = new ObtainMemberReceiveHandler();
 		
-		boolean is = handler.isReceive(MessageType.SelfInfo.requestType());
-		Assert.assertTrue(is);
+		Assert.assertFalse(handler.isReceive(null));
+		Assert.assertFalse(handler.isReceive("ddd"));
+		Assert.assertTrue(handler.isReceive(
+				MessageType.ObtainMember.responseType()));
 	}
 	
 	@Test
 	public void testBuildMessage(){
-		SelfInfoReceiveHandler handler = new SelfInfoReceiveHandler();
+		ObtainMemberReceiveHandler handler = new ObtainMemberReceiveHandler();
 		Map<String,String> content = initContent();
 		
 		String companyId = "1";
 		String opId = "1";
 		String seq = "4";
 		
-		SelfInfoResponse message = handler.buildMessage(
+		ObtainMemberResponse message = handler.buildMessage(
 				companyId, opId,  seq, content);
 		
 		Assert.assertEquals("1", message.getCompanyId());
 		Assert.assertEquals("1", message.getOpId());
-		Assert.assertEquals("per_worker_info", message.getMessageType());
+		Assert.assertEquals("add_op", message.getMessageType());
 		Assert.assertEquals("4", message.getSeq());
 		Assert.assertEquals("0005", message.getWorkId());
 		Assert.assertEquals("0005", message.getName());
@@ -49,8 +53,9 @@ public class SelfInfoReceiveHandlerTest {
 		Assert.assertEquals("1", message.getState());
 		Assert.assertEquals("1", message.getBindState());
 		Assert.assertEquals("1", message.getCallState());
-		Assert.assertEquals("0", message.getType());
 		Assert.assertEquals("1234567", message.getMobileNumber());
+		Assert.assertEquals("0", message.getRecordFlag());
+		Assert.assertEquals("0", message.getRecordingNow());
 		Assert.assertEquals("0", message.getWorkModel());
 		
 	}
@@ -68,10 +73,12 @@ public class SelfInfoReceiveHandlerTest {
 		map.put("State", "1");
 		map.put("BindState", "1");
 		map.put("CallState", "1");
-		map.put("Type", "0");
 		map.put("MobileNumber", "1234567");
+		map.put("RecordFlag", "0");
+		map.put("RecordingNow", "0");
 		map.put("WorkModel", "0");
 		
 		return map;
 	}
+	
 }

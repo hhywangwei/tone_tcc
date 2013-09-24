@@ -1,13 +1,16 @@
 package com.tcc.cti.core.client.receive;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
+import com.tcc.cti.core.message.response.ResponseMessage;
 
 /**
  * 单元测试 {@link AbstractReceiveHandler}
@@ -32,6 +35,23 @@ public class AbstractReceiveHandlerTest {
 		Assert.assertEquals("8002", map.get("OPNumber"));
 	}
 
+	@Test
+	public void testReceiveHandler()throws ClientException{
+		SelfInfoReceiveHandler handler = new SelfInfoReceiveHandler();
+		Map<String,String> content = new HashMap<String,String>();
+		
+		String companyId = "1";
+		String opId = "1";
+		CtiMessagePool pool = Mockito.mock(CtiMessagePool.class);
+		OperatorChannel.OperatorKey key = 
+				new OperatorChannel.OperatorKey(companyId, opId);
+		OperatorChannel channel = new OperatorChannel(key,null,null,"UTF-8");
+		
+		handler.receiveHandler(pool, channel, content);
+		Mockito.verify(pool,Mockito.atLeastOnce()).
+		push(Mockito.eq(companyId), Mockito.eq(opId), Mockito.any(ResponseMessage.class));
+	}
+	
 	/**
 	 * 实现{@link AbstractReceiverHandler}用于测试
 	 * 
@@ -47,9 +67,10 @@ public class AbstractReceiveHandlerTest {
 		}
 
 		@Override
-		protected void receiveHandler(CtiMessagePool pool,
-				OperatorChannel channel, Map<String, String> content) throws ClientException {
+		protected ResponseMessage buildMessage(String companyId, String opId,
+				String seq, Map<String, String> content) {
 			// none instance
+			return new ResponseMessage(companyId,opId,"login",seq);
 		}
 		
 	}
