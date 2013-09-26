@@ -9,7 +9,8 @@ public enum MessageType {
 	
 	Login("login","login"),
 	SelfInfo("per_worker_info","per_worker_info"),
-	ObtainMember("worker_number_info","add_op");
+	ObtainMember("worker_number_info","add_op"),
+	GroupInfo("group_info","add_group");
 	
 	private final String _requestType;
 	private final String _reponseType;

@@ -13,8 +13,8 @@ import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.RequestMessage;
 
 public abstract class AbstractSendHandler implements SendHandler {
-	private static final Logger logger = LoggerFactory
-			.getLogger(AbstractSendHandler.class);
+	private static final Logger logger = 
+			LoggerFactory.getLogger(AbstractSendHandler.class);
 	private static final String DEFAULT_MESSAGE_LENGTH = "00000";
 	private static final String HEAD_FORMAT = "<head>%s</head>";
 
