@@ -8,18 +8,18 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import com.tcc.cti.core.message.MessageType;
-import com.tcc.cti.core.message.response.ObtainMemberResponse;
+import com.tcc.cti.core.message.response.GroupMemberResponse;
 
 /**
  * 单元测试{@link ObtainMemberHandler}
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class ObtainMemberReceiveHandlerTest {
+public class GroupMemberReceiveHandlerTest {
 
 	@Test
 	public void testIsReceive(){
-		ObtainMemberReceiveHandler handler = new ObtainMemberReceiveHandler();
+		GroupMemberReceiveHandler handler = new GroupMemberReceiveHandler();
 		
 		Assert.assertFalse(handler.isReceive(null));
 		Assert.assertFalse(handler.isReceive("ddd"));
@@ -29,14 +29,14 @@ public class ObtainMemberReceiveHandlerTest {
 	
 	@Test
 	public void testBuildMessage(){
-		ObtainMemberReceiveHandler handler = new ObtainMemberReceiveHandler();
+		GroupMemberReceiveHandler handler = new GroupMemberReceiveHandler();
 		Map<String,String> content = initContent();
 		
 		String companyId = "1";
 		String opId = "1";
 		String seq = "4";
 		
-		ObtainMemberResponse message = handler.buildMessage(
+		GroupMemberResponse message = handler.buildMessage(
 				companyId, opId,  seq, content);
 		
 		Assert.assertEquals("1", message.getCompanyId());

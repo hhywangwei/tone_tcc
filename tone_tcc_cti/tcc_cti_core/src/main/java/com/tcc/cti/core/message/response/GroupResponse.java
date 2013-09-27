@@ -14,7 +14,7 @@ import static com.tcc.cti.core.message.MessageType.GroupInfo;
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class GroupInfoResponse extends ResponseMessage{
+public class GroupResponse extends ResponseMessage{
 	
 	public static class Builder{
 		private final String _companyId;
@@ -57,9 +57,9 @@ public class GroupInfoResponse extends ResponseMessage{
 			return this;
 		}
 		
-		public GroupInfoResponse build(){
+		public GroupResponse build(){
 			
-			GroupInfoResponse response = new GroupInfoResponse(
+			GroupResponse response = new GroupResponse(
 					_companyId,_opId,GroupInfo.responseType(),_seq);
 			response.setGroupId(_groupId);
 			response.setGroupName(_groupName);
@@ -77,7 +77,7 @@ public class GroupInfoResponse extends ResponseMessage{
 	private String _groupWorkState;
 	private String _chooseOpType;
 	
-	private GroupInfoResponse(String companyId, String opId,
+	private GroupResponse(String companyId, String opId,
 			String messageType,String seq) {
 		
 		super(companyId, opId, messageType, seq);
@@ -123,4 +123,26 @@ public class GroupInfoResponse extends ResponseMessage{
 		_chooseOpType = chooseOpType;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder builder2 = new StringBuilder();
+		builder2.append("GroupResponse [_groupId=");
+		builder2.append(_groupId);
+		builder2.append(", _groupName=");
+		builder2.append(_groupName);
+		builder2.append(", _maxQueue=");
+		builder2.append(_maxQueue);
+		builder2.append(", _groupWorkState=");
+		builder2.append(_groupWorkState);
+		builder2.append(", _chooseOpType=");
+		builder2.append(_chooseOpType);
+		builder2.append(", _companyId=");
+		builder2.append(_companyId);
+		builder2.append(", _messageType=");
+		builder2.append(_messageType);
+		builder2.append(", _seq=");
+		builder2.append(_seq);
+		builder2.append("]");
+		return builder2.toString();
+	}
 }

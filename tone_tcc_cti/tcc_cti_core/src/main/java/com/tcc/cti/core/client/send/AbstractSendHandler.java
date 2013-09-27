@@ -12,11 +12,21 @@ import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.RequestMessage;
 
+/**
+ * 实现消息发送类,接受消息并分解到Map中
+ * 
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ */
 public abstract class AbstractSendHandler implements SendHandler {
-	private static final Logger logger = 
-			LoggerFactory.getLogger(AbstractSendHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(AbstractSendHandler.class);
+	
 	private static final String DEFAULT_MESSAGE_LENGTH = "00000";
 	private static final String HEAD_FORMAT = "<head>%s</head>";
+	
+	protected static final String MSG_FORMAT = "<msg>%s</msg>";
+	protected static final String SEQ_FORMAT = "<seq>%s</seq>"; 
+	protected static final String COMPANY_ID_FORMAT = "<CompanyID>%s</CompanyID>";
+	protected static final String OPID_FORMAT = "<OPID>%s</OPID>";
 
 	@Override
 	public void send(SocketChannel channel, RequestMessage message, GeneratorSeq generator,

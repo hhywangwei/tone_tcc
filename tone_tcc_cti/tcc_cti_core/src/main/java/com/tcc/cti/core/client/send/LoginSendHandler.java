@@ -14,9 +14,7 @@ import com.tcc.cti.core.message.request.RequestMessage;
  * 实现发送登录cti消息
  * 
  * <pre>消息格式如下:
- * {@literal <head>00185</head><msg>login</msg><seq>2</seq><Type>1</Type><CompanyID>1</CompanyID><OPID>8001</OPID><OPNumber>8002</OPNumber><PassWord>md5加密</PassWord><AutoLogin>0</AutoLogin>}
- * <pre>消息格式说明
- * head:消息头，表示消息的长度，为五位固定长字符串，未满5位用“0”替补
+ * {@literal <msg>login</msg><seq>2</seq><Type>1</Type><CompanyID>1</CompanyID><OPID>8001</OPID><OPNumber>8002</OPNumber><PassWord>md5加密</PassWord><AutoLogin>0</AutoLogin>}
  * msg:消息类型
  * seq:消息序号，通过该编号可使客户端发送消息和服务端返回信息关联
  * type:座席身份，用数字代表。1－座席、2－班长、3－专家
@@ -32,12 +30,8 @@ import com.tcc.cti.core.message.request.RequestMessage;
 
 public class LoginSendHandler extends AbstractSendHandler{
 	private static final Logger logger = LoggerFactory.getLogger(LoginSendHandler.class);
-	
-	private static final String MSG_FORMAT = "<msg>%s</msg>";
-	private static final String SEQ_FORMAT = "<seq>%s</seq>"; 
+	 
 	private static final String TYPE_FORMAT = "<Type>%s</Type>";
-	private static final String COMPANY_ID_FORMAT = "<CompanyID>%s</CompanyID>";
-	private static final String OPID_FORMAT = "<OPID>%s</OPID>";
 	private static final String OPNUMBER_FORMAT = "<OPNumber>%s</OPNumber>";
 	private static final String PASSWORD_FORMAT = "<PassWord>%s</PassWord>";
 	

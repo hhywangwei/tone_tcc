@@ -2,12 +2,12 @@ package com.tcc.cti.core.message.request;
 
 import static com.tcc.cti.core.message.MessageType.ObtainMember;
 
-public class ObtainMemberRequest extends RequestMessage {
+public class GroupMemberRequest extends RequestMessage {
 	
 	private String _groupId;
 	
-	public ObtainMemberRequest(){
-		super(ObtainMember.responseType());
+	public GroupMemberRequest(){
+		super(ObtainMember.requestType());
 	}
 	
 	public void setGroupId(String groupId){

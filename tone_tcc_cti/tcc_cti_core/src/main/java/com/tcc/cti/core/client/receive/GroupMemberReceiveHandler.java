@@ -4,14 +4,14 @@ import static com.tcc.cti.core.message.MessageType.ObtainMember;
 
 import java.util.Map;
 
-import com.tcc.cti.core.message.response.ObtainMemberResponse;
+import com.tcc.cti.core.message.response.GroupMemberResponse;
 
 /**
  * 获得组成员信息
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class ObtainMemberReceiveHandler extends AbstractReceiveHandler{
+public class GroupMemberReceiveHandler extends AbstractReceiveHandler{
 	private static final String NAME_PARAMETER = "Name";
 	private static final String NUMBER_PARAMETER = "Number";
 	private static final String GROUP_ATTRIBUTE_PARAMETER = "GroupAttribute";
@@ -31,10 +31,10 @@ public class ObtainMemberReceiveHandler extends AbstractReceiveHandler{
 		return ObtainMember.responseType().equals(msgType);
 	}
 	
-	protected ObtainMemberResponse buildMessage(String companyId,String opId,
+	protected GroupMemberResponse buildMessage(String companyId,String opId,
 			String seq,Map<String,String> content){
 		
-		return	new ObtainMemberResponse.Builder(companyId,opId,seq).
+		return	new GroupMemberResponse.Builder(companyId,opId,seq).
 				setBindState(content.get(BIND_STATE_PARAMETER)).
 				setCallState(content.get(CALL_STATE_PARAMETER)).
 				setGroupAttribute(content.get(GROUP_ATTRIBUTE_PARAMETER)).

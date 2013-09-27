@@ -21,7 +21,7 @@ import static com.tcc.cti.core.message.MessageType.ObtainMember;
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class ObtainMemberResponse extends ResponseMessage {
+public class GroupMemberResponse extends ResponseMessage {
 	
 	public static class Builder{
 		private final String _companyId;
@@ -120,8 +120,8 @@ public class ObtainMemberResponse extends ResponseMessage {
 			return this;
 		}
 		
-		public ObtainMemberResponse build(){
-			ObtainMemberResponse m = new ObtainMemberResponse(
+		public GroupMemberResponse build(){
+			GroupMemberResponse m = new GroupMemberResponse(
 					_companyId,_opId,_messageType,_seq);
 			
 			m.setBindState(_bindState);
@@ -158,7 +158,7 @@ public class ObtainMemberResponse extends ResponseMessage {
 	private String _recordFlag;
 	private String _recordingNow;
 
-	private ObtainMemberResponse(String companyId, 
+	private GroupMemberResponse(String companyId, 
 			String opId, String messageType,String seq) {
 		
 		super(companyId, opId, messageType,seq);
