@@ -1,6 +1,6 @@
 package com.tcc.cti.core.message.request;
 
-import static com.tcc.cti.core.message.MessageType.GroupInfo;
+import static com.tcc.cti.core.message.MessageType.Group;
 
 /**
  * 请求公司分组
@@ -11,7 +11,7 @@ public class GroupRequest extends RequestMessage{
 	private String _groupId;
 
 	public GroupRequest() {
-		super(GroupInfo.requestType());
+		super(Group.request());
 	}
 	
 	public void setGroupId(String groupId){

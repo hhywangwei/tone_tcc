@@ -3,45 +3,41 @@ package com.tcc.cti.core.client.receive;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.tcc.cti.core.message.MessageType;
-import com.tcc.cti.core.message.response.GroupMemberResponse;
+import com.tcc.cti.core.message.response.OwnResponse;
 
-/**
- * 单元测试{@link ObtainMemberHandler}
- * 
- * @author <a href="hhywangwei@gmail.com">wangwei</a>
- */
-public class GroupMemberReceiveHandlerTest {
+public class OwnReceiveHandlerTest {
 
 	@Test
 	public void testIsReceive(){
-		GroupMemberReceiveHandler handler = new GroupMemberReceiveHandler();
+		OwnReceiveHandler handler = new OwnReceiveHandler();
+		boolean not=handler.isReceive(null);
+		Assert.assertFalse(not);
+		not = handler.isReceive("login");
+		Assert.assertFalse(not);
 		
-		Assert.assertFalse(handler.isReceive(null));
-		Assert.assertFalse(handler.isReceive("ddd"));
-		Assert.assertTrue(handler.isReceive(
-				MessageType.GroupMember.response()));
+		boolean is = handler.isReceive(MessageType.Own.request());
+		Assert.assertTrue(is);
 	}
 	
 	@Test
 	public void testBuildMessage(){
-		GroupMemberReceiveHandler handler = new GroupMemberReceiveHandler();
+		OwnReceiveHandler handler = new OwnReceiveHandler();
 		Map<String,String> content = initContent();
 		
 		String companyId = "1";
 		String opId = "1";
 		String seq = "4";
 		
-		GroupMemberResponse message = handler.buildMessage(
+		OwnResponse message = handler.buildMessage(
 				companyId, opId,  seq, content);
 		
 		Assert.assertEquals("1", message.getCompanyId());
 		Assert.assertEquals("1", message.getOpId());
-		Assert.assertEquals("add_op", message.getMessageType());
+		Assert.assertEquals("per_worker_info", message.getMessageType());
 		Assert.assertEquals("4", message.getSeq());
 		Assert.assertEquals("0005", message.getWorkId());
 		Assert.assertEquals("0005", message.getName());
@@ -53,9 +49,8 @@ public class GroupMemberReceiveHandlerTest {
 		Assert.assertEquals("1", message.getState());
 		Assert.assertEquals("1", message.getBindState());
 		Assert.assertEquals("1", message.getCallState());
+		Assert.assertEquals("0", message.getType());
 		Assert.assertEquals("1234567", message.getMobileNumber());
-		Assert.assertEquals("0", message.getRecordFlag());
-		Assert.assertEquals("0", message.getRecordingNow());
 		Assert.assertEquals("0", message.getWorkModel());
 		
 	}
@@ -73,12 +68,10 @@ public class GroupMemberReceiveHandlerTest {
 		map.put("State", "1");
 		map.put("BindState", "1");
 		map.put("CallState", "1");
+		map.put("Type", "0");
 		map.put("MobileNumber", "1234567");
-		map.put("RecordFlag", "0");
-		map.put("RecordingNow", "0");
 		map.put("WorkModel", "0");
 		
 		return map;
 	}
-	
 }

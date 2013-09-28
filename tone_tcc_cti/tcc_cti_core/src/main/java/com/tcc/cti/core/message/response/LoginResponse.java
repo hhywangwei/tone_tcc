@@ -8,7 +8,7 @@ public class LoginResponse extends ResponseMessage{
 	private final String _detail;
 	
 	public LoginResponse(String companyId, String opId,	String seq,String result) {
-		super(companyId, opId, Login.responseType(), seq);
+		super(companyId, opId, Login.response(), seq);
 		_result = result;
 		_detail = ResponseCode.codeInstance.getDetail(result);
 	}

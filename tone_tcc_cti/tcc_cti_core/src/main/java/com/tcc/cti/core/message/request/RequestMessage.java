@@ -35,4 +35,17 @@ public class RequestMessage {
 	public String getMessageType(){
 		return _messageType;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("RequestMessage [_messageType=");
+		builder.append(_messageType);
+		builder.append(", _compayId=");
+		builder.append(_compayId);
+		builder.append(", _opId=");
+		builder.append(_opId);
+		builder.append("]");
+		return builder.toString();
+	}
 }

@@ -1,13 +1,18 @@
 package com.tcc.cti.core.message.request;
 
-import static com.tcc.cti.core.message.MessageType.ObtainMember;
+import static com.tcc.cti.core.message.MessageType.GroupMember;
 
+/**
+ * 获取公司分组成员信息
+ * 
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ */
 public class GroupMemberRequest extends RequestMessage {
 	
 	private String _groupId;
 	
 	public GroupMemberRequest(){
-		super(ObtainMember.requestType());
+		super(GroupMember.request());
 	}
 	
 	public void setGroupId(String groupId){
