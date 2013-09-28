@@ -1,26 +1,14 @@
 package com.tcc.cti.core.message.response;
 
-import static com.tcc.cti.core.message.MessageType.SelfInfo;
+import static com.tcc.cti.core.message.MessageType.Monitor;
+
 /**
- * 接收座席信息
- * 
- * <pre>
- * _name:姓名
- * _number:座席电话号码
- * _groupAttribute:分组属性(int类型32个bit对应32个组，一个座席人员可以属于多个组，相应bit为1)
- * _type:身份(1－座席,2－班长,3－专家)
- * _mobileNumber:移动座席电话号码
- * _workModel:工作模式(0 – 普通模式,1 – ACW模式)
- * _groupString:分组的新的表示方式(以逗号分开的多个组)
- * _loginState:登录状态
- * _bindState:绑定状态
- * _callState:呼叫状态
- * _mobileState:移动座席状态
+ * 获得班长信息
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class SelfInfoResponse extends ResponseMessage {
-	
+public class MonitorResponse extends ResponseMessage{
+
 	public static class Builder{
 		private final String _companyId;
 		private final String _opId;
@@ -36,14 +24,11 @@ public class SelfInfoResponse extends ResponseMessage {
 		private String _state;
 		private String _bindState;
 		private String _callState;
-		private String _type;
-		private String _mobileNumber;
-		private String _workModel;
 		
 		public Builder(String companyId,String opId,String seq){
 			_companyId = companyId;
 			_opId = opId;
-			_messageType = SelfInfo.responseType();
+			_messageType = Monitor.response();
 			_seq = seq;
 		}
 		
@@ -97,23 +82,8 @@ public class SelfInfoResponse extends ResponseMessage {
 			return this;
 		}
 		
-		public Builder setType(String type){
-			_type = type;
-			return this;
-		}
-		
-		public Builder setMobileNumber(String mobileNumber){
-			_mobileNumber = mobileNumber;
-			return this;
-		}
-		
-		public Builder setWorkModel(String workModel){
-			_workModel = workModel;
-			return this;
-		}
-		
-		public SelfInfoResponse build(){
-			SelfInfoResponse m = new SelfInfoResponse(
+		public MonitorResponse build(){
+			MonitorResponse m = new MonitorResponse(
 					_companyId,_opId,_messageType,_seq);
 			
 			m.setBindState(_bindState);
@@ -121,14 +91,11 @@ public class SelfInfoResponse extends ResponseMessage {
 			m.setGroupAttribute(_groupAttribute);
 			m.setGroupString(_groupString);
 			m.setLoginState(_loginState);
-			m.setMobileNumber(_mobileNumber);
 			m.setMobileState(_mobileState);
 			m.setName(_name);
 			m.setNumber(_number);
 			m.setState(_state);
-			m.setType(_type);
 			m.setWorkId(_workId);
-			m.setWorkModel(_workModel);
 			
 			return m;
 		}
@@ -144,14 +111,10 @@ public class SelfInfoResponse extends ResponseMessage {
 	private String _state;
 	private String _bindState;
 	private String _callState;
-	private String _type;
-	private String _mobileNumber;
-	private String _workModel;
 
-	private SelfInfoResponse(String companyId, 
-			String opId, String messageType,String seq) {
-		
-		super(companyId, opId, messageType,seq);
+	public MonitorResponse(String companyId, String opId,
+			String messageType,String seq) {
+		super(companyId, opId, messageType, seq);
 	}
 
 	public String getWorkId(){
@@ -235,34 +198,10 @@ public class SelfInfoResponse extends ResponseMessage {
 		_callState = callState;
 	}
 
-	public String getType() {
-		return _type;
-	}
-
-	private void setType(String type) {
-		_type = type;
-	}
-
-	public String getMobileNumber() {
-		return _mobileNumber;
-	}
-
-	private void setMobileNumber(String mobileNumber) {
-		_mobileNumber = mobileNumber;
-	}
-
-	public String getWorkModel() {
-		return _workModel;
-	}
-
-	private void setWorkModel(String workModel) {
-		_workModel = workModel;
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder builder2 = new StringBuilder();
-		builder2.append("SelfInfoReceiveMessage [_workId=");
+		builder2.append("MonitorResponse [_workId=");
 		builder2.append(_workId);
 		builder2.append(", _name=");
 		builder2.append(_name);
@@ -282,15 +221,16 @@ public class SelfInfoResponse extends ResponseMessage {
 		builder2.append(_bindState);
 		builder2.append(", _callState=");
 		builder2.append(_callState);
-		builder2.append(", _type=");
-		builder2.append(_type);
-		builder2.append(", _mobileNumber=");
-		builder2.append(_mobileNumber);
-		builder2.append(", _workModel=");
-		builder2.append(_workModel);
-		builder2.append(", toString()=");
-		builder2.append(super.toString());
+		builder2.append(", _companyId=");
+		builder2.append(_companyId);
+		builder2.append(", _opId=");
+		builder2.append(_opId);
+		builder2.append(", _messageType=");
+		builder2.append(_messageType);
+		builder2.append(", _seq=");
+		builder2.append(_seq);
 		builder2.append("]");
 		return builder2.toString();
 	}
+	
 }

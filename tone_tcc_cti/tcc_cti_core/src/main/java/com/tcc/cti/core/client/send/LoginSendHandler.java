@@ -37,20 +37,21 @@ public class LoginSendHandler extends AbstractSendHandler{
 	
 	@Override
 	protected boolean isSend(RequestMessage message) {
-		return Login.requestType().equals(message.getMessageType());
+		return Login.request().equals(message.getMessageType());
 	}
 
 	@Override
 	protected String buildMessage(RequestMessage message,GeneratorSeq generator){
-		LoginRequest login = (LoginRequest)message;
+		LoginRequest request = (LoginRequest)message;
+		
 		StringBuilder sb = new StringBuilder(128);
-		sb.append(String.format(MSG_FORMAT, Login.requestType()));
+		sb.append(String.format(MSG_FORMAT, request.getMessageType()));
 		sb.append(String.format(SEQ_FORMAT, generator.next()));
-		sb.append(String.format(TYPE_FORMAT, login.getType()));
-		sb.append(String.format(COMPANY_ID_FORMAT,login.getCompayId()));
-		sb.append(String.format(OPID_FORMAT, login.getOpId()));
-		sb.append(String.format(OPNUMBER_FORMAT, login.getOpNumber()));
-		String password = PasswordUtils.encodeMD5(login.getPassword());
+		sb.append(String.format(TYPE_FORMAT, request.getType()));
+		sb.append(String.format(COMPANY_ID_FORMAT,request.getCompayId()));
+		sb.append(String.format(OPID_FORMAT, request.getOpId()));
+		sb.append(String.format(OPNUMBER_FORMAT, request.getOpNumber()));
+		String password = PasswordUtils.encodeMD5(request.getPassword());
 		sb.append(String.format(PASSWORD_FORMAT, password));
 		
 		String m = sb.toString();

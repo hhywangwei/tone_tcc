@@ -8,23 +8,26 @@ package com.tcc.cti.core.message;
 public enum MessageType {
 	
 	Login("login","login"),
-	SelfInfo("per_worker_info","per_worker_info"),
-	ObtainMember("worker_number_info","add_op"),
-	GroupInfo("group_info","add_group");
+	Own("per_worker_info","per_worker_info"),
+	GroupMember("worker_number_info","add_op"),
+	Group("group_info","add_group"),
+	Monitor("monitor_info","add_monitor"),
+	PhoneCall("get_call_info","add_call"),
+	OutCall("outcall","outcall");
 	
-	private final String _requestType;
-	private final String _reponseType;
+	private final String _request;
+	private final String _reponse;
 	
-	private MessageType(String requestType,String reponseType){
-		_requestType = requestType;
-		_reponseType = reponseType;
+	private MessageType(String request,String reponse){
+		_request = request;
+		_reponse = reponse;
 	}
 	
-	public String requestType(){
-		return _requestType;
+	public String request(){
+		return _request;
 	}
 	
-	public String responseType(){
-		return _reponseType;
+	public String response(){
+		return _reponse;
 	}
 }

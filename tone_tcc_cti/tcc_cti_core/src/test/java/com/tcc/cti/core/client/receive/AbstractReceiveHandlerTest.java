@@ -37,7 +37,7 @@ public class AbstractReceiveHandlerTest {
 
 	@Test
 	public void testReceiveHandler()throws ClientException{
-		SelfInfoReceiveHandler handler = new SelfInfoReceiveHandler();
+		OwnReceiveHandler handler = new OwnReceiveHandler();
 		Map<String,String> content = new HashMap<String,String>();
 		
 		String companyId = "1";

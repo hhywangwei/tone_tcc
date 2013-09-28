@@ -1,6 +1,6 @@
 package com.tcc.cti.core.client.receive;
 
-import static com.tcc.cti.core.message.MessageType.GroupInfo;
+import static com.tcc.cti.core.message.MessageType.Group;
 
 import java.util.Map;
 
@@ -21,7 +21,7 @@ public class GroupReceiveHandler extends AbstractReceiveHandler{
 	
 	@Override
 	protected boolean isReceive(String msgType) {
-		return GroupInfo.responseType().equals(msgType);
+		return Group.response().equals(msgType);
 	}
 
 	@Override

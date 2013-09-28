@@ -1,6 +1,6 @@
 package com.tcc.cti.core.message.response;
 
-import static com.tcc.cti.core.message.MessageType.GroupInfo;
+import static com.tcc.cti.core.message.MessageType.Group;
 
 /**
  * 接受公司分组情况
@@ -9,8 +9,8 @@ import static com.tcc.cti.core.message.MessageType.GroupInfo;
  * _groupId:用户组编号(1－32之间的一个正数)
  * _groupName:用户名
  * _maxQueue:最大排队人数
- * _groupWorkState:??
- * _chooseOpType:??
+ * _groupWorkState:组工作状态
+ * _chooseOpType:选择话务员的方式
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
@@ -60,7 +60,7 @@ public class GroupResponse extends ResponseMessage{
 		public GroupResponse build(){
 			
 			GroupResponse response = new GroupResponse(
-					_companyId,_opId,GroupInfo.responseType(),_seq);
+					_companyId,_opId,Group.response(),_seq);
 			response.setGroupId(_groupId);
 			response.setGroupName(_groupName);
 			response.setMaxQueue(_maxQueue);

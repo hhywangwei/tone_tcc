@@ -24,7 +24,7 @@ public class LoginReceiveHandler extends AbstractReceiveHandler{
 	
 	@Override
 	protected boolean isReceive(String msgType) {
-		return Login.responseType().equals(msgType);
+		return Login.response().equals(msgType);
 	}
 
 	@Override

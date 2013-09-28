@@ -1,14 +1,14 @@
 package com.tcc.cti.core.message.response;
 
-import static com.tcc.cti.core.message.MessageType.GroupMember;
-
+import static com.tcc.cti.core.message.MessageType.Own;
 /**
- * 获取组成员信息
+ * 接收座席信息
  * 
  * <pre>
  * _name:姓名
  * _number:座席电话号码
  * _groupAttribute:分组属性(int类型32个bit对应32个组，一个座席人员可以属于多个组，相应bit为1)
+ * _type:身份(1－座席,2－班长,3－专家)
  * _mobileNumber:移动座席电话号码
  * _workModel:工作模式(0 – 普通模式,1 – ACW模式)
  * _groupString:分组的新的表示方式(以逗号分开的多个组)
@@ -16,12 +16,10 @@ import static com.tcc.cti.core.message.MessageType.GroupMember;
  * _bindState:绑定状态
  * _callState:呼叫状态
  * _mobileState:移动座席状态
- * _recordFlag:1－有录音属性，0－没有
- * _recordingNow:1-正在被录音，0-没有
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class GroupMemberResponse extends ResponseMessage {
+public class OwnResponse extends ResponseMessage {
 	
 	public static class Builder{
 		private final String _companyId;
@@ -38,15 +36,14 @@ public class GroupMemberResponse extends ResponseMessage {
 		private String _state;
 		private String _bindState;
 		private String _callState;
+		private String _type;
 		private String _mobileNumber;
 		private String _workModel;
-		private String _recordFlag;
-		private String _recordingNow;
 		
 		public Builder(String companyId,String opId,String seq){
 			_companyId = companyId;
 			_opId = opId;
-			_messageType = GroupMember.response();
+			_messageType = Own.response();
 			_seq = seq;
 		}
 		
@@ -100,6 +97,11 @@ public class GroupMemberResponse extends ResponseMessage {
 			return this;
 		}
 		
+		public Builder setType(String type){
+			_type = type;
+			return this;
+		}
+		
 		public Builder setMobileNumber(String mobileNumber){
 			_mobileNumber = mobileNumber;
 			return this;
@@ -110,18 +112,8 @@ public class GroupMemberResponse extends ResponseMessage {
 			return this;
 		}
 		
-		public Builder setRecordFlag(String flag){
-			_recordFlag = flag;
-			return this;
-		}
-		
-		public Builder setRecordingNow(String recordingNow){
-			_recordingNow = recordingNow;
-			return this;
-		}
-		
-		public GroupMemberResponse build(){
-			GroupMemberResponse m = new GroupMemberResponse(
+		public OwnResponse build(){
+			OwnResponse m = new OwnResponse(
 					_companyId,_opId,_messageType,_seq);
 			
 			m.setBindState(_bindState);
@@ -134,9 +126,8 @@ public class GroupMemberResponse extends ResponseMessage {
 			m.setName(_name);
 			m.setNumber(_number);
 			m.setState(_state);
+			m.setType(_type);
 			m.setWorkId(_workId);
-			m.setRecordFlag(_recordFlag);
-			m.setRecordingNow(_recordingNow);
 			m.setWorkModel(_workModel);
 			
 			return m;
@@ -153,12 +144,11 @@ public class GroupMemberResponse extends ResponseMessage {
 	private String _state;
 	private String _bindState;
 	private String _callState;
+	private String _type;
 	private String _mobileNumber;
 	private String _workModel;
-	private String _recordFlag;
-	private String _recordingNow;
 
-	private GroupMemberResponse(String companyId, 
+	private OwnResponse(String companyId, 
 			String opId, String messageType,String seq) {
 		
 		super(companyId, opId, messageType,seq);
@@ -245,6 +235,14 @@ public class GroupMemberResponse extends ResponseMessage {
 		_callState = callState;
 	}
 
+	public String getType() {
+		return _type;
+	}
+
+	private void setType(String type) {
+		_type = type;
+	}
+
 	public String getMobileNumber() {
 		return _mobileNumber;
 	}
@@ -253,22 +251,6 @@ public class GroupMemberResponse extends ResponseMessage {
 		_mobileNumber = mobileNumber;
 	}
 
-	public String getRecordFlag(){
-		return _recordFlag;
-	}
-	
-	private void setRecordFlag(String recordFlag){
-		_recordFlag = recordFlag;
-	}
-	
-	public String getRecordingNow(){
-		return _recordingNow;
-	}
-	
-	private void setRecordingNow(String recordingNow){
-		_recordingNow = recordingNow;
-	}
-	
 	public String getWorkModel() {
 		return _workModel;
 	}
@@ -279,44 +261,36 @@ public class GroupMemberResponse extends ResponseMessage {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("ObtainMemberResponse [_workId=");
-		builder.append(_workId);
-		builder.append(", _name=");
-		builder.append(_name);
-		builder.append(", _groupAttribute=");
-		builder.append(_groupAttribute);
-		builder.append(", _groupString=");
-		builder.append(_groupString);
-		builder.append(", _number=");
-		builder.append(_number);
-		builder.append(", _loginState=");
-		builder.append(_loginState);
-		builder.append(", _mobileState=");
-		builder.append(_mobileState);
-		builder.append(", _state=");
-		builder.append(_state);
-		builder.append(", _bindState=");
-		builder.append(_bindState);
-		builder.append(", _callState=");
-		builder.append(_callState);
-		builder.append(", _mobileNumber=");
-		builder.append(_mobileNumber);
-		builder.append(", _workModel=");
-		builder.append(_workModel);
-		builder.append(", _recordFlag=");
-		builder.append(_recordFlag);
-		builder.append(", _recordingNow=");
-		builder.append(_recordingNow);
-		builder.append(", _companyId=");
-		builder.append(_companyId);
-		builder.append(", _opId=");
-		builder.append(_opId);
-		builder.append(", _messageType=");
-		builder.append(_messageType);
-		builder.append(", _seq=");
-		builder.append(_seq);
-		builder.append("]");
-		return builder.toString();
+		StringBuilder builder2 = new StringBuilder();
+		builder2.append("SelfInfoReceiveMessage [_workId=");
+		builder2.append(_workId);
+		builder2.append(", _name=");
+		builder2.append(_name);
+		builder2.append(", _groupAttribute=");
+		builder2.append(_groupAttribute);
+		builder2.append(", _groupString=");
+		builder2.append(_groupString);
+		builder2.append(", _number=");
+		builder2.append(_number);
+		builder2.append(", _loginState=");
+		builder2.append(_loginState);
+		builder2.append(", _mobileState=");
+		builder2.append(_mobileState);
+		builder2.append(", _state=");
+		builder2.append(_state);
+		builder2.append(", _bindState=");
+		builder2.append(_bindState);
+		builder2.append(", _callState=");
+		builder2.append(_callState);
+		builder2.append(", _type=");
+		builder2.append(_type);
+		builder2.append(", _mobileNumber=");
+		builder2.append(_mobileNumber);
+		builder2.append(", _workModel=");
+		builder2.append(_workModel);
+		builder2.append(", toString()=");
+		builder2.append(super.toString());
+		builder2.append("]");
+		return builder2.toString();
 	}
 }

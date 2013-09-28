@@ -1,15 +1,16 @@
 package com.tcc.cti.core.message.response;
 
 import static com.tcc.cti.core.message.response.ResponseCode.InstanceCode;
-import static com.tcc.cti.core.message.MessageType.Login;
+import static com.tcc.cti.core.message.MessageType.OutCall;
 
-public class LoginResponse extends ResponseMessage{
-
+public class OutCallResponse extends ResponseMessage{
 	private final String _result;
 	private final String _detail;
 	
-	public LoginResponse(String companyId, String opId,	String seq,String result) {
-		super(companyId, opId, Login.response(), seq);
+	public OutCallResponse(String companyId, String opId,
+			String seq,String result) {
+		
+		super(companyId, opId, OutCall.response(), seq);
 		_result = result;
 		_detail = InstanceCode.getDetail(result);
 	}
@@ -25,7 +26,7 @@ public class LoginResponse extends ResponseMessage{
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("LoginResponse [_result=");
+		builder.append("OutCallResponse [_result=");
 		builder.append(_result);
 		builder.append(", _detail=");
 		builder.append(_detail);
@@ -40,4 +41,5 @@ public class LoginResponse extends ResponseMessage{
 		builder.append("]");
 		return builder.toString();
 	}
+
 }

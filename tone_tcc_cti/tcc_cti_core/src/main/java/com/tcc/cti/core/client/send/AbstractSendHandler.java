@@ -63,8 +63,7 @@ public abstract class AbstractSendHandler implements SendHandler {
 	 *            字符集
 	 * @return
 	 */
-	protected byte[] getMessage(
-			RequestMessage message,GeneratorSeq generator,String charset) {
+	protected byte[] getMessage(RequestMessage message,GeneratorSeq generator,String charset) {
 		
 		String m = buildMessage(message,generator);
 	    return headCompletion(m,charset);

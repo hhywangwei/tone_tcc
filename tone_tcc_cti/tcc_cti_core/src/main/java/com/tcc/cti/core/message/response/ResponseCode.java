@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 public enum ResponseCode {
-	codeInstance(LoggerFactory.getLogger(ResponseCode.class));
+	InstanceCode(LoggerFactory.getLogger(ResponseCode.class));
 	
 	private static final String FILE_NAME = "cti_response_code.propertites";
 	private static final String CODE_PREFIX = "return_code_";

@@ -1,6 +1,6 @@
 package com.tcc.cti.core.client.send;
 
-import static com.tcc.cti.core.message.MessageType.GroupInfo;
+import static com.tcc.cti.core.message.MessageType.Group;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ public class GroupSendHandler extends AbstractSendHandler{
 	@Override
 	protected boolean isSend(RequestMessage message) {
 		return message != null && 
-				GroupInfo.requestType().equals(
+				Group.request().equals(
 						message.getMessageType());
 	}
 
@@ -39,7 +39,7 @@ public class GroupSendHandler extends AbstractSendHandler{
 		GroupRequest request = (GroupRequest)message;
 		
 		StringBuilder sb = new StringBuilder(512);
-		sb.append(String.format(MSG_FORMAT, message.getMessageType()));
+		sb.append(String.format(MSG_FORMAT, request.getMessageType()));
 		sb.append(String.format(SEQ_FORMAT, generator.next()));
 		sb.append(String.format(COMPANY_ID_FORMAT, request.getCompayId()));
 		if(StringUtils.isNotBlank(request.getGroupId())){

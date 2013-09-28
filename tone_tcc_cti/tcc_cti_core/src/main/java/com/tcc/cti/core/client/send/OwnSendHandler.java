@@ -1,11 +1,12 @@
 package com.tcc.cti.core.client.send;
 
-import static com.tcc.cti.core.message.MessageType.SelfInfo;
+import static com.tcc.cti.core.message.MessageType.Own;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
+import com.tcc.cti.core.message.request.OwnRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
 
 /**
@@ -20,22 +21,23 @@ import com.tcc.cti.core.message.request.RequestMessage;
  * {@code 是线程安全类}
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class SelfInfoSendHandler extends AbstractSendHandler  {
-	private static final Logger logger = LoggerFactory.getLogger(SelfInfoSendHandler.class);
+public class OwnSendHandler extends AbstractSendHandler{
+	private static final Logger logger = LoggerFactory.getLogger(OwnSendHandler.class);
 	private static final String WORK_ID_FORMAT = "<WorkID></WorkID>";
 	
 	@Override
 	protected boolean isSend(RequestMessage message) {
 		return message != null && 
-				SelfInfo.requestType().equals(
+				Own.request().equals(
 						message.getMessageType());
 	}
 
 	@Override
 	protected String buildMessage(RequestMessage message,GeneratorSeq generator) {
+		OwnRequest request = (OwnRequest)message;
 		
 		StringBuilder sb = new StringBuilder(128);
-		sb.append(String.format(MSG_FORMAT, message.getMessageType()));
+		sb.append(String.format(MSG_FORMAT, request.getMessageType()));
 		sb.append(String.format(SEQ_FORMAT, generator.next()));
 		sb.append(WORK_ID_FORMAT);
 		

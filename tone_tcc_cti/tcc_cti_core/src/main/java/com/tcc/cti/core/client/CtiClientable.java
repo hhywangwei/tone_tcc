@@ -28,7 +28,7 @@ public interface CtiClientable {
 	void close()throws ClientException;
 	
 	/**
-	 * 注册用户到CTI服务，打开stocket连接
+	 * 注册用户到CTI服务，打开socket连接
 	 * 
 	 * @param companyId 公司编号
 	 * @param opId 操作员编号
@@ -37,7 +37,7 @@ public interface CtiClientable {
 	void register(String companyId,String opId)throws ClientException;
 	
 	/**
-	 * 注销用户CTI服务，关闭stocket连接
+	 * 注销用户CTI服务，关闭socket连接
 	 * 
 	 * @param companyId 公司编号
 	 * @param opId 操作编号
