@@ -15,7 +15,7 @@ public class ResponseCodeTest {
 
 	@Test
 	public void testGetDetail(){
-		ResponseCode code = ResponseCode.codeInstance;
+		ResponseCode code = ResponseCode.InstanceCode;
 		
 		String detail = code.getDetail("0");
 		Assert.assertEquals("正常返回", detail);
