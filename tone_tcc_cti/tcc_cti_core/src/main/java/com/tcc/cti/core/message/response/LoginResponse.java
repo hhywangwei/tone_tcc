@@ -4,6 +4,7 @@ import static com.tcc.cti.core.message.response.ResponseCode.InstanceCode;
 import static com.tcc.cti.core.message.MessageType.Login;
 
 public class LoginResponse extends ResponseMessage{
+	private static final String PREFIX_DETAIL_TEMPLATE = "return_code_%s";
 
 	private final String _result;
 	private final String _detail;
@@ -11,7 +12,8 @@ public class LoginResponse extends ResponseMessage{
 	public LoginResponse(String companyId, String opId,	String seq,String result) {
 		super(companyId, opId, Login.response(), seq);
 		_result = result;
-		_detail = InstanceCode.getDetail(result);
+		_detail = InstanceCode.getDetail(
+				String.format(PREFIX_DETAIL_TEMPLATE, result));
 	}
 	
 	public String getResult(){

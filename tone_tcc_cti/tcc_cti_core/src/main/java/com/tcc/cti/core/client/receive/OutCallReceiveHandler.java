@@ -8,7 +8,7 @@ import com.tcc.cti.core.message.response.OutCallResponse;
 import com.tcc.cti.core.message.response.ResponseMessage;
 
 /**
- * 服务器收到外呼信息
+ * 收到外呼信息
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */

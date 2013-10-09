@@ -13,7 +13,8 @@ public enum MessageType {
 	Group("group_info","add_group"),
 	Monitor("monitor_info","add_monitor"),
 	PhoneCall("get_call_info","add_call"),
-	OutCall("outcall","outcall");
+	OutCall("outcall","outcall"),
+	OutCallState("","outcallresp");
 	
 	private final String _request;
 	private final String _reponse;

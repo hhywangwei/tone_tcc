@@ -16,3 +16,13 @@ return_code_14=组ID不存在
 return_code_15=原始主叫的呼叫信息未找到
 return_code_17=移动座席号码不匹配
 return_code_18=座席号码不匹配
+out_call_1=第一个呼叫开始
+out_call_2=第一个呼叫振铃
+out_call_3=第一个呼叫接通
+out_call_4=第一个呼叫失败
+out_call_5=第二个呼叫开始
+out_call_6=第二个呼叫振铃
+out_call_7=第二个呼叫接通
+out_call_8=第二个呼叫失败
+out_call_9=呼叫结束
+
