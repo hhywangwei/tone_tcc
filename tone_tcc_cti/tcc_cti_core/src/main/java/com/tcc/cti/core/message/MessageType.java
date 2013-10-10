@@ -12,7 +12,7 @@ public enum MessageType {
 	GroupMember("worker_number_info","add_op"),
 	Group("group_info","add_group"),
 	Monitor("monitor_info","add_monitor"),
-	PhoneCall("get_call_info","add_call"),
+	Call("get_call_info","add_call"),
 	OutCall("outcall","outcall"),
 	OutCallState("","outcallresp");
 	

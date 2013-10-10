@@ -1,12 +1,12 @@
 package com.tcc.cti.core.client.send;
 
-import static com.tcc.cti.core.message.MessageType.PhoneCall;
+import static com.tcc.cti.core.message.MessageType.Call;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
-import com.tcc.cti.core.message.request.PhoneCallRequest;
+import com.tcc.cti.core.message.request.CallRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
 
 /**
@@ -14,19 +14,19 @@ import com.tcc.cti.core.message.request.RequestMessage;
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class PhoneCallSendHandler extends AbstractSendHandler {
-	private static final Logger logger = LoggerFactory.getLogger(PhoneCallSendHandler.class);
+public class CallSendHandler extends AbstractSendHandler {
+	private static final Logger logger = LoggerFactory.getLogger(CallSendHandler.class);
 
 	@Override
 	protected boolean isSend(RequestMessage message) {
 		return message != null && 
-				PhoneCall.request().equals(
+				Call.request().equals(
 						message.getMessageType());
 	}
 
 	@Override
 	protected String buildMessage(RequestMessage message, GeneratorSeq generator) {
-		PhoneCallRequest request = (PhoneCallRequest)message;
+		CallRequest request = (CallRequest)message;
 		
 		StringBuilder sb = new StringBuilder(128);
 		sb.append(String.format(MSG_FORMAT, request.getMessageType()));

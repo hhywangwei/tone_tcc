@@ -1,6 +1,6 @@
 package com.tcc.cti.core.message.response;
 
-import static com.tcc.cti.core.message.MessageType.PhoneCall;
+import static com.tcc.cti.core.message.MessageType.Call;
 
 /**
  * 接受呼叫信息对象
@@ -24,7 +24,7 @@ import static com.tcc.cti.core.message.MessageType.PhoneCall;
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class PhoneCallResponse extends ResponseMessage{ 
+public class CallResponse extends ResponseMessage{ 
 	
 	public static class Builder{
 		private final String _companyId;
@@ -51,7 +51,7 @@ public class PhoneCallResponse extends ResponseMessage{
 			_companyId = companyId;
 			_opId = opId;
 			_seq = seq;
-			_messageType = PhoneCall.response(); 
+			_messageType = Call.response(); 
 		}
 		
 		public Builder setGroupId(String groupId){
@@ -129,8 +129,8 @@ public class PhoneCallResponse extends ResponseMessage{
 			return this;
 		}
 		
-		public PhoneCallResponse build(){
-			PhoneCallResponse response = new  PhoneCallResponse(
+		public CallResponse build(){
+			CallResponse response = new  CallResponse(
 					_companyId,_opId,_messageType,_seq);
 			
 			response.setGroupId(_groupId);
@@ -153,7 +153,7 @@ public class PhoneCallResponse extends ResponseMessage{
 		}
 	}
 
-	private PhoneCallResponse(String companyId, String opId,
+	private CallResponse(String companyId, String opId,
 			String messageType,String seq) {
 		
 		super(companyId, opId, messageType, seq);

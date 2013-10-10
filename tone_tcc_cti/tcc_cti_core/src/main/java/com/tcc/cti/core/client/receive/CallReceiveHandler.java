@@ -1,10 +1,10 @@
 package com.tcc.cti.core.client.receive;
 
-import static com.tcc.cti.core.message.MessageType.PhoneCall;
+import static com.tcc.cti.core.message.MessageType.Call;
 
 import java.util.Map;
 
-import com.tcc.cti.core.message.response.PhoneCallResponse;
+import com.tcc.cti.core.message.response.CallResponse;
 import com.tcc.cti.core.message.response.ResponseMessage;
 
 /**
@@ -12,7 +12,7 @@ import com.tcc.cti.core.message.response.ResponseMessage;
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class PhoneCallReceiveHandler extends AbstractReceiveHandler{
+public class CallReceiveHandler extends AbstractReceiveHandler{
 	private static final String GROUP_ID_PARAMETER = "GroupID";
 	private static final String CALL_LEG_PARAMETER = "CallLeg";
 	private static final String CALLER_NUMBER_PARAMETER = "CallerNumber";
@@ -31,14 +31,14 @@ public class PhoneCallReceiveHandler extends AbstractReceiveHandler{
 
 	@Override
 	protected boolean isReceive(String msgType) {
-		return PhoneCall.response().equals(msgType);
+		return Call.response().equals(msgType);
 	}
 
 	@Override
 	protected ResponseMessage buildMessage(String companyId, String opId,
 			String seq, Map<String, String> content) {
 		
-		return new PhoneCallResponse.Builder(companyId, opId, seq).
+		return new CallResponse.Builder(companyId, opId, seq).
 				setGroupId(content.get(GROUP_ID_PARAMETER)).
 				setCallLeg(content.get(CALL_LEG_PARAMETER)).
 				setCallerNumber(content.get(CALLER_NUMBER_PARAMETER)).

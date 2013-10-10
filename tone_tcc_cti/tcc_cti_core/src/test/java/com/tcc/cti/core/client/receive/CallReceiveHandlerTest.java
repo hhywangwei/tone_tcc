@@ -1,6 +1,6 @@
 package com.tcc.cti.core.client.receive;
 
-import static com.tcc.cti.core.message.MessageType.PhoneCall;
+import static com.tcc.cti.core.message.MessageType.Call;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,29 +8,29 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.tcc.cti.core.message.response.PhoneCallResponse;
+import com.tcc.cti.core.message.response.CallResponse;
 
 /**
- * {@link PhoneCallReceiveHandler}单元测试
+ * {@link CallReceiveHandler}单元测试
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class PhoneCallReceiveHandlerTest {
+public class CallReceiveHandlerTest {
 
 	@Test
 	public void testIsReceive(){
-		PhoneCallReceiveHandler handler = new PhoneCallReceiveHandler();
+		CallReceiveHandler handler = new CallReceiveHandler();
 		
 		Assert.assertFalse(handler.isReceive(null));
 		Assert.assertFalse(handler.isReceive("not"));
-		Assert.assertTrue(handler.isReceive(PhoneCall.response()));
+		Assert.assertTrue(handler.isReceive(Call.response()));
 	}
 	
 	@Test
 	public void testBuildMessage(){
-		PhoneCallReceiveHandler handler = new PhoneCallReceiveHandler();
+		CallReceiveHandler handler = new CallReceiveHandler();
 		Map<String,String> content = initContent();
-		PhoneCallResponse message = (PhoneCallResponse)handler.buildMessage("1", "2", "3", content);
+		CallResponse message = (CallResponse)handler.buildMessage("1", "2", "3", content);
 		
 		Assert.assertEquals("add_call", message.getMessageType());
 		Assert.assertEquals("1", message.getCompanyId());
