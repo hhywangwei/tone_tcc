@@ -13,7 +13,7 @@ public class OutCallStateResponse extends ResponseMessage{
 	public OutCallStateResponse(String companyId, String opId,
 			String seq,String callLeg,String state) {
 		
-		super(companyId, opId, OutCallState.request(), seq);
+		super(companyId, opId, OutCallState.response(), seq);
 		_callLeg = callLeg;
 		_state = state;
 		_detail = InstanceCode.getDetail(

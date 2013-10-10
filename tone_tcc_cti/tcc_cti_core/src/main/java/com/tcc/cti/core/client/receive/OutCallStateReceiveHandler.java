@@ -7,6 +7,12 @@ import java.util.Map;
 import com.tcc.cti.core.message.response.OutCallStateResponse;
 import com.tcc.cti.core.message.response.ResponseMessage;
 
+/**
+ * 接收外呼状态
+ * 
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ *
+ */
 public class OutCallStateReceiveHandler extends AbstractReceiveHandler{
 	private static final String STATE_PARAMETER = "State";
 	private static final String CALL_LEG_PARAMETER = "CallLeg";

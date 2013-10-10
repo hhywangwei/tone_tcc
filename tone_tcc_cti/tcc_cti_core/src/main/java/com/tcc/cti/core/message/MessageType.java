@@ -14,7 +14,8 @@ public enum MessageType {
 	Monitor("monitor_info","add_monitor"),
 	Call("get_call_info","add_call"),
 	OutCall("outcall","outcall"),
-	OutCallState("","outcallresp");
+	OutCallState("","outcallresp"),
+	OutCallCancel("outcallcancel","outcallcancel");
 	
 	private final String _request;
 	private final String _reponse;
