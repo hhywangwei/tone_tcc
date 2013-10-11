@@ -28,7 +28,7 @@ public class OwnReceiveHandler extends AbstractReceiveHandler{
 
 	@Override
 	protected boolean isReceive(String msgType) {
-		return Own.response().equals(msgType);
+		return Own.isResponse(msgType);
 	}
     
 	protected OwnResponse buildMessage(String companyId,String opId,

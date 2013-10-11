@@ -37,7 +37,7 @@ public class LoginSendHandler extends AbstractSendHandler{
 	
 	@Override
 	protected boolean isSend(RequestMessage message) {
-		return Login.request().equals(message.getMessageType());
+		return Login.isRequest(message.getMessageType());
 	}
 
 	@Override

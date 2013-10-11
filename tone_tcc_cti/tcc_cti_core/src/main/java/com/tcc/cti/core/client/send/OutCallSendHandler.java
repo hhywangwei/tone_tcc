@@ -31,8 +31,7 @@ public class OutCallSendHandler extends AbstractSendHandler{
 	@Override
 	protected boolean isSend(RequestMessage message) {
 		return message != null && 
-				OutCall.request().equals(
-						message.getMessageType());
+				OutCall.isRequest(message.getMessageType());
 	}
 
 	@Override

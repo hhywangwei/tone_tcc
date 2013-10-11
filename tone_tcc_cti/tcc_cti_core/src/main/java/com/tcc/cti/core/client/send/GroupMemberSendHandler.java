@@ -30,8 +30,7 @@ public class GroupMemberSendHandler extends AbstractSendHandler{
 	@Override
 	protected boolean isSend(RequestMessage message) {
 		return message != null && 
-				GroupMember.request().equals(
-						message.getMessageType());
+				GroupMember.isRequest(message.getMessageType());
 	}
 
 	@Override

@@ -31,7 +31,7 @@ public class CallReceiveHandler extends AbstractReceiveHandler{
 
 	@Override
 	protected boolean isReceive(String msgType) {
-		return Call.response().equals(msgType);
+		return Call.isResponse(msgType);
 	}
 
 	@Override

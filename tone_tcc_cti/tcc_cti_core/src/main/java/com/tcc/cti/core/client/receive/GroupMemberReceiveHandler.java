@@ -28,7 +28,7 @@ public class GroupMemberReceiveHandler extends AbstractReceiveHandler{
 
 	@Override
 	protected boolean isReceive(String msgType) {
-		return GroupMember.response().equals(msgType);
+		return GroupMember.isResponse(msgType);
 	}
 	
 	protected GroupMemberResponse buildMessage(String companyId,String opId,

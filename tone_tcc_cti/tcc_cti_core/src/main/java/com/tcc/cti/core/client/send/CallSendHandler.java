@@ -20,8 +20,7 @@ public class CallSendHandler extends AbstractSendHandler {
 	@Override
 	protected boolean isSend(RequestMessage message) {
 		return message != null && 
-				Call.request().equals(
-						message.getMessageType());
+				Call.isRequest(message.getMessageType());
 	}
 
 	@Override

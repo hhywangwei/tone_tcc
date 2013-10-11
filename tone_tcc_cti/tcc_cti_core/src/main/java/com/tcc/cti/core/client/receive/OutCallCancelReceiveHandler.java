@@ -1,23 +1,23 @@
 package com.tcc.cti.core.client.receive;
 
-import static com.tcc.cti.core.message.MessageType.OutCall;
+import static com.tcc.cti.core.message.MessageType.OutCallCancel;
 
 import java.util.Map;
 
-import com.tcc.cti.core.message.response.OutCallResponse;
+import com.tcc.cti.core.message.response.OutCallCancelResponse;
 import com.tcc.cti.core.message.response.ResponseMessage;
 
 /**
- * 收到外呼信息
+ * 接收取消外呼状态
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class OutCallReceiveHandler extends AbstractReceiveHandler{
+public class OutCallCancelReceiveHandler extends AbstractReceiveHandler{
 	private static final String RESULT_PARAMETER = "result";
 	
 	@Override
 	protected boolean isReceive(String msgType) {
-		return OutCall.isResponse(msgType);
+		return OutCallCancel.isResponse(msgType);
 	}
 
 	@Override
@@ -26,7 +26,7 @@ public class OutCallReceiveHandler extends AbstractReceiveHandler{
 		
 		String result = content.get(RESULT_PARAMETER);
 		
-		return new OutCallResponse(companyId,opId,seq,result);
+		return new OutCallCancelResponse(companyId,opId,seq,result);
 	}
 
 }

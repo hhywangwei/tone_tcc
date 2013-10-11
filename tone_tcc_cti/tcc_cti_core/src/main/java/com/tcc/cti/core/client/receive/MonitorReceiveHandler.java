@@ -25,7 +25,7 @@ public class MonitorReceiveHandler extends AbstractReceiveHandler{
 	
 	@Override
 	protected boolean isReceive(String msgType) {
-		return Monitor.response().equals(msgType);
+		return Monitor.isResponse(msgType);
 	}
 
 	@Override

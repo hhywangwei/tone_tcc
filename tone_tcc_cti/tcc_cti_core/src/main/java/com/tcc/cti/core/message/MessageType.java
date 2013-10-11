@@ -15,21 +15,30 @@ public enum MessageType {
 	Call("get_call_info","add_call"),
 	OutCall("outcall","outcall"),
 	OutCallState("","outcallresp"),
-	OutCallCancel("outcallcancel","outcallcancel");
+	OutCallCancel("outcallcancel","outcallcancel"),
+	Record("start_record","start_record");
 	
 	private final String _request;
-	private final String _reponse;
+	private final String _response;
 	
-	private MessageType(String request,String reponse){
+	private MessageType(String request,String response){
 		_request = request;
-		_reponse = reponse;
+		_response = response;
 	}
 	
 	public String request(){
 		return _request;
 	}
 	
+	public boolean isRequest(String request){
+		return request != null && _request.equals(request);
+	}
+	
 	public String response(){
-		return _reponse;
+		return _response;
+	}
+	
+	public boolean isResponse(String response){
+		return response != null && _response.equals(response);
 	}
 }

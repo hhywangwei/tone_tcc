@@ -19,7 +19,7 @@ public class OutCallStateReceiveHandler extends AbstractReceiveHandler{
 	
 	@Override
 	protected boolean isReceive(String msgType) {
-		return OutCallState.response().equals(msgType);
+		return OutCallState.isResponse(msgType);
 	}
 
 	@Override

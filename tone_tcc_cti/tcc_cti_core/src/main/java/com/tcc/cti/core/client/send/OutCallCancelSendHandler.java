@@ -29,9 +29,8 @@ public class OutCallCancelSendHandler extends AbstractSendHandler{
 
 	@Override
 	protected boolean isSend(RequestMessage message) {
-		return message != null && 
-				message.getMessageType().equals(
-						OutCallCancel.request());
+		return message != null &&
+				OutCallCancel.isRequest(message.getMessageType());
 	}
 
 	@Override

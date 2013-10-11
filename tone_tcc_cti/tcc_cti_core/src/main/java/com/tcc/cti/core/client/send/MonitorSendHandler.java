@@ -25,8 +25,7 @@ public class MonitorSendHandler extends AbstractSendHandler{
 	@Override
 	protected boolean isSend(RequestMessage message) {
 		return message != null && 
-				Monitor.request().equals(
-						message.getMessageType());
+				Monitor.isRequest(message.getMessageType());
 	}
 
 	@Override

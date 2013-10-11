@@ -28,8 +28,7 @@ public class OwnSendHandler extends AbstractSendHandler{
 	@Override
 	protected boolean isSend(RequestMessage message) {
 		return message != null && 
-				Own.request().equals(
-						message.getMessageType());
+				Own.isRequest(message.getMessageType());
 	}
 
 	@Override
