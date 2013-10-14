@@ -13,6 +13,7 @@ public enum MessageType {
 	Group("group_info","add_group"),
 	Monitor("monitor_info","add_monitor"),
 	Call("get_call_info","add_call"),
+	CloseCall("","delete_call"),
 	OutCall("outcall","outcall"),
 	OutCallState("","outcallresp"),
 	OutCallCancel("outcallcancel","outcallcancel"),
