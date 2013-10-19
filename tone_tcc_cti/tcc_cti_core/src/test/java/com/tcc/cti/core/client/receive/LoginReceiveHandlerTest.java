@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.tcc.cti.core.client.OperatorChannel;
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.monitor.HeartbeatKeepable;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
@@ -39,12 +40,12 @@ public class LoginReceiveHandlerTest {
 	public void testReceiveHandlerButLoginFail()throws Exception{
 		LoginReceiveHandler handler = new LoginReceiveHandler();
 		CtiMessagePool pool = Mockito.mock(CtiMessagePool.class);
-		OperatorChannel.OperatorKey key = new OperatorChannel.OperatorKey("1", "1");
+		OperatorKey key = new OperatorKey("1", "1");
 		OperatorChannel oc = new OperatorChannel(key,null,new ArrayList<SendHandler>(),"UTF-8");
 		Map<String,String> m = new HashMap<String,String>();
 		m.put("result", "1");
 		handler.receiveHandler(pool, oc, m);
-		Mockito.verify(pool, Mockito.timeout(1)).push(
+		Mockito.verify(pool, Mockito.timeout(1)).put(
 				Mockito.anyString(), Mockito.anyString(), Mockito.any(ResponseMessage.class));
 	}
 	
@@ -58,14 +59,14 @@ public class LoginReceiveHandlerTest {
 		Map<String,String> m = new HashMap<String,String>();
 		m.put("result", "0");
 		handler.receiveHandler(pool, null, m);
-		Mockito.verify(pool, Mockito.never()).push(
+		Mockito.verify(pool, Mockito.never()).put(
 				Mockito.anyString(), Mockito.anyString(), Mockito.any(ResponseMessage.class));
 	}
 	
 	@Test
 	public void testReciveHandler()throws Exception{
 		CtiMessagePool pool = Mockito.mock(CtiMessagePool.class);
-		OperatorChannel.OperatorKey key = new OperatorChannel.OperatorKey("1", "1");
+		OperatorKey key = new OperatorKey("1", "1");
 		OperatorChannel oc = new OperatorChannel(key,null,new ArrayList<SendHandler>(),"UTF-8");
 		LoginReceiveHandler handler = new LoginReceiveHandler();
 		HeartbeatKeepable heartbeat = Mockito.mock(HeartbeatKeepable.class);
@@ -75,7 +76,7 @@ public class LoginReceiveHandlerTest {
 		Map<String,String> m = new HashMap<String,String>();
 		m.put("result", "0");
 		handler.receiveHandler(pool, oc, m);
-		Mockito.verify(pool, Mockito.timeout(1)).push(
+		Mockito.verify(pool, Mockito.timeout(1)).put(
 				Mockito.anyString(), Mockito.anyString(), Mockito.any(ResponseMessage.class));
 	}
 }

@@ -1,162 +1,108 @@
 package com.tcc.cti.core.message.pool;
 
-import java.util.Date;
 import java.util.Iterator;
-import java.util.Queue;
+import java.util.Map.Entry;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.message.response.ResponseMessage;
 
 /**
- * 实现以话务员为单位的消息池,每个话务员消息池有最大存活时间{@code ttl}，超过最大存活时间{@code ttl}消息池自动回收。
+ * 实现以话务员为单位的消息池,每个话务员消息池有最大存活时间{@code ttl},。
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 public class OperatorCtiMessagePool implements CtiMessagePool {
 	private static final Logger logger = LoggerFactory.getLogger(OperatorCtiMessagePool.class);
 	private static final int DEFAULT_TTL = 2 * 60 * 1000;
-	private static final int DEFAULT_AUTO_CLEAR_DELAY = 30 * 1000;
-    private static final int POOL_SIZE = 1;
+	private static final int DEFAULT_MESSAGE_TIMEOUT = 20 * 1000;
 	
     private final int _ttl;
-	private final ScheduledExecutorService _executorService;
-	private final ConcurrentHashMap<MessagePoolKey, Queue<ResponseMessage>> _pool = 
-			new ConcurrentHashMap<MessagePoolKey,Queue<ResponseMessage>>();
-	
-	private volatile boolean _run = false;
-	private volatile int _autoClearDelay = DEFAULT_AUTO_CLEAR_DELAY;
+    private final int _messageTimeout;
+    private final ConcurrentHashMap<OperatorKey,MessageEntry> _pool;
 	
 	public OperatorCtiMessagePool(){
-		this(DEFAULT_TTL);
+		this(DEFAULT_TTL,DEFAULT_MESSAGE_TIMEOUT);
 	}
 	
-	public OperatorCtiMessagePool(int ttl){
+	public OperatorCtiMessagePool(int ttl,int messageTimeout){
 		_ttl = ttl;
-		_executorService = Executors.newScheduledThreadPool(POOL_SIZE);
+		_messageTimeout = messageTimeout;
+		_pool = new ConcurrentHashMap<>();
 	}
 
 	@Override
-	public void push(String companyId, String opId, ResponseMessage message) {
-		MessagePoolKey key = new MessagePoolKey(companyId,opId,_ttl);
-		Queue<ResponseMessage> q = _pool.putIfAbsent(key,new ConcurrentLinkedQueue<ResponseMessage>());
-		if(q == null){
-			q = _pool.get(key);
+	public void put(String companyId, String opId, ResponseMessage message)throws InterruptedException {
+		OperatorKey key = new OperatorKey(companyId,opId);
+		MessageEntry m = _pool.putIfAbsent(key,new MessageEntry(_ttl,_messageTimeout));
+		if(m == null){
+			logger.debug("{} message pool create",key.toString());
+			m = _pool.get(key);
 		}
-		q.offer(message);
+		m.put(message);
 	}
 
 	@Override
-	public ResponseMessage task(String companyId, String opId) {
-		MessagePoolKey key = new MessagePoolKey(companyId,opId,_ttl);
-		Queue<ResponseMessage> q = _pool.get(key);
-		return q == null ? null : q.poll();
+	public ResponseMessage poll(String companyId, String opId) throws InterruptedException{
+		OperatorKey key = new OperatorKey(companyId,opId);
+		MessageEntry m = _pool.get(key);
+		return m == null ? null : m.poll();
 	}
 	
 	@Override
-	public void remove(String companyId, String opId) {
-		MessagePoolKey key = new MessagePoolKey(companyId,opId,_ttl);
-		_pool.remove(key);
+	public void compact(){
+		Iterator<Entry<OperatorKey,MessageEntry>> iterator =
+				_pool.entrySet().iterator();
+		
+		for( ;iterator.hasNext(); ){
+			Entry<OperatorKey,MessageEntry> e = iterator.next();
+			if(e.getValue().expire()){
+				iterator.remove();
+			}
+		}
 	}
 	
-	@Override
-	public void startAutoClearExpire() {
-		if(!_run){
-			_run = true;
-			ClearExpireRunner runner = new ClearExpireRunner(_pool);
-			_executorService.scheduleWithFixedDelay(runner, 2, _autoClearDelay, TimeUnit.MILLISECONDS);
-		}
-	}
-
-	@Override
-	public void closeAutoClearExpire() {
-		if(_run){
-			_run = false;
-			_executorService.shutdown();
-		}
-	}
-
-	static class MessagePoolKey{
-		private final String _companyId;
-		private final String _opId;
+	static class MessageEntry{
+		
+		private final BlockingQueue<ResponseMessage> _messages;
 		private final int _ttl;
-		private final Date _createTime;
+		private final int _messageTimeout;
+		private volatile long _lastTime;
 		
-		public MessagePoolKey(String companyId,String opId,int ttl){
-			_companyId = companyId;
-			_opId = opId;
+		MessageEntry(int ttl,int messageTimeout){
+			_messages = new LinkedBlockingQueue<ResponseMessage>();
 			_ttl = ttl;
-			_createTime = new Date();
+			_messageTimeout = messageTimeout;
+			_lastTime = System.currentTimeMillis();
 		}
 		
-		public boolean expire(){
-			Date now = new Date();
-			long deff =  now.getTime() - _createTime.getTime();
+		void put(ResponseMessage message)throws InterruptedException{
+			_messages.put(message);
+			_lastTime = System.currentTimeMillis();
+		}
+		
+		ResponseMessage poll()throws InterruptedException{
+			ResponseMessage m ;
+			if(expire()){
+				_messages.clear();
+				m = null;
+			}else{
+				m =  _messages.poll(_messageTimeout, TimeUnit.MILLISECONDS);
+			}
+			_lastTime = System.currentTimeMillis();
+			return m;
+		}
+		
+		boolean expire(){
+			long deff =  System.currentTimeMillis() - _lastTime;
 			return (new Long(deff)).intValue() > _ttl;
 		}
 
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result
-					+ ((_companyId == null) ? 0 : _companyId.hashCode());
-			result = prime * result + ((_opId == null) ? 0 : _opId.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			MessagePoolKey other = (MessagePoolKey) obj;
-			if (_companyId == null) {
-				if (other._companyId != null)
-					return false;
-			} else if (!_companyId.equals(other._companyId))
-				return false;
-			if (_opId == null) {
-				if (other._opId != null)
-					return false;
-			} else if (!_opId.equals(other._opId))
-				return false;
-			return true;
-		}
-	}
-	
-	private static class ClearExpireRunner implements Runnable{
-		private ConcurrentHashMap<MessagePoolKey, Queue<ResponseMessage>> _pool;
-		
-		ClearExpireRunner(ConcurrentHashMap<MessagePoolKey, Queue<ResponseMessage>> pool){
-			_pool = pool;
-		}
-		
-		@Override
-		public void run() {
-			logger.debug("Start clear expire...");
-			Iterator<MessagePoolKey> iterator = _pool.keySet().iterator();
-			while(iterator.hasNext()){
-				removeExpire(iterator);
-			}
-		}
-		
-		private void removeExpire(Iterator<MessagePoolKey> iterator){
-			MessagePoolKey key = iterator.next();
-			if(key.expire()){
-				iterator.remove();
-				logger.debug("Remove companyId={} and opId={}",
-						key._companyId,key._opId);
-			}
-		}
 	}
 }

@@ -39,10 +39,10 @@ public class TcpCtiClient implements CtiClientable{
 	
 	private final CtiMessagePool _messagePool;
 	private final InetSocketAddress _address;
-	private final ConcurrentHashMap<OperatorChannel.OperatorKey, OperatorChannel> _channelPool = 
-			new ConcurrentHashMap<OperatorChannel.OperatorKey, OperatorChannel>();
-	private final BlockingQueue<OperatorChannel.OperatorKey> _notifyReadQueue = 
-			new LinkedBlockingQueue<OperatorChannel.OperatorKey>(MAX_Notify_CAPACITY);
+	private final ConcurrentHashMap<OperatorKey, OperatorChannel> _channelPool = 
+			new ConcurrentHashMap<OperatorKey, OperatorChannel>();
+	private final BlockingQueue<OperatorKey> _notifyReadQueue = 
+			new LinkedBlockingQueue<OperatorKey>(MAX_Notify_CAPACITY);
 	
 	private List<SendHandler> _sendHandlers;
 	private List<ReceiveHandler> _receiveHandlers;
@@ -86,8 +86,8 @@ public class TcpCtiClient implements CtiClientable{
 	public void register(String companyId,String opId)throws ClientException{
 		try {
 			SocketChannel channel = SocketChannel.open();
-			OperatorChannel.OperatorKey key = 
-					new OperatorChannel.OperatorKey(companyId, opId);
+			OperatorKey key = 
+					new OperatorKey(companyId, opId);
 			
 			if(_channelPool.contains(key)){
 				return ;
@@ -117,7 +117,7 @@ public class TcpCtiClient implements CtiClientable{
 	/**
 	 * 等待连接CTI服务器
 	 * 
-	 * @param key 操作键  {@link OperatorChannel.OperatorKey}
+	 * @param key 操作键  {@link OperatorKey}
 	 * @param channel {@link SocketChannel}
 	 * @param selector {@link Selector}
 	 * @param address CTI服务地址  {@link InetSocketAddress}
@@ -125,7 +125,7 @@ public class TcpCtiClient implements CtiClientable{
 	 * @throws IOException 
 	 * @throws InterruptedException 
 	 */
-	protected boolean waitConnection(OperatorChannel.OperatorKey key,
+	protected boolean waitConnection(OperatorKey key,
 			SocketChannel channel, Selector selector,
 			InetSocketAddress address)throws IOException{
 		
@@ -171,8 +171,8 @@ public class TcpCtiClient implements CtiClientable{
 	}
 	
 	public void unRegister(String companyId,String opId)throws ClientException{
-		OperatorChannel.OperatorKey key = 
-				new OperatorChannel.OperatorKey(companyId, opId);
+		OperatorKey key = 
+				new OperatorKey(companyId, opId);
 		OperatorChannel  oc = _channelPool.remove(key);
 		if(oc != null && oc.isOpen()){
 			oc.close();			
@@ -181,7 +181,7 @@ public class TcpCtiClient implements CtiClientable{
 
 	@Override
 	public void close()throws ClientException {
-		for(OperatorChannel.OperatorKey key : _channelPool.keySet()){
+		for(OperatorKey key : _channelPool.keySet()){
 			OperatorChannel channel = _channelPool.remove(key);
 			if(channel != null && channel.isOpen()){
 				channel.close();
@@ -191,8 +191,8 @@ public class TcpCtiClient implements CtiClientable{
 
 	@Override
 	public void send(RequestMessage message)throws ClientException {
-		OperatorChannel.OperatorKey key = 
-				new OperatorChannel.OperatorKey(
+		OperatorKey key = 
+				new OperatorKey(
 						message.getCompayId(), message.getOpId());
 		OperatorChannel channel = _channelPool.get(key);
 		if(channel.isOpen()){
@@ -220,27 +220,32 @@ public class TcpCtiClient implements CtiClientable{
 		_charset = charset;
 	}
 	
+	@Override
+	public CtiMessagePool getMessagePool(){
+		return _messagePool;
+	}
+	
 	static class StocketReaderRunner implements Runnable {
 		private static final int DEFAULT_BUFFER_SIZE = 1024 * 8;
 		
 		private final Selector _selector;
 		private final int _bufferSize ;
 		private final Object _suspendLock = new Object();
-		private final Map<OperatorChannel.OperatorKey, OperatorChannel> _channelPool;
-		private final BlockingQueue<OperatorChannel.OperatorKey> _notifyReadQueue;
+		private final Map<OperatorKey, OperatorChannel> _channelPool;
+		private final BlockingQueue<OperatorKey> _notifyReadQueue;
 		
 		private volatile boolean _suspend = false;
 		
 		public StocketReaderRunner(Selector selector,
-				Map<OperatorChannel.OperatorKey, OperatorChannel> channelPool,
-				BlockingQueue<OperatorChannel.OperatorKey> notifyReadQueue){
+				Map<OperatorKey, OperatorChannel> channelPool,
+				BlockingQueue<OperatorKey> notifyReadQueue){
 			
 			this(selector,channelPool,notifyReadQueue,DEFAULT_BUFFER_SIZE);
 		}
 		
 		public StocketReaderRunner(Selector selector,
-				Map<OperatorChannel.OperatorKey, OperatorChannel> channelPool,
-				BlockingQueue<OperatorChannel.OperatorKey> notifyReadQueue,
+				Map<OperatorKey, OperatorChannel> channelPool,
+				BlockingQueue<OperatorKey> notifyReadQueue,
 				int bufferSize){
 			
 			_selector = selector;
@@ -274,8 +279,8 @@ public class TcpCtiClient implements CtiClientable{
 						buffer.flip();
 						byte[] bytes = new byte[buffer.remaining()];
 						buffer.get(bytes);
-						OperatorChannel.OperatorKey key = 
-									(OperatorChannel.OperatorKey)sk.attachment();
+						OperatorKey key = 
+									(OperatorKey)sk.attachment();
 						OperatorChannel channel = _channelPool.get(key);
 						channel.append(bytes);
 						_notifyReadQueue.add(key);
@@ -318,12 +323,12 @@ public class TcpCtiClient implements CtiClientable{
 	static class MessageHandlerRunner implements Runnable{
 		private final List<ReceiveHandler> _receiveHandlers;
 		private final CtiMessagePool _messagePool;
-		private final Map<OperatorChannel.OperatorKey, OperatorChannel> _channelPool;
-		private final BlockingQueue<OperatorChannel.OperatorKey> _notifyReadQueue;
+		private final Map<OperatorKey, OperatorChannel> _channelPool;
+		private final BlockingQueue<OperatorKey> _notifyReadQueue;
 		
 		MessageHandlerRunner(List<ReceiveHandler> receiveHandlers,CtiMessagePool messagePool,
-				Map<OperatorChannel.OperatorKey, OperatorChannel> channelPool,
-				BlockingQueue<OperatorChannel.OperatorKey> notifyReadQueue){
+				Map<OperatorKey, OperatorChannel> channelPool,
+				BlockingQueue<OperatorKey> notifyReadQueue){
 			
 			_receiveHandlers = receiveHandlers;
 			_messagePool = messagePool;
@@ -335,7 +340,7 @@ public class TcpCtiClient implements CtiClientable{
 		public void run() {
 			while(true){
 				try{
-					OperatorChannel.OperatorKey key = _notifyReadQueue.take();
+					OperatorKey key = _notifyReadQueue.take();
 					OperatorChannel o = _channelPool.get(key);
 					String m = null;
 					if(o != null){

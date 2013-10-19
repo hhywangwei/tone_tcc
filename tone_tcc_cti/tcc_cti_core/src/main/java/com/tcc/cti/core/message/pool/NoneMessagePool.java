@@ -10,28 +10,18 @@ import com.tcc.cti.core.message.response.ResponseMessage;
 public class NoneMessagePool implements CtiMessagePool{
 
 	@Override
-	public void push(String companyId, String opId, ResponseMessage message) {
+	public void put(String companyId, String opId, ResponseMessage message) {
 		//none instance
 	}
 
 	@Override
-	public ResponseMessage task(String companyId, String opId) {
+	public ResponseMessage poll(String companyId, String opId) {
 		return null;
 	}
 
 	@Override
-	public void remove(String companyId, String opId) {
-		//none instance
+	public void compact() {
+		// TODO Auto-generated method stub
+		
 	}
-
-	@Override
-	public void startAutoClearExpire() {
-		//none instance
-	}
-
-	@Override
-	public void closeAutoClearExpire() {
-		//none instance
-	}
-
 }

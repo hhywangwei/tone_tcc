@@ -110,7 +110,12 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 		ResponseMessage message = 
 				buildMessage(companyId,opId,seq,content);
 		
-		pool.push(companyId, opId, message);
+		try{
+			pool.put(companyId, opId, message);	
+		}catch(Exception e){
+			logger.error("Company = {} and opId = {},Put message pool error {}",
+					new Object[]{companyId,opId,e.getMessage()});
+		}
 	}
 	
 	/**

@@ -35,7 +35,7 @@ public class TcpCtiClientTest {
 	@Test
 	public void testWaitConnection()throws Exception{
 		TcpCtiClient client = new TcpCtiClient(_configure,new NoneMessagePool());
-		OperatorChannel.OperatorKey key = new OperatorChannel.OperatorKey("1", "8001");
+		OperatorKey key = new OperatorKey("1", "8001");
 		
 		InetSocketAddress address = new InetSocketAddress(
 				_configure.getHost(), _configure.getPort());
@@ -52,7 +52,7 @@ public class TcpCtiClientTest {
 		configure.setPort(9999);
 		
 		TcpCtiClient client = new TcpCtiClient(configure,new NoneMessagePool());
-		OperatorChannel.OperatorKey key = new OperatorChannel.OperatorKey("1", "8001");
+		OperatorKey key = new OperatorKey("1", "8001");
 		InetSocketAddress address = new InetSocketAddress(
 				configure.getHost(), configure.getPort());
 		SocketChannel channel = SocketChannel.open();
@@ -69,7 +69,7 @@ public class TcpCtiClientTest {
 		
 		TcpCtiClient client = new TcpCtiClient(configure,new NoneMessagePool());
 		client.setTimeOut(10);
-		OperatorChannel.OperatorKey key = new OperatorChannel.OperatorKey("1", "8001");
+		OperatorKey key = new OperatorKey("1", "8001");
 		InetSocketAddress address = new InetSocketAddress(
 				configure.getHost(), configure.getPort());
 		SocketChannel channel = SocketChannel.open();

@@ -7,8 +7,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.OperatorChannel;
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.response.ResponseMessage;
 
@@ -36,20 +36,20 @@ public class AbstractReceiveHandlerTest {
 	}
 
 	@Test
-	public void testReceiveHandler()throws ClientException{
+	public void testReceiveHandler()throws Exception{
 		OwnReceiveHandler handler = new OwnReceiveHandler();
 		Map<String,String> content = new HashMap<String,String>();
 		
 		String companyId = "1";
 		String opId = "1";
 		CtiMessagePool pool = Mockito.mock(CtiMessagePool.class);
-		OperatorChannel.OperatorKey key = 
-				new OperatorChannel.OperatorKey(companyId, opId);
+		OperatorKey key = 
+				new OperatorKey(companyId, opId);
 		OperatorChannel channel = new OperatorChannel(key,null,null,"UTF-8");
 		
 		handler.receiveHandler(pool, channel, content);
 		Mockito.verify(pool,Mockito.atLeastOnce()).
-		push(Mockito.eq(companyId), Mockito.eq(opId), Mockito.any(ResponseMessage.class));
+		put(Mockito.eq(companyId), Mockito.eq(opId), Mockito.any(ResponseMessage.class));
 	}
 	
 	/**

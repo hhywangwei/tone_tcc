@@ -1,7 +1,7 @@
 package com.tcc.cti.core.message.pool;
 
-import junit.framework.Assert;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.tcc.cti.core.message.response.ResponseMessage;
@@ -12,66 +12,66 @@ import com.tcc.cti.core.message.response.ResponseMessage;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 public class OperatorCtiMessagePoolTest {
-
+	
 	@Test
 	public void testMessageExpire()throws Exception{
-		String companyId = "1";
-		String opId = "1";
-		OperatorCtiMessagePool.MessagePoolKey key = 
-				new OperatorCtiMessagePool.MessagePoolKey(companyId, opId, 2 * 1000);
+		OperatorCtiMessagePool.MessageEntry e = 
+				new OperatorCtiMessagePool.MessageEntry(2 * 1000, 1*1000);
 		Thread.sleep(3 * 1000);
-		Assert.assertTrue(key.expire());
+		Assert.assertTrue(e.expire());
+		
+		e.put(initMessage());
+		Assert.assertFalse(e.expire());
 	}
 	
 	@Test
-	public void testPushAndTask(){
+	public void testPollMessageExpire()throws Exception{
+		OperatorCtiMessagePool.MessageEntry e = 
+				new OperatorCtiMessagePool.MessageEntry(2 * 1000, 1*1000);
+		e.put(initMessage());
+		Thread.sleep(3 * 1000);
+		Assert.assertTrue(e.expire());
+		
+		ResponseMessage m = e.poll();
+		Assert.assertNull(m);
+		Assert.assertFalse(e.expire());
+	}
+	
+	@Test
+	public void testPushAndTask()throws Exception{
 		OperatorCtiMessagePool pool = new OperatorCtiMessagePool();
 		String companyId = "1";
 		String opId = "1";
 		
-		ReceiveMessageImpl m = new ReceiveMessageImpl();
-		pool.push(companyId, opId, m);
+		ResponseMessage m =initMessage();
+		pool.put(companyId, opId, m);
 		
-		Object om = pool.task(companyId, opId);
+		Object om = pool.poll(companyId, opId);
 		Assert.assertNotNull(om);
 		Assert.assertEquals(m, om);
 	}
 	
 	@Test
-	public void testRemove(){
-		OperatorCtiMessagePool pool = new OperatorCtiMessagePool();
-		String companyId = "1";
-		String opId = "1";
+	public void testCompact()throws Exception{
+		OperatorCtiMessagePool pool = new OperatorCtiMessagePool(2 * 1000, 1*1000);
 		
-		ReceiveMessageImpl m = new ReceiveMessageImpl();
-		pool.push(companyId, opId, m);
+		ResponseMessage m =initMessage();
+		pool.put(m.getCompanyId(), m.getOpId(), m);
+		Thread.sleep(3 * 1000);
 		
-		pool.remove(companyId, opId);
-		Object om = pool.task(companyId, opId);
-		Assert.assertNull(om);
+		ResponseMessage m1 = new ResponseMessage(
+				 "2", "2",m.getMessageType(),"2");
+		pool.put(m1.getCompanyId(), m1.getOpId(), m1);
+		
+		pool.compact();
+		
+		ResponseMessage recevie = pool.poll(m.getCompanyId(), m.getCompanyId());
+		Assert.assertNull(recevie);
+		recevie = pool.poll(m1.getCompanyId(), m1.getCompanyId());
+		Assert.assertEquals("2",recevie.getSeq());
 	}
 	
-	@Test
-	public void testAutoClearExpire()throws Exception{
-		OperatorCtiMessagePool pool = new OperatorCtiMessagePool(20 * 1000);
-		String companyId = "1";
-		String opId = "1";
-		ReceiveMessageImpl m = new ReceiveMessageImpl();
-		pool.push(companyId, opId, m);
-		
-		try{
-			pool.startAutoClearExpire();
-			Thread.sleep(36* 1000);
-			Object om = pool.task(companyId, opId);
-			Assert.assertNull(om);
-		}finally{
-			pool.closeAutoClearExpire();
-		}
-	}
-	
-	private class ReceiveMessageImpl extends ResponseMessage{
-		public ReceiveMessageImpl(){
-			super("1","1","login","1");
-		}
+	private ResponseMessage initMessage(){
+		return new ResponseMessage("1","1","login","1");
 	}
 }

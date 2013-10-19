@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.OperatorChannel;
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.monitor.HeartbeatListener.HeartbeatEvent;
 import com.tcc.cti.core.client.send.SendHandler;
 
@@ -21,7 +22,7 @@ public class ScheduledHeartbeatKeepTest {
 	private static final Logger logger = LoggerFactory.getLogger(ScheduledHeartbeatKeepTest.class);
 	@Test
 	public void testRegister(){
-		OperatorChannel.OperatorKey key = new OperatorChannel.OperatorKey("1", "1");
+		OperatorKey key = new OperatorKey("1", "1");
 		OperatorChannel oc = new OperatorChannel(key,null,new ArrayList<SendHandler>(),"UTF-8");
 		ScheduledHeartbeatKeep keep = new ScheduledHeartbeatKeep();
 		boolean success = keep.register(oc);
@@ -31,7 +32,7 @@ public class ScheduledHeartbeatKeepTest {
 	
 	@Test
 	public void testUnRegister(){
-		OperatorChannel.OperatorKey key = new OperatorChannel.OperatorKey("1", "1");
+		OperatorKey key = new OperatorKey("1", "1");
 		OperatorChannel oc = new OperatorChannel(key,null,new ArrayList<SendHandler>(),"UTF-8");
 		ScheduledHeartbeatKeep keep = new ScheduledHeartbeatKeep();
 		boolean success = keep.register(oc);
@@ -43,7 +44,7 @@ public class ScheduledHeartbeatKeepTest {
 	
 	@Test
 	public void testShutdown()throws IOException{
-		OperatorChannel.OperatorKey key = new OperatorChannel.OperatorKey("1", "1");
+		OperatorKey key = new OperatorKey("1", "1");
 		OperatorChannel oc = new OperatorChannel(key,SocketChannel.open(),new ArrayList<SendHandler>(),"UTF-8");
 		ScheduledHeartbeatKeep keep = new ScheduledHeartbeatKeep();
 		boolean success = keep.register(oc);
@@ -64,7 +65,7 @@ public class ScheduledHeartbeatKeepTest {
 		channel.configureBlocking(true);
 		channel.connect(address);
 		
-		OperatorChannel.OperatorKey key = new OperatorChannel.OperatorKey("1", "1");
+		OperatorKey key = new OperatorKey("1", "1");
 		OperatorChannel oc = new OperatorChannel(key,channel,new ArrayList<SendHandler>(),"UTF-8");
 		ScheduledHeartbeatKeep keep = new ScheduledHeartbeatKeep();
 		boolean success = keep.register(oc);

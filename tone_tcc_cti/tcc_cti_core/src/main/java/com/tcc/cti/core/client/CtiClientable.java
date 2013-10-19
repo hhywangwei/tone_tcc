@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
+import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.request.RequestMessage;
 
 /**
@@ -80,4 +81,11 @@ public interface CtiClientable {
 	 * @param charset
 	 */
 	void setCharset(String charset);
+	
+	/**
+	 * 得到接收服务器消息池
+	 * 
+	 * @return
+	 */
+	CtiMessagePool getMessagePool();
 }
