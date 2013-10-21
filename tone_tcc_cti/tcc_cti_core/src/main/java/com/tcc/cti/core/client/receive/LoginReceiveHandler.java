@@ -7,7 +7,7 @@ import java.util.Map;
 import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.client.monitor.HeartbeatKeepable;
-import com.tcc.cti.core.client.monitor.NoneHeartbeatKeep;
+import com.tcc.cti.core.client.monitor.ScheduledHeartbeatKeep;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.response.LoginResponse;
 import com.tcc.cti.core.message.response.ResponseMessage;
@@ -20,7 +20,7 @@ import com.tcc.cti.core.message.response.ResponseMessage;
 public class LoginReceiveHandler extends AbstractReceiveHandler{
 	private static final String RESULT_PARAMETER = "result";
 	private static final String LOGIN_SUCCESS = "0";
-	private HeartbeatKeepable _heartbeat = new NoneHeartbeatKeep();
+	private HeartbeatKeepable _heartbeat = new ScheduledHeartbeatKeep();
 	
 	@Override
 	protected boolean isReceive(String msgType) {

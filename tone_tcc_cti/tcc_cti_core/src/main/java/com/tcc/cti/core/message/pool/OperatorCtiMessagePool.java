@@ -83,20 +83,20 @@ public class OperatorCtiMessagePool implements CtiMessagePool {
 		}
 		
 		void put(ResponseMessage message)throws InterruptedException{
+			touch();
 			_messages.put(message);
+		}
+		
+		void touch(){
+			if(expire()){
+				_messages.clear();
+			}
 			_lastTime = System.currentTimeMillis();
 		}
 		
 		ResponseMessage poll()throws InterruptedException{
-			ResponseMessage m ;
-			if(expire()){
-				_messages.clear();
-				m = null;
-			}else{
-				m =  _messages.poll(_messageTimeout, TimeUnit.MILLISECONDS);
-			}
-			_lastTime = System.currentTimeMillis();
-			return m;
+			touch();
+			return	_messages.poll(_messageTimeout, TimeUnit.MILLISECONDS);
 		}
 		
 		boolean expire(){

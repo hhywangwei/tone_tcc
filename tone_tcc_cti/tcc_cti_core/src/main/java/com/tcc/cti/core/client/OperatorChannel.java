@@ -54,7 +54,7 @@ public class OperatorChannel {
 		return _operatorKey;
 	}
 	
-	public void append(byte[] bytes) throws InterruptedException {
+	public void append(byte[] bytes)  {
 		_messageBuffer.append(bytes);
 	}
 	
