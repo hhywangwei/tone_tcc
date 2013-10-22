@@ -4,11 +4,15 @@ import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.tcc.cti.core.client.buffer.ByteMessageBuffer;
 import com.tcc.cti.core.client.buffer.MessageBuffer;
+import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.sequence.MemoryGeneratorSeq;
+import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.request.RequestMessage;
 
 /**
@@ -21,24 +25,34 @@ public class OperatorChannel {
 	private final GeneratorSeq _generator;
 	private final SocketChannel _channel;
 	private final MessageBuffer _messageBuffer;
+	private final List<ReceiveHandler> _receiveHandlers;
 	private final List<SendHandler> _sendHandlers;
+	private final CtiMessagePool _pool;
 	private final String _charset;
+	private final Object _monitor = new Object();
+	private volatile int _bufferCount = 0;
+	private volatile boolean _startHeartBeat = false;
+	
 
 	public OperatorChannel(OperatorKey operatorKey,SocketChannel channel,
-			List<SendHandler> sendHandlers,String charset) {
+			List<ReceiveHandler> receiveHandlers,List<SendHandler> sendHandlers,
+			CtiMessagePool pool,String charset) {
 
-		this(operatorKey, channel, sendHandlers, charset,
+		this(operatorKey, channel,receiveHandlers, sendHandlers, pool,charset,
 				new MemoryGeneratorSeq(operatorKey._companyId, operatorKey._opId));
 	}
 
 	public OperatorChannel(OperatorKey operatorKey, SocketChannel channel,
-			List<SendHandler> sendHandlers,String charset,GeneratorSeq generator){
+			List<ReceiveHandler> receiveHandlers,List<SendHandler> sendHandlers,
+			CtiMessagePool pool,String charset,GeneratorSeq generator){
 		
 		_operatorKey = operatorKey;
 		_channel = channel;
 		_generator = generator;
 		_messageBuffer = new ByteMessageBuffer(charset);
+		_receiveHandlers = receiveHandlers;
 		_sendHandlers = sendHandlers;
+		_pool = pool;
 		_charset = charset;
 	}
 
@@ -55,7 +69,11 @@ public class OperatorChannel {
 	}
 	
 	public void append(byte[] bytes)  {
-		_messageBuffer.append(bytes);
+		synchronized (_monitor) {
+			_bufferCount++;
+			_messageBuffer.append(bytes);
+			_monitor.notifyAll();
+		}
 	}
 	
 	public String next(){
@@ -66,10 +84,37 @@ public class OperatorChannel {
 		return _channel.isOpen();
 	}
 	
+	public boolean isStartHeartBeat(){
+		return _startHeartBeat;
+	}
+	
 	public void send(RequestMessage message)throws ClientException {
 		for(SendHandler handler : _sendHandlers){
 			handler.send(_channel, message, _generator,_charset);
 		}
+	}
+	
+	public void startRecevie()throws InterruptedException,ClientException{
+		while(true){
+			String m = null;
+			synchronized (_monitor) {
+				if(_bufferCount == 0){
+					_monitor.wait();
+				}
+				m = _messageBuffer.next();
+				_bufferCount--;
+			}
+			if(StringUtils.isNotBlank(m)){
+				for(ReceiveHandler r : _receiveHandlers){
+					r.receive(_pool, this, m);
+				}
+			}
+		}
+	}
+	
+	
+	public void startHeartBeat(){
+		
 	}
 	
 	public void close()throws ClientException{

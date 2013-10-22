@@ -11,11 +11,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,14 +32,11 @@ public class TcpCtiClient implements CtiClientable{
 	private static final Logger logger = LoggerFactory.getLogger(TcpCtiClient.class);
 	private static final String DEFAULT_CHARSET_NAME = "ISO-8859-1";
 	private static final int DEFAULT_TIMEOUT = 30 * 1000;
-	private static final int MAX_Notify_CAPACITY = 1000;
-	
+
 	private final CtiMessagePool _messagePool;
 	private final InetSocketAddress _address;
 	private final ConcurrentHashMap<OperatorKey, OperatorChannel> _channelPool = 
 			new ConcurrentHashMap<OperatorKey, OperatorChannel>();
-	private final BlockingQueue<OperatorKey> _notifyReadQueue = 
-			new LinkedBlockingQueue<OperatorKey>(MAX_Notify_CAPACITY);
 	
 	private List<SendHandler> _sendHandlers;
 	private List<ReceiveHandler> _receiveHandlers;
@@ -66,15 +60,9 @@ public class TcpCtiClient implements CtiClientable{
 		try {
 			_selector = Selector.open();
 
-			_readerRunner= new StocketReaderRunner(
-					_selector,_channelPool,_notifyReadQueue);
+			_readerRunner= new StocketReaderRunner(_selector,_channelPool);
 			Thread t = new Thread(_readerRunner);
 			t.start();
-
-			MessageHandlerRunner handlerRunner = new MessageHandlerRunner(
-					_receiveHandlers,_messagePool,_channelPool,_notifyReadQueue);
-			Thread handlerThread = new Thread(handlerRunner);
-			handlerThread.start();
 
 		} catch (IOException e) {
 			logger.error("Tcp client start is error {}",e.toString());
@@ -97,7 +85,7 @@ public class TcpCtiClient implements CtiClientable{
 			int port = _address.getPort();
 			if(waitConnection(key,channel,_selector,_address)){
 				OperatorChannel oc = new OperatorChannel(
-						key,channel,_sendHandlers,_charset);
+						key,channel,_receiveHandlers,_sendHandlers,_messagePool,_charset);
 				if(_channelPool.putIfAbsent(key, oc) != null){
 					logger.warn("Connection {}:{} is exist",host,port);
 					channel.close();
@@ -232,26 +220,22 @@ public class TcpCtiClient implements CtiClientable{
 		private final int _bufferSize ;
 		private final Object _suspendLock = new Object();
 		private final Map<OperatorKey, OperatorChannel> _channelPool;
-		private final BlockingQueue<OperatorKey> _notifyReadQueue;
 		
 		private volatile boolean _suspend = false;
 		
 		public StocketReaderRunner(Selector selector,
-				Map<OperatorKey, OperatorChannel> channelPool,
-				BlockingQueue<OperatorKey> notifyReadQueue){
+				Map<OperatorKey, OperatorChannel> channelPool){
 			
-			this(selector,channelPool,notifyReadQueue,DEFAULT_BUFFER_SIZE);
+			this(selector,channelPool,DEFAULT_BUFFER_SIZE);
 		}
 		
 		public StocketReaderRunner(Selector selector,
 				Map<OperatorKey, OperatorChannel> channelPool,
-				BlockingQueue<OperatorKey> notifyReadQueue,
 				int bufferSize){
 			
 			_selector = selector;
 			_bufferSize = bufferSize;
 			_channelPool = channelPool;
-			_notifyReadQueue = notifyReadQueue;
 		}
 
 		public void run() {
@@ -283,7 +267,6 @@ public class TcpCtiClient implements CtiClientable{
 									(OperatorKey)sk.attachment();
 						OperatorChannel channel = _channelPool.get(key);
 						channel.append(bytes);
-						_notifyReadQueue.add(key);
 						buffer.clear();
 						iterator.remove();
 					}
@@ -318,45 +301,5 @@ public class TcpCtiClient implements CtiClientable{
 			_suspend = true;
 			_selector.wakeup();
 		}
-	}
-	
-	static class MessageHandlerRunner implements Runnable{
-		private final List<ReceiveHandler> _receiveHandlers;
-		private final CtiMessagePool _messagePool;
-		private final Map<OperatorKey, OperatorChannel> _channelPool;
-		private final BlockingQueue<OperatorKey> _notifyReadQueue;
-		
-		MessageHandlerRunner(List<ReceiveHandler> receiveHandlers,CtiMessagePool messagePool,
-				Map<OperatorKey, OperatorChannel> channelPool,
-				BlockingQueue<OperatorKey> notifyReadQueue){
-			
-			_receiveHandlers = receiveHandlers;
-			_messagePool = messagePool;
-			_channelPool = channelPool;
-			_notifyReadQueue = notifyReadQueue;
-		}
-		
-		@Override
-		public void run() {
-			while(true){
-				try{
-					OperatorKey key = _notifyReadQueue.take();
-					OperatorChannel o = _channelPool.get(key);
-					String m = null;
-					if(o != null){
-						m = o.next();
-					}
-					if( StringUtils.isBlank(m)){
-						continue;
-					}
-					for(ReceiveHandler handler : _receiveHandlers){
-						handler.receive(_messagePool, o, m);
-					}
-				}catch(Exception e){
-					//TODO 异常处理
-				}
-			}
-		}
-		
 	}
 }
