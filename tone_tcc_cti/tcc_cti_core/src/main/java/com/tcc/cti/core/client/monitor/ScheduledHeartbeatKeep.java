@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -23,56 +20,35 @@ import com.tcc.cti.core.client.OperatorChannel;
  */
 public class ScheduledHeartbeatKeep implements HeartbeatKeepable, HeartbeatListener{
 	private static final Logger logger = LoggerFactory.getLogger(ScheduledHeartbeatKeep.class);
-	private static final int DEFAULT_POOL_SIZE = 1;
+	private static final int DEFAULT_INIT_DELAY = 0;
+	private static final int DEFAULT_DELAY = 20;
 	
+	private final OperatorChannel _channel;
+	private final int _initDelay;
+	private final int _delay;
 	private final ScheduledExecutorService _executorService;
-	private final List<OperatorChannel> _channels = 
-			Collections.synchronizedList(new ArrayList<OperatorChannel>());
+	
 	private HeartbeatListener.HeartbeatEvent _event = new NoneHeartbeatEvent();
 	
-	public ScheduledHeartbeatKeep(){
-		_executorService = Executors.newScheduledThreadPool(DEFAULT_POOL_SIZE);
+	public ScheduledHeartbeatKeep(OperatorChannel channel){
+		this(channel,DEFAULT_INIT_DELAY,DEFAULT_DELAY);
+	}
+	
+	public ScheduledHeartbeatKeep(OperatorChannel channel,int initDelay,int delay){
+		_executorService = Executors.newSingleThreadScheduledExecutor();
+		_initDelay = initDelay;
+		_delay = delay;
+		_channel = channel;
 	}
 	
 	@Override
 	public void start() {
-		HeartbeatRunner runner = new HeartbeatRunner(_channels, _event);
-		_executorService.scheduleWithFixedDelay(runner, 2, 20, TimeUnit.SECONDS);
-	}
-
-	@Override
-	public boolean register(OperatorChannel channel) {
-		synchronized (_channels) {
-			if(_channels.contains(channel)){
-				if(channel.isOpen()){
-					return false;	
-				}
-				_channels.remove(channel);
-			}
-			_channels.add(channel);
-			return true;
-		}
-	}
-
-	@Override
-	public void unRegister(OperatorChannel channel) {
-		synchronized (_channels) {
-			_channels.remove(channel);
-		}
-	}
-	
-	@Override
-	public boolean contains(OperatorChannel channel) {
-		synchronized (_channels) {
-			return _channels.contains(channel);
-		}
+		HeartbeatRunner runner = new HeartbeatRunner(_channel, _event);
+		_executorService.scheduleWithFixedDelay(runner, _initDelay, _delay, TimeUnit.SECONDS);
 	}
 	
 	@Override
 	public void shutdown() {
-		synchronized (_channels) {
-			_channels.clear();
-		}
 		_executorService.shutdown();
 	}
 	
@@ -90,12 +66,12 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable, HeartbeatListe
 	private static class HeartbeatRunner implements Runnable{
 		private static final String DEFAULT_CHARSET_NAME = "ISO-8859-1";
 		private final String heartbeatMessage = "<head>00013</head><msg>hb</msg>";
-		private final List<OperatorChannel> _channels;
+		private final OperatorChannel _channel;
 		private final ByteBuffer _buffer ;
 		private final HeartbeatListener.HeartbeatEvent _event;
 		
-		public HeartbeatRunner(List<OperatorChannel> channels,HeartbeatListener.HeartbeatEvent event){
-			_channels = channels;
+		public HeartbeatRunner(OperatorChannel channel,HeartbeatListener.HeartbeatEvent event){
+			_channel = channel;
 			_event = event;
 			Charset c = Charset.forName(DEFAULT_CHARSET_NAME);
 			byte[] m = heartbeatMessage.getBytes(c);
@@ -104,11 +80,7 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable, HeartbeatListe
 		
 		@Override
 		public void run() {
-			synchronized (_channels) {
-				for(OperatorChannel channel : _channels){
-					sendHeartbeat(channel);
-				}
-			}
+			sendHeartbeat(_channel);
 		}
 		
 		private void sendHeartbeat(OperatorChannel channel){

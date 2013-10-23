@@ -1,6 +1,5 @@
 package com.tcc.cti.core.client.monitor;
 
-import com.tcc.cti.core.client.OperatorChannel;
 
 /**
  * 检测与CTI服务器的tcp连接的有效性,客户端每20秒发出该消息，服务器端收到则答复。
@@ -15,29 +14,6 @@ public interface HeartbeatKeepable {
 	 * 开始心跳
 	 */
 	void start();
-	
-	/**
-	 * 注册操作channel
-	 * 
-	 * @param channel 操作频道
-	 * @return true:注册成功 false:已经存在不注册
-	 */
-	boolean register(OperatorChannel channel);
-	
-	/**
-	 * 卸载操作channel
-	 * 
-	 * @param channel 操作频道
-	 */
-	void unRegister(OperatorChannel channel);
-	
-	/**
-	 * 是否包含操作channel
-	 * 
-	 * @param channel 操作频道
-	 * @return true 包含该操作频道
-	 */
-	boolean contains(OperatorChannel channel);
 	
 	/**
 	 * 停止心跳

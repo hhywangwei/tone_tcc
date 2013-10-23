@@ -16,44 +16,13 @@ import org.slf4j.LoggerFactory;
 import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.monitor.HeartbeatListener.HeartbeatEvent;
+import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
+import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
 
 public class ScheduledHeartbeatKeepTest {
 	private static final Logger logger = LoggerFactory.getLogger(ScheduledHeartbeatKeepTest.class);
-	@Test
-	public void testRegister(){
-		OperatorKey key = new OperatorKey("1", "1");
-		OperatorChannel oc = new OperatorChannel(key,null,new ArrayList<SendHandler>(),"UTF-8");
-		ScheduledHeartbeatKeep keep = new ScheduledHeartbeatKeep();
-		boolean success = keep.register(oc);
-		Assert.assertTrue(success);
-		Assert.assertTrue(keep.contains(oc));
-	}
-	
-	@Test
-	public void testUnRegister(){
-		OperatorKey key = new OperatorKey("1", "1");
-		OperatorChannel oc = new OperatorChannel(key,null,new ArrayList<SendHandler>(),"UTF-8");
-		ScheduledHeartbeatKeep keep = new ScheduledHeartbeatKeep();
-		boolean success = keep.register(oc);
-		Assert.assertTrue(success);
-		Assert.assertTrue(keep.contains(oc));
-		keep.unRegister(oc);
-		Assert.assertFalse(keep.contains(oc));
-	}
-	
-	@Test
-	public void testShutdown()throws IOException{
-		OperatorKey key = new OperatorKey("1", "1");
-		OperatorChannel oc = new OperatorChannel(key,SocketChannel.open(),new ArrayList<SendHandler>(),"UTF-8");
-		ScheduledHeartbeatKeep keep = new ScheduledHeartbeatKeep();
-		boolean success = keep.register(oc);
-		Assert.assertTrue(success);
-		Assert.assertTrue(keep.contains(oc));
-		
-		keep.shutdown();
-		Assert.assertFalse(keep.contains(oc));
-	}
+	 
 	
 	@Test
 	public void testStart()throws IOException{
@@ -66,10 +35,11 @@ public class ScheduledHeartbeatKeepTest {
 		channel.connect(address);
 		
 		OperatorKey key = new OperatorKey("1", "1");
-		OperatorChannel oc = new OperatorChannel(key,channel,new ArrayList<SendHandler>(),"UTF-8");
-		ScheduledHeartbeatKeep keep = new ScheduledHeartbeatKeep();
-		boolean success = keep.register(oc);
-		Assert.assertTrue(success);
+		OperatorChannel oc = new OperatorChannel(key,channel,
+				new ArrayList<ReceiveHandler>(),new ArrayList<SendHandler>(),
+				new OperatorCtiMessagePool(),"UTF-8");
+		
+		ScheduledHeartbeatKeep keep = new ScheduledHeartbeatKeep(oc);
 		final AtomicInteger count =new AtomicInteger(0);
 		keep.listener(new HeartbeatEvent(){
 

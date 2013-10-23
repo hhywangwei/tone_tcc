@@ -45,7 +45,7 @@ public class AbstractReceiveHandlerTest {
 		CtiMessagePool pool = Mockito.mock(CtiMessagePool.class);
 		OperatorKey key = 
 				new OperatorKey(companyId, opId);
-		OperatorChannel channel = new OperatorChannel(key,null,null,"UTF-8");
+		OperatorChannel channel = new OperatorChannel(key,null,null,null,null,"UTF-8");
 		
 		handler.receiveHandler(pool, channel, content);
 		Mockito.verify(pool,Mockito.atLeastOnce()).
