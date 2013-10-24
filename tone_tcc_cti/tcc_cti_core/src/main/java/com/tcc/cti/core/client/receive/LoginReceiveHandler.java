@@ -6,8 +6,6 @@ import java.util.Map;
 
 import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.OperatorChannel;
-import com.tcc.cti.core.client.monitor.HeartbeatKeepable;
-import com.tcc.cti.core.client.monitor.ScheduledHeartbeatKeep;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.response.LoginResponse;
 import com.tcc.cti.core.message.response.ResponseMessage;
@@ -20,7 +18,6 @@ import com.tcc.cti.core.message.response.ResponseMessage;
 public class LoginReceiveHandler extends AbstractReceiveHandler{
 	private static final String RESULT_PARAMETER = "result";
 	private static final String LOGIN_SUCCESS = "0";
-	private HeartbeatKeepable _heartbeat = new ScheduledHeartbeatKeep();
 	
 	@Override
 	protected boolean isReceive(String msgType) {
@@ -33,12 +30,8 @@ public class LoginReceiveHandler extends AbstractReceiveHandler{
 		
 		String result = content.get(RESULT_PARAMETER);
 		if(loginSuccess(result)){
-			boolean success= _heartbeat.register(channel);
-			if(!success){
-				return ;
-			}
+			channel.startHeartBeatKeep();
 		} 
-		
 		super.receiveHandler(pool, channel, content);
 	}
 	
@@ -52,9 +45,5 @@ public class LoginReceiveHandler extends AbstractReceiveHandler{
 		
 		String result = content.get(RESULT_PARAMETER);
 		return new LoginResponse(companyId,opId,seq,result);
-	}
-	
-	public void setHeartbeatKeep(HeartbeatKeepable heartbeat){
-		_heartbeat = heartbeat;
 	}
 }

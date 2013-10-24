@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
@@ -16,8 +15,6 @@ import org.slf4j.LoggerFactory;
 import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.monitor.HeartbeatListener.HeartbeatEvent;
-import com.tcc.cti.core.client.receive.ReceiveHandler;
-import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
 
 public class ScheduledHeartbeatKeepTest {
@@ -35,9 +32,8 @@ public class ScheduledHeartbeatKeepTest {
 		channel.connect(address);
 		
 		OperatorKey key = new OperatorKey("1", "1");
-		OperatorChannel oc = new OperatorChannel(key,channel,
-				new ArrayList<ReceiveHandler>(),new ArrayList<SendHandler>(),
-				new OperatorCtiMessagePool(),"UTF-8");
+		OperatorChannel oc =new OperatorChannel.Builder(
+				key,channel,new OperatorCtiMessagePool()).build();
 		
 		ScheduledHeartbeatKeep keep = new ScheduledHeartbeatKeep(oc);
 		final AtomicInteger count =new AtomicInteger(0);

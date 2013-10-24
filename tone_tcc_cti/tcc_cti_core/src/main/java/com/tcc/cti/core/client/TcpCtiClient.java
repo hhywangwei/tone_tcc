@@ -84,8 +84,13 @@ public class TcpCtiClient implements CtiClientable{
 			String host = _address.getHostName();
 			int port = _address.getPort();
 			if(waitConnection(key,channel,_selector,_address)){
-				OperatorChannel oc = new OperatorChannel(
-						key,channel,_receiveHandlers,_sendHandlers,_messagePool,_charset);
+				OperatorChannel oc = new OperatorChannel.
+						Builder(key,channel,_messagePool).
+						setReceiveHandlers(_receiveHandlers).
+						setSendHandlers(_sendHandlers).
+						setCharset(_charset).
+						build();
+				oc.startRecevie();
 				if(_channelPool.putIfAbsent(key, oc) != null){
 					logger.warn("Connection {}:{} is exist",host,port);
 					channel.close();

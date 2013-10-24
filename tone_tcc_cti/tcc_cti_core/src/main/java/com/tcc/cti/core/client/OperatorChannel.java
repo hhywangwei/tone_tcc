@@ -2,6 +2,7 @@ package com.tcc.cti.core.client;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -12,7 +13,26 @@ import com.tcc.cti.core.client.buffer.ByteMessageBuffer;
 import com.tcc.cti.core.client.buffer.MessageBuffer;
 import com.tcc.cti.core.client.monitor.HeartbeatKeepable;
 import com.tcc.cti.core.client.monitor.ScheduledHeartbeatKeep;
+import com.tcc.cti.core.client.receive.CallReceiveHandler;
+import com.tcc.cti.core.client.receive.CloseCallReceiveHandler;
+import com.tcc.cti.core.client.receive.GroupMemberReceiveHandler;
+import com.tcc.cti.core.client.receive.GroupReceiveHandler;
+import com.tcc.cti.core.client.receive.LoginReceiveHandler;
+import com.tcc.cti.core.client.receive.MonitorReceiveHandler;
+import com.tcc.cti.core.client.receive.OutCallReceiveHandler;
+import com.tcc.cti.core.client.receive.OutCallStateReceiveHandler;
+import com.tcc.cti.core.client.receive.OwnReceiveHandler;
 import com.tcc.cti.core.client.receive.ReceiveHandler;
+import com.tcc.cti.core.client.receive.RecordReceiveHandler;
+import com.tcc.cti.core.client.send.CallSendHandler;
+import com.tcc.cti.core.client.send.GroupMemberSendHandler;
+import com.tcc.cti.core.client.send.GroupSendHandler;
+import com.tcc.cti.core.client.send.LoginSendHandler;
+import com.tcc.cti.core.client.send.MonitorSendHandler;
+import com.tcc.cti.core.client.send.OutCallCancelSendHandler;
+import com.tcc.cti.core.client.send.OutCallSendHandler;
+import com.tcc.cti.core.client.send.OwnSendHandler;
+import com.tcc.cti.core.client.send.RecordSendHandler;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.sequence.MemoryGeneratorSeq;
@@ -27,43 +47,133 @@ import com.tcc.cti.core.message.request.RequestMessage;
 public class OperatorChannel {
 	private static final Logger logger = LoggerFactory.getLogger(OperatorChannel.class);
 	
-	private final OperatorKey _operatorKey;
-	private final GeneratorSeq _generator;
-	private final SocketChannel _channel;
-	private final MessageBuffer _messageBuffer;
-	private final List<ReceiveHandler> _receiveHandlers;
-	private final List<SendHandler> _sendHandlers;
-	private final CtiMessagePool _pool;
-	private final String _charset;
-	private final Object _bufferMonitor = new Object();
-	private final Thread _receiveThread = new Thread(new ReceiveRun());
-	private volatile boolean _startReceive = false;
-	private final Object _heartbeatMonitor = new Object();
-	private HeartbeatKeepable _heartbeatKeep ;
-	private volatile boolean _startHeartbeatKeep = false;
-	
 	public static class Builder{
+		private final OperatorKey _key;
+		private final SocketChannel _channel;
+		private final CtiMessagePool _pool;
+		private List<ReceiveHandler> _receiveHandlers;
+		private List<SendHandler> _sendHandlers;
+		private GeneratorSeq _generatorSeq ;
+		private String _charset = "UTF-8";
+		private HeartbeatKeepable _heartbeatKeep;
+		private int _heartbeatInitDelay = 0;
+		private int _heartbeatDelay = 20;
+		
 
-		Builder(OperatorKey key,SocketChannel channel,CtiMessagePool pool){
-	    	
+		public Builder(OperatorKey key,SocketChannel channel,CtiMessagePool pool){
+	    	_key = key;
+	    	_channel = channel;
+	    	_pool = pool;
+	    	_generatorSeq = new MemoryGeneratorSeq(key._companyId, key._opId);
 	    }
 		
+		public Builder setReceiveHandlers(List<ReceiveHandler> receiveHandlers){
+			_receiveHandlers = receiveHandlers;
+			return this;
+		}
+		
+		public Builder setSendHandlers(List<SendHandler> sendHandlers){
+			_sendHandlers = sendHandlers;
+			return this;
+		}
+		
+		public Builder setCharset(String charset){
+			_charset = charset;
+			return this;
+		}
+		
+		public Builder setGeneratorSeq(GeneratorSeq generatorSeq){
+			_generatorSeq = generatorSeq;
+			return this;
+		}
+		
+		public Builder setHeartbeatInitDelay(int initDelay){
+			_heartbeatInitDelay = initDelay;
+			return this;
+		}
+		
+		public Builder setHeartbeatDelay(int delay){
+			_heartbeatDelay = delay;
+			return this;
+		}
+		
+		public Builder setHeartbeatKeep(HeartbeatKeepable heartbeatKeep){
+			_heartbeatKeep = heartbeatKeep;
+			return this;
+		}
+		
+		public OperatorChannel build(){
+			_receiveHandlers = _receiveHandlers != null ?
+					_receiveHandlers : defaultReceiveHandlers();
+			_sendHandlers = _sendHandlers != null ?
+					_sendHandlers : defaultSendHandlers();
+			
+			return new OperatorChannel(_key,_channel,_pool,
+					_receiveHandlers,_sendHandlers,_generatorSeq,_charset,
+					_heartbeatKeep,_heartbeatInitDelay,_heartbeatDelay);
+			
+		}
+		
+		private List<ReceiveHandler> defaultReceiveHandlers(){
+			List<ReceiveHandler> handlers = new ArrayList<>();
+			
+			handlers.add(new LoginReceiveHandler());
+			handlers.add(new OwnReceiveHandler());
+			handlers.add(new GroupMemberReceiveHandler());
+			handlers.add(new GroupReceiveHandler());
+			handlers.add(new MonitorReceiveHandler());
+			handlers.add(new OutCallReceiveHandler());
+			handlers.add(new OutCallStateReceiveHandler());
+			handlers.add(new CallReceiveHandler());
+			handlers.add(new CloseCallReceiveHandler());
+			handlers.add(new RecordReceiveHandler());
+			
+			return handlers;
+		}
+		
+		private List<SendHandler> defaultSendHandlers(){
+			List<SendHandler> handlers = new ArrayList<>();
+			
+			handlers.add(new LoginSendHandler());
+			handlers.add(new OwnSendHandler());
+			handlers.add(new GroupMemberSendHandler());
+			handlers.add(new GroupSendHandler());
+			handlers.add(new MonitorSendHandler());
+			handlers.add(new OutCallSendHandler());
+			handlers.add(new OutCallCancelSendHandler());
+			handlers.add(new CallSendHandler());
+			handlers.add(new RecordSendHandler());
+			
+			return handlers;
+		}
+		
 	}
 	
+	private final OperatorKey _key;
+	private final SocketChannel _channel;
+	private final CtiMessagePool _pool;
+	private final List<ReceiveHandler> _receiveHandlers;
+	private final List<SendHandler> _sendHandlers;
+	private final GeneratorSeq _generator;
+	private final String _charset;
+	private final HeartbeatKeepable _heartbeatKeep ;
+	private final MessageBuffer _messageBuffer;
+	
+	private final Object _bufferMonitor = new Object();
+	private final Thread _receiveThread ;
+	private final Object _monitor = new Object();
+	private volatile boolean _startReceive = false;
+	private volatile boolean _startHeartbeatKeep = false;
+	private volatile long _lastHeartbeanTime = System.currentTimeMillis();
+	
 
-	public OperatorChannel(OperatorKey operatorKey,SocketChannel channel,
+	protected OperatorChannel(OperatorKey operatorKey, 
+			SocketChannel channel,CtiMessagePool pool,
 			List<ReceiveHandler> receiveHandlers,List<SendHandler> sendHandlers,
-			CtiMessagePool pool,String charset) {
-
-		this(operatorKey, channel,receiveHandlers, sendHandlers, pool,charset,
-				new MemoryGeneratorSeq(operatorKey._companyId, operatorKey._opId));
-	}
-
-	public OperatorChannel(OperatorKey operatorKey, SocketChannel channel,
-			List<ReceiveHandler> receiveHandlers,List<SendHandler> sendHandlers,
-			CtiMessagePool pool,String charset,GeneratorSeq generator){
+			GeneratorSeq generator,String charset,HeartbeatKeepable heartbeatKeep,
+			int heartbeatInitDelay,int heartbeatDelay){
 		
-		_operatorKey = operatorKey;
+		_key = operatorKey;
 		_channel = channel;
 		_generator = generator;
 		_messageBuffer = new ByteMessageBuffer(charset);
@@ -71,6 +181,13 @@ public class OperatorChannel {
 		_sendHandlers = sendHandlers;
 		_pool = pool;
 		_charset = charset;
+		_heartbeatKeep = heartbeatKeep != null ?
+				heartbeatKeep : defaultHeartbeatKeep(heartbeatInitDelay,heartbeatDelay);
+		_receiveThread = new Thread(new ReceiveRun());
+	}
+	
+	private HeartbeatKeepable defaultHeartbeatKeep(int heartbeatInitDelay,int heartbeatDelay){
+		return  new ScheduledHeartbeatKeep(this,heartbeatInitDelay,heartbeatDelay);
 	}
 
 	public SocketChannel getChannel() {
@@ -82,7 +199,7 @@ public class OperatorChannel {
 	}
 
 	public OperatorKey getOperatorKey() {
-		return _operatorKey;
+		return _key;
 	}
 	
 	public void append(byte[] bytes)  {
@@ -107,7 +224,7 @@ public class OperatorChannel {
 	}
 	
 	public void startRecevie(){
-		synchronized (_receiveThread) {
+		synchronized (_monitor) {
 			if(_startReceive){
 				return ;
 			}
@@ -116,38 +233,36 @@ public class OperatorChannel {
 		}
 	}
 	
-	
-	public void startHeartBeat(){
-		synchronized (_heartbeatMonitor) {
+	public void startHeartBeatKeep(){
+		synchronized (_monitor) {
 			if(_startHeartbeatKeep){
 				return ;
 			}
-			if(_heartbeatKeep == null){
-				_heartbeatKeep = new ScheduledHeartbeatKeep(this);
-				_heartbeatKeep.start();
-				_startHeartbeatKeep = true;
-			}
+			_startHeartbeatKeep = true;
+			_heartbeatKeep.start();
 		}
+	}
+	
+	public void serverHeartbeatTouch(){
+		_lastHeartbeanTime = System.currentTimeMillis();
 	}
 	
 	public void close()throws ClientException{
-		try{
-			if(_startReceive){
-				_receiveThread.interrupt();
-			}
-			if(_startHeartbeatKeep){
-				_heartbeatKeep.shutdown();
-			}
-			if(_channel.isOpen()){
-				_channel.close();
-			}
-		}catch(IOException e){
-			throw new ClientException(e);
+		synchronized (_monitor) {
+			try{
+				if(_startReceive){
+					_receiveThread.interrupt();
+				}
+				if(_startHeartbeatKeep){
+					_heartbeatKeep.shutdown();
+				}
+				if(_channel.isOpen()){
+					_channel.close();
+				}
+			}catch(IOException e){
+				throw new ClientException(e);
+			}			
 		}
-	}
-	
-	public void setHeartbeatKeep(HeartbeatKeepable heartbeatKeep){
-		_heartbeatKeep = heartbeatKeep;
 	}
 	
 	@Override
@@ -155,7 +270,7 @@ public class OperatorChannel {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ ((_operatorKey == null) ? 0 : _operatorKey.hashCode());
+				+ ((_key == null) ? 0 : _key.hashCode());
 		return result;
 	}
 
@@ -168,10 +283,10 @@ public class OperatorChannel {
 		if (getClass() != obj.getClass())
 			return false;
 		OperatorChannel other = (OperatorChannel) obj;
-		if (_operatorKey == null) {
-			if (other._operatorKey != null)
+		if (_key == null) {
+			if (other._key != null)
 				return false;
-		} else if (!_operatorKey.equals(other._operatorKey))
+		} else if (!_key.equals(other._key))
 			return false;
 		return true;
 	}
@@ -180,7 +295,7 @@ public class OperatorChannel {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("OperatorChannel [_operatorKey=");
-		builder.append(_operatorKey.toString());
+		builder.append(_key.toString());
 		builder.append("]");
 		return builder.toString();
 	}
