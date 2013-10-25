@@ -6,6 +6,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -23,33 +24,61 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable, HeartbeatListe
 	private static final int DEFAULT_INIT_DELAY = 0;
 	private static final int DEFAULT_DELAY = 20;
 	
-	private final OperatorChannel _channel;
-	private final int _initDelay;
-	private final int _delay;
-	private final ScheduledExecutorService _executorService;
+	private Object _monitor = new Object();
+	private OperatorChannel _channel;
+	private int _initDelay;
+	private int _delay;
+	private ScheduledExecutorService _executorService;
+	private volatile ScheduledFuture<?> _future ;
+	private volatile boolean _independent = false;
 	
 	private HeartbeatListener.HeartbeatEvent _event = new NoneHeartbeatEvent();
 	
 	public ScheduledHeartbeatKeep(OperatorChannel channel){
-		this(channel,DEFAULT_INIT_DELAY,DEFAULT_DELAY);
+		init(channel,null,DEFAULT_INIT_DELAY,DEFAULT_DELAY);
 	}
 	
-	public ScheduledHeartbeatKeep(OperatorChannel channel,int initDelay,int delay){
-		_executorService = Executors.newSingleThreadScheduledExecutor();
+	public ScheduledHeartbeatKeep(OperatorChannel channel,
+			ScheduledExecutorService executorService,int initDelay,int delay){
+		
+		init(channel,executorService,initDelay,delay);
+	}
+	
+	private void init(OperatorChannel channel,
+			ScheduledExecutorService executorService,int initDelay,int delay){
+	 
+		_channel = channel;
+		_executorService = executorService;
 		_initDelay = initDelay;
 		_delay = delay;
-		_channel = channel;
 	}
 	
 	@Override
 	public void start() {
-		HeartbeatRunner runner = new HeartbeatRunner(_channel, _event);
-		_executorService.scheduleWithFixedDelay(runner, _initDelay, _delay, TimeUnit.SECONDS);
+		synchronized (_monitor) {
+			if(_executorService == null){
+				_executorService = Executors.newSingleThreadScheduledExecutor();
+				_independent = true;
+			}
+			HeartbeatRunner runner = new HeartbeatRunner(_channel, _event);
+			_future = _executorService.scheduleWithFixedDelay(
+					runner, _initDelay, _delay, TimeUnit.SECONDS);	
+		}
 	}
 	
 	@Override
 	public void shutdown() {
-		_executorService.shutdown();
+		synchronized (_monitor) {
+			if(_future == null){
+				return ;
+			}
+			
+			_future.cancel(true);
+			
+			if(_independent){
+				_executorService.shutdownNow();		
+			}
+		}
 	}
 	
 	@Override

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -46,6 +47,9 @@ import com.tcc.cti.core.message.request.RequestMessage;
  */
 public class OperatorChannel {
 	private static final Logger logger = LoggerFactory.getLogger(OperatorChannel.class);
+	private static final int DEFAULT_HEARTBEAT_INIT_DELAY = 0;
+	private static final int DEFAULT_HEARTBEAT_DELAY = 20;
+	private static final int DEFAULT_HEARTBEAT_TIMEOUT = 65;
 	
 	public static class Builder{
 		private final OperatorKey _key;
@@ -55,10 +59,10 @@ public class OperatorChannel {
 		private List<SendHandler> _sendHandlers;
 		private GeneratorSeq _generatorSeq ;
 		private String _charset = "UTF-8";
-		private HeartbeatKeepable _heartbeatKeep;
-		private int _heartbeatInitDelay = 0;
-		private int _heartbeatDelay = 20;
-		
+		private ScheduledExecutorService _executorService;
+		private int _heartbeatInitDelay = DEFAULT_HEARTBEAT_INIT_DELAY;
+		private int _heartbeatDelay = DEFAULT_HEARTBEAT_DELAY;
+		private int _heartbeatTimeout = DEFAULT_HEARTBEAT_TIMEOUT; 
 
 		public Builder(OperatorKey key,SocketChannel channel,CtiMessagePool pool){
 	    	_key = key;
@@ -87,6 +91,11 @@ public class OperatorChannel {
 			return this;
 		}
 		
+		public Builder setScheduledExecutorService(ScheduledExecutorService executorService){
+			_executorService = executorService;
+			return this;
+		}
+		
 		public Builder setHeartbeatInitDelay(int initDelay){
 			_heartbeatInitDelay = initDelay;
 			return this;
@@ -97,8 +106,8 @@ public class OperatorChannel {
 			return this;
 		}
 		
-		public Builder setHeartbeatKeep(HeartbeatKeepable heartbeatKeep){
-			_heartbeatKeep = heartbeatKeep;
+		public Builder setHeartbeatTimeout(int timeout){
+			_heartbeatTimeout = timeout;
 			return this;
 		}
 		
@@ -108,9 +117,9 @@ public class OperatorChannel {
 			_sendHandlers = _sendHandlers != null ?
 					_sendHandlers : defaultSendHandlers();
 			
-			return new OperatorChannel(_key,_channel,_pool,
-					_receiveHandlers,_sendHandlers,_generatorSeq,_charset,
-					_heartbeatKeep,_heartbeatInitDelay,_heartbeatDelay);
+			return new OperatorChannel(_key,_channel,_pool,_receiveHandlers,
+					_sendHandlers,_generatorSeq,_charset,_executorService,
+					_heartbeatInitDelay,_heartbeatDelay,_heartbeatTimeout);
 			
 		}
 		
@@ -157,6 +166,7 @@ public class OperatorChannel {
 	private final GeneratorSeq _generator;
 	private final String _charset;
 	private final HeartbeatKeepable _heartbeatKeep ;
+	private final int _heartbeatTimeout;
 	private final MessageBuffer _messageBuffer;
 	
 	private final Object _bufferMonitor = new Object();
@@ -167,11 +177,10 @@ public class OperatorChannel {
 	private volatile long _lastHeartbeanTime = System.currentTimeMillis();
 	
 
-	protected OperatorChannel(OperatorKey operatorKey, 
-			SocketChannel channel,CtiMessagePool pool,
-			List<ReceiveHandler> receiveHandlers,List<SendHandler> sendHandlers,
-			GeneratorSeq generator,String charset,HeartbeatKeepable heartbeatKeep,
-			int heartbeatInitDelay,int heartbeatDelay){
+	protected OperatorChannel(OperatorKey operatorKey,SocketChannel channel,
+			CtiMessagePool pool,List<ReceiveHandler> receiveHandlers,List<SendHandler> sendHandlers,
+			GeneratorSeq generator,String charset,ScheduledExecutorService executorService,
+			int heartbeatInitDelay,int heartbeatDelay,int heartbeatTimeout){
 		
 		_key = operatorKey;
 		_channel = channel;
@@ -181,13 +190,17 @@ public class OperatorChannel {
 		_sendHandlers = sendHandlers;
 		_pool = pool;
 		_charset = charset;
-		_heartbeatKeep = heartbeatKeep != null ?
-				heartbeatKeep : defaultHeartbeatKeep(heartbeatInitDelay,heartbeatDelay);
+		_heartbeatKeep = initHeartbeatKeep(
+				executorService,heartbeatInitDelay,heartbeatDelay);
+		_heartbeatTimeout = heartbeatTimeout;
 		_receiveThread = new Thread(new ReceiveRun());
 	}
 	
-	private HeartbeatKeepable defaultHeartbeatKeep(int heartbeatInitDelay,int heartbeatDelay){
-		return  new ScheduledHeartbeatKeep(this,heartbeatInitDelay,heartbeatDelay);
+	private HeartbeatKeepable initHeartbeatKeep(ScheduledExecutorService executorService,
+			int heartbeatInitDelay,int heartbeatDelay){
+		
+		return 	new ScheduledHeartbeatKeep(this,
+				executorService,heartbeatInitDelay,heartbeatDelay);
 	}
 
 	public SocketChannel getChannel() {
@@ -215,6 +228,12 @@ public class OperatorChannel {
 	
 	public boolean isStartHeartbeatKeep(){
 		return _startHeartbeatKeep;
+	}
+	
+	public boolean isOffline(){
+		long now = System.currentTimeMillis();
+		int deff =(int)(now - _lastHeartbeanTime);
+		return deff > _heartbeatTimeout;
 	}
 	
 	public void send(RequestMessage message)throws ClientException {
