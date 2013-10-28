@@ -64,6 +64,7 @@ public class OperatorChannel {
 		private int _heartbeatDelay = DEFAULT_HEARTBEAT_DELAY;
 		private int _heartbeatTimeout = DEFAULT_HEARTBEAT_TIMEOUT; 
 
+		
 		public Builder(OperatorKey key,SocketChannel channel,CtiMessagePool pool){
 	    	_key = key;
 	    	_channel = channel;
