@@ -8,6 +8,7 @@ package com.tcc.cti.core.message;
 public enum MessageType {
 	
 	Login("login","login"),
+	Heartbeat("hb","hb"),
 	Own("per_worker_info","per_worker_info"),
 	GroupMember("worker_number_info","add_op"),
 	Group("group_info","add_group"),

@@ -172,8 +172,8 @@ public class OperatorChannel {
 	private final Object _bufferMonitor = new Object();
 	private final Thread _receiveThread ;
 	private final Object _monitor = new Object();
-	private volatile boolean _startReceive = false;
-	private volatile boolean _startHeartbeatKeep = false;
+	private volatile boolean _start = false;
+	private volatile boolean _loginSuccessful = false;
 	private volatile long _lastHeartbeanTime = System.currentTimeMillis();
 	
 
@@ -192,7 +192,7 @@ public class OperatorChannel {
 		_charset = charset;
 		_heartbeatKeep = initHeartbeatKeep(
 				executorService,heartbeatInitDelay,heartbeatDelay);
-		_heartbeatTimeout = heartbeatTimeout;
+		_heartbeatTimeout = heartbeatTimeout * 1000;
 		_receiveThread = new Thread(new ReceiveRun());
 	}
 	
@@ -227,7 +227,7 @@ public class OperatorChannel {
 	}
 	
 	public boolean isStartHeartbeatKeep(){
-		return _startHeartbeatKeep;
+		return _loginSuccessful;
 	}
 	
 	public boolean isOffline(){
@@ -236,43 +236,43 @@ public class OperatorChannel {
 		return deff > _heartbeatTimeout;
 	}
 	
+	public void heartbeatTouch(){
+		_lastHeartbeanTime = System.currentTimeMillis();
+	}
+	
 	public void send(RequestMessage message)throws ClientException {
 		for(SendHandler handler : _sendHandlers){
 			handler.send(_channel, message, _generator,_charset);
 		}
 	}
 	
-	public void startRecevie(){
+	public void start(){
 		synchronized (_monitor) {
-			if(_startReceive){
+			if(_start){
 				return ;
 			}
-			_startReceive = true;
+			_start = true;
 			_receiveThread.start();
 		}
 	}
 	
-	public void startHeartBeatKeep(){
+	public void login(boolean success){
 		synchronized (_monitor) {
-			if(_startHeartbeatKeep){
+			_loginSuccessful = success;
+			if(!_loginSuccessful){
 				return ;
 			}
-			_startHeartbeatKeep = true;
 			_heartbeatKeep.start();
 		}
-	}
-	
-	public void serverHeartbeatTouch(){
-		_lastHeartbeanTime = System.currentTimeMillis();
 	}
 	
 	public void close()throws ClientException{
 		synchronized (_monitor) {
 			try{
-				if(_startReceive){
+				if(_start){
 					_receiveThread.interrupt();
 				}
-				if(_startHeartbeatKeep){
+				if(_loginSuccessful){
 					_heartbeatKeep.shutdown();
 				}
 				if(_channel.isOpen()){

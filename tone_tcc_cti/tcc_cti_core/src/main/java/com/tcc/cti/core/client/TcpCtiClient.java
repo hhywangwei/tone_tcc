@@ -90,7 +90,7 @@ public class TcpCtiClient implements CtiClientable{
 						setSendHandlers(_sendHandlers).
 						setCharset(_charset).
 						build();
-				oc.startRecevie();
+				oc.start();
 				if(_channelPool.putIfAbsent(key, oc) != null){
 					logger.warn("Connection {}:{} is exist",host,port);
 					channel.close();

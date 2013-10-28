@@ -29,9 +29,8 @@ public class LoginReceiveHandler extends AbstractReceiveHandler{
 			OperatorChannel channel, Map<String, String> content) throws ClientException {
 		
 		String result = content.get(RESULT_PARAMETER);
-		if(loginSuccess(result)){
-			channel.startHeartBeatKeep();
-		} 
+		boolean success = loginSuccess(result);
+		channel.login(success);
 		super.receiveHandler(pool, channel, content);
 	}
 	
