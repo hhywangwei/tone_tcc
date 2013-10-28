@@ -51,6 +51,7 @@ public class OperatorChannel {
 	private static final int DEFAULT_HEARTBEAT_DELAY = 20;
 	private static final int DEFAULT_HEARTBEAT_TIMEOUT = 65;
 	
+	
 	public static class Builder{
 		private final OperatorKey _key;
 		private final SocketChannel _channel;
