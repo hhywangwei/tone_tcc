@@ -33,9 +33,10 @@ public interface CtiClientable {
 	 * 
 	 * @param companyId 公司编号
 	 * @param opId 操作员编号
+	 * @return true:注册成功,false:注册失败
 	 * @throws ClientException
 	 */
-	void register(String companyId,String opId)throws ClientException;
+	boolean register(String companyId,String opId)throws ClientException;
 	
 	/**
 	 * 注销用户CTI服务，关闭socket连接

@@ -71,16 +71,24 @@ public class TcpCtiClient implements CtiClientable{
 	}
 	
 
-	public void register(String companyId,String opId)throws ClientException{
-		try {
-			SocketChannel channel = SocketChannel.open();
-			OperatorKey key = 
-					new OperatorKey(companyId, opId);
-			
-			if(_channelPool.contains(key)){
-				return ;
+	public boolean register(String companyId,String opId)throws ClientException{
+			OperatorKey key =new OperatorKey(companyId, opId);
+			if(isRegister(key)){
+				return true;
 			}
+			
+			return connectionServer(key); 
+	}
+	
+	private boolean isRegister(OperatorKey key){
+		return _channelPool.contains(key) &&_channelPool.get(key).isOpen();
+	}
+	
+	private boolean connectionServer(OperatorKey key)throws ClientException{
+		boolean success = false;
+		try {
 			_readerRunner.suspend();
+			SocketChannel channel = SocketChannel.open();
 			String host = _address.getHostName();
 			int port = _address.getPort();
 			if(waitConnection(key,channel,_selector,_address)){
@@ -95,6 +103,7 @@ public class TcpCtiClient implements CtiClientable{
 					logger.warn("Connection {}:{} is exist",host,port);
 					channel.close();
 				}
+				success = true;
 			}else{
 				logger.error("Connection {}:{} is timeout",host,port);
 				throw new ClientException("Connection "+ host + ":" + port +" is timeout");
@@ -105,6 +114,7 @@ public class TcpCtiClient implements CtiClientable{
 		}finally{
 			_readerRunner.restart();
 		}
+		return success;
 	}
 	
 	/**
