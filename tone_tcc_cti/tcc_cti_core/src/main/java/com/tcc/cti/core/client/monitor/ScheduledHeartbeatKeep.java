@@ -114,7 +114,7 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable, HeartbeatListe
 		
 		private void sendHeartbeat(OperatorChannel channel){
 			try{
-				if(!channel.isOpen()){
+				if(!channel.isStart()){
 					return;
 				}
 				SocketChannel socketChannel = channel.getChannel();

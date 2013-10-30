@@ -175,6 +175,7 @@ public class OperatorChannel {
 	private final Thread _receiveThread ;
 	private final Object _monitor = new Object();
 	private volatile boolean _start = false;
+	private volatile boolean _connecting = false;
 	private volatile boolean _loginSuccessful = false;
 	private volatile long _lastHeartbeanTime = System.currentTimeMillis();
 	
@@ -205,27 +206,30 @@ public class OperatorChannel {
 				executorService,heartbeatInitDelay,heartbeatDelay);
 	}
 
-	public SocketChannel getChannel() {
-		return _channel;
-	}
-
-	public GeneratorSeq getGenerator() {
-		return _generator;
-	}
-
-	public OperatorKey getOperatorKey() {
-		return _key;
+	public void startConnection(){
+		_connecting = true;
 	}
 	
-	public void append(byte[] bytes)  {
-		synchronized (_bufferMonitor) {
-			_messageBuffer.append(bytes);
-			_bufferMonitor.notifyAll();
+	public void finishConnection(){
+		_connecting = false;
+	}
+	
+	public boolean isConnecting(){
+		return _connecting;
+	}
+	
+	public void start(){
+		synchronized (_monitor) {
+			if(_start){
+				return ;
+			}
+			_start = true;
+			_receiveThread.start();
 		}
 	}
 	
-	public boolean isOpen(){
-		return _channel.isOpen();
+	public boolean isStart(){
+		return _start;
 	}
 	
 	public boolean isStartHeartbeatKeep(){
@@ -240,22 +244,6 @@ public class OperatorChannel {
 	
 	public void heartbeatTouch(){
 		_lastHeartbeanTime = System.currentTimeMillis();
-	}
-	
-	public void send(RequestMessage message)throws ClientException {
-		for(SendHandler handler : _sendHandlers){
-			handler.send(_channel, message, _generator,_charset);
-		}
-	}
-	
-	public void start(){
-		synchronized (_monitor) {
-			if(_start){
-				return ;
-			}
-			_start = true;
-			_receiveThread.start();
-		}
 	}
 	
 	public void login(boolean success){
@@ -285,6 +273,32 @@ public class OperatorChannel {
 			}			
 		}
 	}
+	
+	public void append(byte[] bytes)  {
+		synchronized (_bufferMonitor) {
+			_messageBuffer.append(bytes);
+			_bufferMonitor.notifyAll();
+		}
+	}
+	
+	public void send(RequestMessage message)throws ClientException {
+		for(SendHandler handler : _sendHandlers){
+			handler.send(_channel, message, _generator,_charset);
+		}
+	}
+	
+	public SocketChannel getChannel() {
+		return _channel;
+	}
+
+	public GeneratorSeq getGenerator() {
+		return _generator;
+	}
+
+	public OperatorKey getOperatorKey() {
+		return _key;
+	}
+
 	
 	@Override
 	public int hashCode() {

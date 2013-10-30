@@ -26,6 +26,7 @@ public class OperatorCtiMessagePool implements CtiMessagePool {
     private final int _ttl;
     private final int _messageTimeout;
     private final ConcurrentHashMap<OperatorKey,MessageEntry> _pool;
+    private final Object _monitor = new Object();
 	
 	public OperatorCtiMessagePool(){
 		this(DEFAULT_TTL,DEFAULT_MESSAGE_TIMEOUT);
@@ -37,13 +38,24 @@ public class OperatorCtiMessagePool implements CtiMessagePool {
 		_pool = new ConcurrentHashMap<>();
 	}
 
+	private MessageEntry putNewEntry(OperatorKey key){
+		logger.debug("{} message pool create",key.toString());
+		
+		synchronized (_monitor) {
+			if(_pool.containsKey(key)){
+				return _pool.get(key);
+			}
+			MessageEntry m = new MessageEntry(_ttl,_messageTimeout);
+			_pool.put(key, m);
+			return m;
+		}
+	}
 	@Override
 	public void put(String companyId, String opId, ResponseMessage message)throws InterruptedException {
 		OperatorKey key = new OperatorKey(companyId,opId);
-		MessageEntry m = _pool.putIfAbsent(key,new MessageEntry(_ttl,_messageTimeout));
+		MessageEntry m = _pool.get(key);
 		if(m == null){
-			logger.debug("{} message pool create",key.toString());
-			m = _pool.get(key);
+			m = putNewEntry(key);
 		}
 		m.put(message);
 	}
@@ -52,7 +64,10 @@ public class OperatorCtiMessagePool implements CtiMessagePool {
 	public ResponseMessage poll(String companyId, String opId) throws InterruptedException{
 		OperatorKey key = new OperatorKey(companyId,opId);
 		MessageEntry m = _pool.get(key);
-		return m == null ? null : m.poll();
+		if(m == null){
+			m = putNewEntry(key);
+		}
+		return m.poll();
 	}
 	
 	@Override
