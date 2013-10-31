@@ -199,9 +199,17 @@ public class TcpCtiClient implements CtiClientable{
 
 	@Override
 	public void close()throws ClientException {
-		for(OperatorKey key : _channelPool.keySet()){
-			unRegister(key.getCompanyId(),key.getOpId());
-		}	
+		try{
+			for(OperatorKey key : _channelPool.keySet()){
+				unRegister(key.getCompanyId(),key.getOpId());
+			}	
+			_readerRunner.close();
+			_selector.close();	
+		}catch(IOException e){
+			logger.error("Close is error {}" + e.getMessage());
+			throw new ClientException("Close is error " + e.getMessage());
+		}
+		
 	}
 
 	@Override
@@ -244,7 +252,7 @@ public class TcpCtiClient implements CtiClientable{
 		
 		private final Selector _selector;
 		private final int _bufferSize ;
-		private final Object _suspendLock = new Object();
+		private final Object _monitor = new Object();
 		private final Map<OperatorKey, OperatorChannel> _channelPool;
 		
 		private volatile boolean _suspend = false;
@@ -270,30 +278,23 @@ public class TcpCtiClient implements CtiClientable{
 				while(true){
 					if(_suspend){
 						logger.debug("ReaderRunner is suspend");
-						synchronized (_suspendLock) {
-							_suspendLock.wait();
+						synchronized (_monitor) {
+							_monitor.wait();
+							continue;
 						}
 					}
-					
+
+					if(Thread.interrupted()){
+						break;
+					}
 					if(_selector.select() == 0){
 						continue;
 					}
-					
 					Set<SelectionKey> selectedKeys = _selector.selectedKeys();
 					Iterator<SelectionKey> iterator = selectedKeys.iterator();					
 					while(iterator.hasNext()){
 						SelectionKey sk = iterator.next();
-						if(!sk.isReadable()) continue;
-						SocketChannel sc =(SocketChannel) sk.channel();
-						sc.read(buffer);
-						buffer.flip();
-						byte[] bytes = new byte[buffer.remaining()];
-						buffer.get(bytes);
-						OperatorKey key = 
-									(OperatorKey)sk.attachment();
-						OperatorChannel channel = _channelPool.get(key);
-						channel.append(bytes);
-						buffer.clear();
+						append(buffer,sk);
 						iterator.remove();
 					}
 				}
@@ -308,24 +309,51 @@ public class TcpCtiClient implements CtiClientable{
 		}
 		
 		/**
+		 * 接收服务端数据保存到缓存区
+		 * 
+		 * @param buffer {@link ByteBuffer}
+		 * @param sk {@link SelectionKey}
+		 * @throws IOException
+		 */
+		private void append(ByteBuffer buffer,SelectionKey sk)throws IOException{
+			if(!sk.isReadable()) {
+				return ;
+			}
+			SocketChannel sc =(SocketChannel) sk.channel();
+			sc.read(buffer);
+			buffer.flip();
+			byte[] bytes = new byte[buffer.remaining()];
+			buffer.get(bytes);
+			OperatorKey key = (OperatorKey)sk.attachment();
+			OperatorChannel oc = _channelPool.get(key);
+			oc.append(bytes);
+			buffer.clear();
+		}
+		
+		/**
 		 * 从新开始{@link Selector.select()},接收注册服务端数据
 		 */
 		public void restart(){
 			_suspend = false;
-			synchronized (_suspendLock) {
+			synchronized (_monitor) {
 				logger.debug("ReaderRunner is restart");
-				_suspendLock.notifyAll();
+				_monitor.notifyAll();
 			}
 		}
 		
 		/**
 		 * 暂停{@link Selector.select()}并从中断恢复，使{@link Selector}可以接收其他操作
-		 * 
-		 * @throws InterruptedException
 		 */
 		public void suspend() {
 			_suspend = true;
 			_selector.wakeup();
+		}
+		
+		/**
+		 * 关闭接收运行
+		 */
+		public void close(){
+			Thread.currentThread().interrupt();
 		}
 	}
 }

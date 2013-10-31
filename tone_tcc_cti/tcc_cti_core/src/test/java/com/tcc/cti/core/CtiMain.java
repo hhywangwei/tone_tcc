@@ -35,7 +35,7 @@ public class CtiMain {
 		_companyId = "1";
 		_pool = new OperatorCtiMessagePool();
 		_client = new TcpCtiClient(initConfigure(),_pool);
-		_receiveThread = new Thread(new ReceiveRunner(_pool,_companyId,_opId));
+		_receiveThread = new Thread(new ReceiveRunner(_pool,_companyId,_opId,_client));
 	}
 	
 	private ServerConfigure initConfigure(){
@@ -68,7 +68,7 @@ public class CtiMain {
 		_client.send(login);;
 	}
 	
-	public void close(){
+	public void close()throws ClientException{
 		_receiveThread.interrupt();
 	}
 	
@@ -77,6 +77,7 @@ public class CtiMain {
 			CtiMain main = new CtiMain();
 			main.start();
 			main.loginCtiServer();
+			Thread.sleep(30 * 1000);
 			main.close();
 		}catch(Exception e){
 			logger.error("Test Cti is {}",e.toString());
@@ -90,11 +91,14 @@ public class CtiMain {
 		private final OutputStream _os;
 		private final String _companyId;
 		private final String _opId;
+		private final TcpCtiClient _client;
 		
-		ReceiveRunner(CtiMessagePool pool,String companyId,String opId)throws IOException{
+		ReceiveRunner(CtiMessagePool pool,String companyId,
+				String opId,TcpCtiClient client)throws IOException{
 			_pool = pool;
 			_companyId = companyId;
 			_opId = opId;
+			_client = client;
 			_os = new FileOutputStream(DEFAULT_MESSAGE_FILE);
 		}
 		
@@ -105,8 +109,9 @@ public class CtiMain {
 			while(true){
 				if(Thread.interrupted()){
 					try{
-						Thread.sleep(30 * 1000);
+						logger.debug("Start close ...");
 						_os.close();	
+						_client.close();
 					}catch(Exception e){
 						logger.error("Close output stream is fail {}",e.toString());
 					}
@@ -120,6 +125,10 @@ public class CtiMain {
 					}
 					_os.write(m.toString().getBytes());
 					_os.flush();
+					logger.debug("Message is \"{}\"",m.toString());
+				}catch (InterruptedException e){
+					logger.error("Writ message InterruptedException");
+					Thread.currentThread().interrupt();
 				} catch (Exception e) {
 					logger.error("Writ message is error {}",e.toString());
 				}

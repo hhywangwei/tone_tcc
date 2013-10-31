@@ -357,6 +357,7 @@ public class OperatorChannel {
 					receiveHandle(m);	
 				}catch(InterruptedException e){
 					logger.error("Receive message interruped {}",e.getMessage());
+					Thread.currentThread().interrupt();
 				}
 			}
 		}
