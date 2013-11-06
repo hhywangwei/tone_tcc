@@ -42,9 +42,12 @@ public class TcpCtiClient implements CtiClientable{
 	private List<SendHandler> _sendHandlers;
 	private List<ReceiveHandler> _receiveHandlers;
 	private StocketReaderRunner _readerRunner;
+	private Thread _readThread;
 	private Selector _selector;
 	private int _timeOut = DEFAULT_TIMEOUT;
 	private String _charset = DEFAULT_CHARSET_NAME;
+	private volatile boolean _start = false;
+	
 	
 	public TcpCtiClient(ServerConfigure configure){
 		this(configure,new OperatorCtiMessagePool());
@@ -59,12 +62,13 @@ public class TcpCtiClient implements CtiClientable{
 	@Override
 	public void start()throws ClientException {
 		try {
-			_selector = Selector.open();
-
-			_readerRunner= new StocketReaderRunner(_selector,_channelPool);
-			Thread t = new Thread(_readerRunner);
-			t.start();
-
+			synchronized (_monitor) {
+				_selector = Selector.open();
+				_readerRunner= new StocketReaderRunner(_selector,_channelPool);
+				_readThread = new Thread(_readerRunner);
+				_readThread.start();
+				_start = true;
+			}
 		} catch (IOException e) {
 			logger.error("Tcp client start is error {}",e.toString());
 			throw new ClientException(e);
@@ -73,9 +77,13 @@ public class TcpCtiClient implements CtiClientable{
 	
 	@Override
 	public boolean register(String companyId,String opId)throws ClientException{
-		OperatorKey key =new OperatorKey(companyId, opId);
-		OperatorChannel oc = null;
 		synchronized (_monitor) {
+			if(!_start){
+				throw new RuntimeException("TcpCtiClient must start");
+			}
+			
+			OperatorKey key =new OperatorKey(companyId, opId);
+			OperatorChannel oc = null;
 			if(isRegister(key)){
 				return true;
 			}
@@ -92,9 +100,8 @@ public class TcpCtiClient implements CtiClientable{
 				logger.error("Open socketchannel is error {}",e.toString());
 				return false;
 			}
+			return connectionServer(key,oc); 
 		}
-			
-		return connectionServer(key,oc); 
 	}
 	
 	private boolean isRegister(OperatorKey key){
@@ -186,34 +193,39 @@ public class TcpCtiClient implements CtiClientable{
 	}
 	
 	public void unRegister(String companyId,String opId)throws ClientException{
-		OperatorKey key = 
-				new OperatorKey(companyId, opId);
-		OperatorChannel  oc = _channelPool.remove(key);
-		if(oc == null){
-			return ;
-		}
-		if( oc.isStart() || oc.isConnecting()){
-			oc.close();			
+		synchronized (_monitor) {
+			if(!_start){
+				return ;
+			}
+			OperatorKey key = new OperatorKey(companyId, opId);
+			OperatorChannel  oc = _channelPool.remove(key);
+			if(oc == null){
+				return ;
+			}
+			if( oc.isStart() || oc.isConnecting()){
+				oc.close();			
+			}	
 		}
 	}
 
 	@Override
 	public void close()throws ClientException {
-		try{
+		synchronized (_monitor) {
+			if(!_start){
+				return ;
+			}
 			for(OperatorKey key : _channelPool.keySet()){
 				unRegister(key.getCompanyId(),key.getOpId());
-			}	
-			_readerRunner.close();
-			_selector.close();	
-		}catch(IOException e){
-			logger.error("Close is error {}" + e.getMessage());
-			throw new ClientException("Close is error " + e.getMessage());
+			}
+			_readThread.interrupt();
 		}
-		
 	}
 
 	@Override
 	public void send(RequestMessage message)throws ClientException {
+		if(!_start){
+			throw new RuntimeException("TcpCtiClient must start");
+		}
 		OperatorKey key = new OperatorKey(
 				message.getCompayId(), message.getOpId());
 		OperatorChannel channel = _channelPool.get(key);
@@ -285,11 +297,15 @@ public class TcpCtiClient implements CtiClientable{
 					}
 
 					if(Thread.interrupted()){
+						logger.debug("Start close stocketReaderRunner...");
+						_selector.close();	
 						break;
 					}
+					
 					if(_selector.select() == 0){
 						continue;
 					}
+					
 					Set<SelectionKey> selectedKeys = _selector.selectedKeys();
 					Iterator<SelectionKey> iterator = selectedKeys.iterator();					
 					while(iterator.hasNext()){
@@ -347,13 +363,6 @@ public class TcpCtiClient implements CtiClientable{
 		public void suspend() {
 			_suspend = true;
 			_selector.wakeup();
-		}
-		
-		/**
-		 * 关闭接收运行
-		 */
-		public void close(){
-			Thread.currentThread().interrupt();
 		}
 	}
 }
