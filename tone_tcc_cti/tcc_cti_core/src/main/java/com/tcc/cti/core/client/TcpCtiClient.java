@@ -40,8 +40,8 @@ public class TcpCtiClient implements CtiClientable{
 	
 	private List<SendHandler> _sendHandlers;
 	private List<ReceiveHandler> _receiveHandlers;
-	private StocketReceiveTask _readerRunner;
-	private Thread _readThread;
+	private StocketReceiveTask _receiveTask;
+	private Thread _receiveThread;
 	private Selector _selector;
 	private int _timeOut = DEFAULT_TIMEOUT;
 	private String _charset = DEFAULT_CHARSET_NAME;
@@ -63,9 +63,9 @@ public class TcpCtiClient implements CtiClientable{
 		try {
 			synchronized (_monitor) {
 				_selector = Selector.open();
-				_readerRunner= new StocketReceiveTask(_selector,_channelPool);
-				_readThread = new Thread(_readerRunner);
-				_readThread.start();
+				_receiveTask= new StocketReceiveTask(_selector,_channelPool);
+				_receiveThread = new Thread(_receiveTask);
+				_receiveThread.start();
 				_start = true;
 			}
 		} catch (IOException e) {
@@ -76,16 +76,20 @@ public class TcpCtiClient implements CtiClientable{
 	
 	@Override
 	public boolean register(String companyId,String opId)throws ClientException{
+		
+		OperatorKey key = null;
+		OperatorChannel oc = null;
+		
 		synchronized (_monitor) {
 			if(!_start){
 				throw new RuntimeException("TcpCtiClient must start");
 			}
 			
-			OperatorKey key =new OperatorKey(companyId, opId);
-			OperatorChannel oc = null;
+			key =new OperatorKey(companyId, opId);
 			if(isRegister(key)){
 				return true;
 			}
+			
 			try{
 				SocketChannel channel = SocketChannel.open();
 				oc = new OperatorChannel.
@@ -94,13 +98,14 @@ public class TcpCtiClient implements CtiClientable{
 						setSendHandlers(_sendHandlers).
 						setCharset(_charset).
 						build();
+				oc.startConnection();
 				_channelPool.put(key, oc);
 			}catch(IOException e){
 				logger.error("Open socketchannel is error {}",e.toString());
 				return false;
 			}
-			return connectionServer(key,oc); 
 		}
+		return connectionServer(key,oc);	
 	}
 	
 	private boolean isRegister(OperatorKey key){
@@ -113,8 +118,7 @@ public class TcpCtiClient implements CtiClientable{
 		boolean success = false;
 		
 		try {
-			_readerRunner.suspend();
-			oc.startConnection();
+			_receiveTask.suspend();
 			SocketChannel channel = oc.getChannel();
 			if(waitConnection(key,channel,_selector,_address)){
 				oc.start();
@@ -130,7 +134,7 @@ public class TcpCtiClient implements CtiClientable{
 			throw new ClientException(e);
 		}finally{
 			oc.finishConnection();
-			_readerRunner.restart();
+			_receiveTask.restart();
 		}
 		return success;
 	}
@@ -153,44 +157,44 @@ public class TcpCtiClient implements CtiClientable{
 		channel.configureBlocking(false);
 		channel.connect(address);
 		channel.register(selector,  SelectionKey.OP_CONNECT,key);
+		boolean connection = false;
 		
 		int delay= 10;
 		int count= (_timeOut / delay);
-		for(int i= 0; i< count; i++){
-			logger.debug("{}.wait connection......",i);
+		for(int i= 0; (!connection && (i< count)); i++){
+			logger.debug("{}.Wait connection......",i);
 			
 			if(selector.select(delay) == 0){
 				continue;
 			}
 			
-			while(true){
-				Set<SelectionKey> selectedKeys = selector.selectedKeys();
-				Iterator<SelectionKey> iterator = selectedKeys.iterator();
-				while(iterator.hasNext()){
+			Set<SelectionKey> selectedKeys = selector.selectedKeys();
+			Iterator<SelectionKey> iterator = selectedKeys.iterator();
+			try{
+				for(;iterator.hasNext();){
 					SelectionKey sk = iterator.next();
 					if(sk.attachment().equals(key) && sk.isConnectable()){
-						try{
-							if(channel.isConnectionPending() && channel.finishConnect()){
-								logger.debug("{}.{} connection success", i, sk.attachment());
-								channel.register(selector, SelectionKey.OP_READ, key);
-								return true;
-							}	
-						}catch(ConnectException e){
-							logger.error("{}.{} connection fail", i, sk.attachment());
-							throw e;
-						}
-						iterator.remove();
+						if(channel.isConnectionPending() && channel.finishConnect()){
+							logger.debug("{}.{} connection success", i, sk.attachment());
+							channel.register(selector, SelectionKey.OP_READ, key);
+							connection = true;
+							break;
+						}	
 					}
+				}				
+			}catch(ConnectException e){
+				logger.error("{}.{} connection fail", i, key);
+				if(channel.isOpen()){
+					channel.close();
 				}
+				throw e;
 			}
 		}
 		
-		if(channel.isOpen()){
-			channel.close();
-		}
-		return false;
+		return connection;
 	}
 	
+	@Override
 	public void unRegister(String companyId,String opId)throws ClientException{
 		synchronized (_monitor) {
 			if(!_start){
@@ -216,7 +220,7 @@ public class TcpCtiClient implements CtiClientable{
 			for(OperatorKey key : _channelPool.keySet()){
 				unRegister(key.getCompanyId(),key.getOpId());
 			}
-			_readThread.interrupt();
+			_receiveThread.interrupt();
 		}
 	}
 
