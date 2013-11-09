@@ -1,15 +1,9 @@
 package com.tcc.cti.core.client.monitor;
 
-import java.nio.ByteBuffer;
+import com.tcc.cti.core.client.monitor.event.HeartbeatEvent;
 
 public interface HeartbeatListener {
 
-	public interface HeartbeatEvent{
-		
-		void success(ByteBuffer buffer);
-		
-		void fail(ByteBuffer buffer,Throwable e);
-	}
-	
 	void listener(HeartbeatEvent event);
+
 }

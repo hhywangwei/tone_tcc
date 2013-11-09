@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.client.OperatorKey;
-import com.tcc.cti.core.client.monitor.HeartbeatListener.HeartbeatEvent;
+import com.tcc.cti.core.client.monitor.event.HeartbeatEvent;
 import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
 
 public class ScheduledHeartbeatKeepTest {
