@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,7 @@ public class TcpCtiClient implements CtiClientable{
 	static final Logger logger = LoggerFactory.getLogger(TcpCtiClient.class);
 	private static final String DEFAULT_CHARSET_NAME = "ISO-8859-1";
 	private static final int DEFAULT_TIMEOUT = 30 * 1000;
+	private static final int HEART_POOL_SIZE = 5;
 
 	private final CtiMessagePool _messagePool;
 	private final InetSocketAddress _address;
@@ -43,10 +46,10 @@ public class TcpCtiClient implements CtiClientable{
 	private StocketReceiveTask _receiveTask;
 	private Thread _receiveThread;
 	private Selector _selector;
+	private ScheduledExecutorService _heartExcecutorService;
 	private int _timeOut = DEFAULT_TIMEOUT;
 	private String _charset = DEFAULT_CHARSET_NAME;
 	private volatile boolean _start = false;
-	
 	
 	public TcpCtiClient(ServerConfigure configure){
 		this(configure,new OperatorCtiMessagePool());
@@ -66,6 +69,7 @@ public class TcpCtiClient implements CtiClientable{
 				_receiveTask= new StocketReceiveTask(_selector,_channelPool);
 				_receiveThread = new Thread(_receiveTask);
 				_receiveThread.start();
+				_heartExcecutorService = Executors.newScheduledThreadPool(HEART_POOL_SIZE);
 				_start = true;
 			}
 		} catch (IOException e) {
@@ -94,6 +98,7 @@ public class TcpCtiClient implements CtiClientable{
 				SocketChannel channel = SocketChannel.open();
 				oc = new OperatorChannel.
 						Builder(key,channel,_messagePool).
+						setScheduledExecutorService(_heartExcecutorService).
 						setReceiveHandlers(_receiveHandlers).
 						setSendHandlers(_sendHandlers).
 						setCharset(_charset).
@@ -220,6 +225,7 @@ public class TcpCtiClient implements CtiClientable{
 			for(OperatorKey key : _channelPool.keySet()){
 				unRegister(key.getCompanyId(),key.getOpId());
 			}
+			_heartExcecutorService.shutdownNow();
 			_receiveThread.interrupt();
 		}
 	}

@@ -25,7 +25,7 @@ public class StocketReceiveTask implements Runnable {
 	private static final int DEFAULT_BUFFER_SIZE = 1024 * 8;
 	
 	private final Selector _selector;
-	private final int _bufferSize ;
+	private final ByteBuffer _buffer ;
 	private final Map<OperatorKey, OperatorChannel> _channelPool;
 	private final Object _monitor = new Object();
 	
@@ -42,13 +42,12 @@ public class StocketReceiveTask implements Runnable {
 			int bufferSize){
 		
 		_selector = selector;
-		_bufferSize = bufferSize;
+		_buffer =  ByteBuffer.allocateDirect(bufferSize);
 		_channelPool = channelPool;
 	}
 
 	@Override
 	public void run() {
-		ByteBuffer buffer = ByteBuffer.allocateDirect(_bufferSize);
 		while(true){
 			try{
 				if(_suspend){
@@ -64,8 +63,14 @@ public class StocketReceiveTask implements Runnable {
 					_selector.close();	
 					break;
 				}
+				
+				if(_selector.isOpen()){
+					logger.debug("selector is open......");
+				}else{
+					logger.debug("select is close......");
+				}
 
-				recevice(_selector,buffer);
+				recevice(_selector,_buffer);
 
 			}catch(InterruptedException e){
 				logger.error("StocketReaderTask spspend is error:{}",e.toString());

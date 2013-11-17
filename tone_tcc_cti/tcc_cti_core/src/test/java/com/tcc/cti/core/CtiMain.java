@@ -12,6 +12,7 @@ import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.TcpCtiClient;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
+import com.tcc.cti.core.message.request.GroupRequest;
 import com.tcc.cti.core.message.request.LoginRequest;
 import com.tcc.cti.core.message.response.ResponseMessage;
 import com.tcc.cti.core.model.ServerConfigure;
@@ -35,6 +36,7 @@ public class CtiMain {
 		_companyId = "1";
 		_pool = new OperatorCtiMessagePool();
 		_client = new TcpCtiClient(initConfigure(),_pool);
+		_client.setCharset("gbk");
 		_receiveThread = new Thread(new ReceiveRunner(_pool,_companyId,_opId,_client));
 	}
 	
@@ -56,7 +58,7 @@ public class CtiMain {
 		logger.debug("Start receive message");
 	}
 	
-	public void loginCtiServer() throws ClientException{
+	private void login() throws ClientException{
 
 		LoginRequest login = new LoginRequest();
 		login.setCompayId(_companyId);
@@ -68,6 +70,15 @@ public class CtiMain {
 		_client.send(login);;
 	}
 	
+	private void getGroups()throws ClientException{
+		
+		GroupRequest r = new GroupRequest();
+		
+		r.setCompayId(_companyId);
+		r.setOpId(_opId);
+		_client.send(r);
+	}
+	
 	public void close()throws ClientException{
 		_receiveThread.interrupt();
 	}
@@ -76,8 +87,10 @@ public class CtiMain {
 		try{
 			CtiMain main = new CtiMain();
 			main.start();
-			main.loginCtiServer();
-			Thread.sleep(30 * 1000);
+			main.login();
+			main.getGroups();
+			
+			Thread.sleep(2* 60 * 1000);
 			main.close();
 		}catch(Exception e){
 			logger.error("Test Cti is {}",e.toString());
@@ -124,6 +137,7 @@ public class CtiMain {
 						continue;
 					}
 					_os.write(m.toString().getBytes());
+					_os.write('\n');
 					_os.flush();
 					logger.debug("Message is \"{}\"",m.toString());
 				}catch (InterruptedException e){

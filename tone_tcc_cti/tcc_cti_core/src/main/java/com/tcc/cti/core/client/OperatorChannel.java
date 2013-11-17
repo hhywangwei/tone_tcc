@@ -18,6 +18,7 @@ import com.tcc.cti.core.client.receive.CallReceiveHandler;
 import com.tcc.cti.core.client.receive.CloseCallReceiveHandler;
 import com.tcc.cti.core.client.receive.GroupMemberReceiveHandler;
 import com.tcc.cti.core.client.receive.GroupReceiveHandler;
+import com.tcc.cti.core.client.receive.HeartbeatReceiveHandler;
 import com.tcc.cti.core.client.receive.LoginReceiveHandler;
 import com.tcc.cti.core.client.receive.MonitorReceiveHandler;
 import com.tcc.cti.core.client.receive.OutCallReceiveHandler;
@@ -129,6 +130,7 @@ public class OperatorChannel {
 			List<ReceiveHandler> handlers = new ArrayList<>();
 			
 			handlers.add(new LoginReceiveHandler());
+			handlers.add(new HeartbeatReceiveHandler());
 			handlers.add(new OwnReceiveHandler());
 			handlers.add(new GroupMemberReceiveHandler());
 			handlers.add(new GroupReceiveHandler());

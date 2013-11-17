@@ -47,6 +47,7 @@ public class HeartbeatSendTask implements Runnable{
 	
 	private void sendHeartbeat(OperatorChannel channel){
 		try{
+			logger.debug("{} send hb......",channel.getOperatorKey());
 			SocketChannel socketChannel = channel.getChannel();
 			socketChannel.write(_buffer);	
 			_event.success(_buffer);

@@ -59,18 +59,26 @@ public class ByteMessageBuffer implements MessageBuffer{
 	@Override
 	public String next() {
 		synchronized (_buffer) {
-			int len =  getMessageLength();
+			int remaining = _buffer.reset().remaining();
+			
+			if(remaining ==  0){
+				logger.debug("message is empty");
+				return null;
+			}
+			
+			int len =  getMessageLength(remaining);
 			if(len > _maxLength){
 				logger.debug("message {} too length",len);
 				clearBuffer();
 				return null;
 			}
-			int remaining = _buffer.reset().remaining();
-			if(len == -1 || len > remaining){
-				logger.debug("message is not complate");
+			
+			if(notComplete(len,remaining)){
+				logger.debug("message is not complete");
 				return null;
 			}
 			
+			_buffer.reset();
 			byte[] m = new byte[len];
 			_buffer.get(m);
 			_buffer.mark();
@@ -79,6 +87,17 @@ public class ByteMessageBuffer implements MessageBuffer{
 			logger.debug("Message is \"{}\"",message);
 			return message;
 		}
+	}
+	
+	/**
+	 * 消息不完整
+	 * 
+	 * @param len 消息长度
+	 * @param remaining buff中真实消息长度
+	 * @return
+	 */
+	private boolean notComplete(int len,int remaining){
+		return len == -1 || len > remaining;
 	}
 	
 	/**
@@ -93,20 +112,20 @@ public class ByteMessageBuffer implements MessageBuffer{
 	 * 
 	 * @return
 	 */
-	private int getMessageLength(){		
+	private int getMessageLength(int remaining){		
 		int headLength = HEAD_LENGTH;
-		int remaining = _buffer.reset().remaining();
 		if(remaining < headLength){
 			return -1;
 		}
 		byte[] head = new byte[headLength];
+		logger.debug("message head is {}",new String(head));
 		_buffer.get(head);
 		boolean enable = isHead(head);
 		if(enable){
 			return parseMessageLength(head,headLength);
 		}else{
 			boolean hasNext = positionNextHead();
-			return hasNext ? getMessageLength() : -1;
+			return hasNext ? getMessageLength(remaining) : -1;
 		}
 	}
 	
@@ -180,6 +199,11 @@ public class ByteMessageBuffer implements MessageBuffer{
 	@Override
 	public void append(byte[] bytes) {
 		
+		if(bytes == null || bytes.length == 0){
+			logger.debug("Message is empty");
+			return ;
+		}
+		
 		if(bytes.length > _maxLength){
 			logger.warn("Append message \"{}\" is too length",new String(bytes,_charset));
 			return ;
@@ -202,7 +226,8 @@ public class ByteMessageBuffer implements MessageBuffer{
 			
 			int limit = _buffer.limit();
 			_buffer.position(limit).limit(limit + len);
-			logger.debug("Append message is \"{}\"",new String(bytes,_charset));
+			String m = new String(bytes,_charset);
+			logger.debug("Append message is \"{}\"", m);
 			_buffer.put(bytes);
 		}
 	}
