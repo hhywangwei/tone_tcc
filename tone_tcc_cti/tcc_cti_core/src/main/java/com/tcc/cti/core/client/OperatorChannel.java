@@ -29,6 +29,7 @@ import com.tcc.cti.core.client.receive.RecordReceiveHandler;
 import com.tcc.cti.core.client.send.CallSendHandler;
 import com.tcc.cti.core.client.send.GroupMemberSendHandler;
 import com.tcc.cti.core.client.send.GroupSendHandler;
+import com.tcc.cti.core.client.send.HeartbeatSendHandler;
 import com.tcc.cti.core.client.send.LoginSendHandler;
 import com.tcc.cti.core.client.send.MonitorSendHandler;
 import com.tcc.cti.core.client.send.OutCallCancelSendHandler;
@@ -128,9 +129,9 @@ public class OperatorChannel {
 		
 		private List<ReceiveHandler> defaultReceiveHandlers(){
 			List<ReceiveHandler> handlers = new ArrayList<>();
-			
-			handlers.add(new LoginReceiveHandler());
+
 			handlers.add(new HeartbeatReceiveHandler());
+			handlers.add(new LoginReceiveHandler());
 			handlers.add(new OwnReceiveHandler());
 			handlers.add(new GroupMemberReceiveHandler());
 			handlers.add(new GroupReceiveHandler());
@@ -147,6 +148,7 @@ public class OperatorChannel {
 		private List<SendHandler> defaultSendHandlers(){
 			List<SendHandler> handlers = new ArrayList<>();
 			
+			handlers.add(new HeartbeatSendHandler());
 			handlers.add(new LoginSendHandler());
 			handlers.add(new OwnSendHandler());
 			handlers.add(new GroupMemberSendHandler());

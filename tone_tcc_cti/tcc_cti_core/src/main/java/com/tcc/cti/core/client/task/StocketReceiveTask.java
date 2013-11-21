@@ -89,13 +89,21 @@ public class StocketReceiveTask implements Runnable {
 			return ;
 		}
 		
-		Set<SelectionKey> selectedKeys = _selector.selectedKeys();
-		Iterator<SelectionKey> iterator = selectedKeys.iterator();					
-		while(iterator.hasNext()){
-			SelectionKey sk = iterator.next();
-			appendBuffer(buffer,sk);
-			iterator.remove();
+		try{
+			Set<SelectionKey> selectedKeys = _selector.selectedKeys();
+			Iterator<SelectionKey> iterator = selectedKeys.iterator();					
+			while(iterator.hasNext()){
+				SelectionKey sk = iterator.next();
+				if(sk.channel().isOpen()){
+					logger.debug("Sk channel is open.blocking is {}",sk.channel().isBlocking());
+				}
+				appendBuffer(buffer,sk);
+				iterator.remove();
+			}	
+		}catch(Exception e){
+			logger.error("receive start...");
 		}
+		
 	}
 	
 	/**

@@ -1,7 +1,5 @@
 package com.tcc.cti.core.client.monitor.event;
 
-import java.nio.ByteBuffer;
-
 /**
  * 心跳发生事件
  * 
@@ -11,16 +9,13 @@ public interface HeartbeatEvent{
 	
 	/**
 	 * 发送成功
-	 * 
-	 * @param buffer
 	 */
-	void success(ByteBuffer buffer);
+	void success();
 	
 	/**
 	 * 发送失败
 	 * 
-	 * @param buffer
 	 * @param e
 	 */
-	void fail(ByteBuffer buffer,Throwable e);
+	void fail(Throwable e);
 }
