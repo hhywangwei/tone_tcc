@@ -2,7 +2,6 @@ package com.tcc.cti.core.client.monitor;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -40,13 +39,13 @@ public class ScheduledHeartbeatKeepTest {
 		keep.listener(new HeartbeatEvent(){
 
 			@Override
-			public void success(ByteBuffer buffer) {
+			public void success() {
 				logger.debug("Send is success");
 				count.incrementAndGet();
 			}
 
 			@Override
-			public void fail(ByteBuffer buffer, Throwable e) {
+			public void fail(Throwable e) {
 				count.incrementAndGet();
 				Assert.fail(e.toString());
 			}

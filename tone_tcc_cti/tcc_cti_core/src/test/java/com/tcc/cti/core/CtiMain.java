@@ -90,8 +90,8 @@ public class CtiMain {
 			main.login();
 			main.getGroups();
 			
-			Thread.sleep(2* 60 * 1000);
-			main.close();
+//			Thread.sleep(2* 60 * 1000);
+//			main.close();
 		}catch(Exception e){
 			logger.error("Test Cti is {}",e.toString());
 		}
