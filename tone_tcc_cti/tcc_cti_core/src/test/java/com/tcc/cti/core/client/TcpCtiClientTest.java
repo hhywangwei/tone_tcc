@@ -1,13 +1,7 @@
 package com.tcc.cti.core.client;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
-
-import junit.framework.Assert;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,57 +26,6 @@ public class TcpCtiClientTest {
 		_configure.setPort(9999);
 	}
 	
-	@Test
-	public void testWaitConnection()throws Exception{
-		TcpCtiClient client = new TcpCtiClient(_configure,new NoneMessagePool());
-		OperatorKey key = new OperatorKey("1", "8001");
-		
-		InetSocketAddress address = new InetSocketAddress(
-				_configure.getHost(), _configure.getPort());
-		SocketChannel channel = SocketChannel.open();
-		Selector selector = Selector.open();
-		boolean connection = client.waitConnection(key, channel,selector,address);
-		Assert.assertTrue(connection);
-	}
-	
-	@Test(expected= IOException.class)
-	public void testWaitConnectionAddressError()throws Exception{
-		ServerConfigure configure = new ServerConfigure();
-		configure.setHost("211.136.173.134");
-		configure.setPort(9999);
-		
-		TcpCtiClient client = new TcpCtiClient(configure,new NoneMessagePool());
-		OperatorKey key = new OperatorKey("1", "8001");
-		InetSocketAddress address = new InetSocketAddress(
-				configure.getHost(), configure.getPort());
-		SocketChannel channel = SocketChannel.open();
-		Selector selector = Selector.open();
-		client.waitConnection(key, channel,selector,address);
-		Assert.fail("Connection not exception");
-	}
-	
-	@Test
-	public void testWaitConnectionTimeOut()throws Exception{
-		ServerConfigure configure = new ServerConfigure();
-		configure.setHost("211.136.173.134");
-		configure.setPort(9999);
-		
-		TcpCtiClient client = new TcpCtiClient(configure,new NoneMessagePool());
-		client.setTimeOut(10);
-		OperatorKey key = new OperatorKey("1", "8001");
-		InetSocketAddress address = new InetSocketAddress(
-				configure.getHost(), configure.getPort());
-		SocketChannel channel = SocketChannel.open();
-		Selector selector = Selector.open();
-		boolean connection = client.waitConnection(key, channel,selector,address);
-		Assert.assertFalse(connection);
-	}
-	
-//	@After
-//	public void after()throws Exception{
-//		client.close();
-//	}
-//	
 	@Test
 	public void testSend()throws Exception{
 		TcpCtiClient client = new TcpCtiClient(_configure,new NoneMessagePool());

@@ -164,6 +164,22 @@ public class OperatorChannel {
 		
 	}
 	
+	/**
+	 * {@link OperatorChannel}状态
+	 * 
+	 * @author wwang
+	 */
+	enum Status {
+		None,
+		Connecting,
+		ConnectError,
+		Connected,
+		Start,
+		Login,
+		LoginError,
+		Close;
+	}
+	
 	private final OperatorKey _key;
 	private final SocketChannel _channel;
 	private final CtiMessagePool _pool;
@@ -181,6 +197,7 @@ public class OperatorChannel {
 	private volatile boolean _start = false;
 	private volatile boolean _connecting = false;
 	private volatile boolean _loginSuccessful = false;
+	private volatile Status status = Status.None;
 	private volatile long _lastHeartbeanTime = System.currentTimeMillis();
 	
 
@@ -210,27 +227,47 @@ public class OperatorChannel {
 				executorService,heartbeatInitDelay,heartbeatDelay);
 	}
 
-	public void startConnection(){
-		_connecting = true;
+	public void connecting(){
+		status = Status.Connecting;
 	}
 	
-	public void finishConnection(){
-		_connecting = false;
+	public void connected(){
+		status = Status.Connected;
 	}
+	
+	public void connectError(){
+		status = Status.ConnectError;
+	}
+	
+	public void start(){
+		synchronized (_monitor) {
+			
+			if(status == Status.Start 
+					|| status == Status.Login){
+				return ;
+			}
+			
+			if(status == Status.Close){
+				throw new RuntimeException("Already close ");
+			}
+			
+			if(status != Status.Connected){
+				throw new RuntimeException("Not connection service,so not start");
+			}
+			
+			_start = true;
+			_receiveThread.start();
+		}
+	}
+	
+	
+	
+	
 	
 	public boolean isConnecting(){
 		return _connecting;
 	}
 	
-	public void start(){
-		synchronized (_monitor) {
-			if(_start){
-				return ;
-			}
-			_start = true;
-			_receiveThread.start();
-		}
-	}
 	
 	public boolean isStart(){
 		return _start;
@@ -252,29 +289,24 @@ public class OperatorChannel {
 	
 	public void login(boolean success){
 		synchronized (_monitor) {
-			_loginSuccessful = success;
-			if(!_loginSuccessful){
-				return ;
+			status = success ? Status.Login : Status.LoginError;
+			if(success){
+				_heartbeatKeep.start();	
 			}
-			_heartbeatKeep.start();
 		}
 	}
 	
-	public void close()throws ClientException{
+	public void close()throws IOException{
 		synchronized (_monitor) {
-			try{
-				if(_start){
-					_receiveThread.interrupt();
-				}
-				if(_loginSuccessful){
-					_heartbeatKeep.shutdown();
-				}
-				if(_channel.isOpen()){
-					_channel.close();
-				}
-			}catch(IOException e){
-				throw new ClientException(e);
-			}			
+			if(isStart()){
+				_receiveThread.interrupt();
+			}
+			if(_loginSuccessful){
+				_heartbeatKeep.shutdown();
+			}
+			if(_channel.isOpen()){
+				_channel.close();
+			}
 		}
 	}
 	

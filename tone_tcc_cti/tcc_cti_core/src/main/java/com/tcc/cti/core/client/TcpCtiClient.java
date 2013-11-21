@@ -1,14 +1,10 @@
 package com.tcc.cti.core.client;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -16,6 +12,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tcc.cti.core.client.connection.Connectionable;
+import com.tcc.cti.core.client.connection.NioConnection;
 import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.task.StocketReceiveTask;
@@ -66,7 +64,7 @@ public class TcpCtiClient implements CtiClientable{
 		try {
 			synchronized (_monitor) {
 				_selector = Selector.open();
-				_receiveTask= new StocketReceiveTask(_selector,_channelPool);
+				_receiveTask= new StocketReceiveTask(_selector);
 				_receiveThread = new Thread(_receiveTask);
 				_receiveThread.start();
 				_heartExcecutorService = Executors.newScheduledThreadPool(HEART_POOL_SIZE);
@@ -103,14 +101,14 @@ public class TcpCtiClient implements CtiClientable{
 						setSendHandlers(_sendHandlers).
 						setCharset(_charset).
 						build();
-				oc.startConnection();
+				oc.connecting();
 				_channelPool.put(key, oc);
 			}catch(IOException e){
 				logger.error("Open socketchannel is error {}",e.toString());
 				return false;
 			}
 		}
-		return connectionServer(key,oc);	
+		return connectionServer(oc);	
 	}
 	
 	private boolean isRegister(OperatorKey key){
@@ -119,13 +117,13 @@ public class TcpCtiClient implements CtiClientable{
 		return (oc != null) && (oc.isConnecting() || oc.isStart());
 	}
 	
-	private boolean connectionServer(OperatorKey key,OperatorChannel oc)throws ClientException{
+	private boolean connectionServer(OperatorChannel oc)throws ClientException{
 		boolean success = false;
 		
 		try {
 			_receiveTask.suspend();
-			SocketChannel channel = oc.getChannel();
-			if(waitConnection(key,channel,_selector,_address)){
+			Connectionable connection = new NioConnection(_selector,_address);
+			if(connection.connect(oc)){
 				oc.start();
 				success = true;
 			}else{
@@ -138,66 +136,12 @@ public class TcpCtiClient implements CtiClientable{
 			logger.error("Tcp client start is error {}",e.toString());
 			throw new ClientException(e);
 		}finally{
-			oc.finishConnection();
+			oc.connected();
 			_receiveTask.restart();
 		}
 		return success;
 	}
 	
-	/**
-	 * 等待连接CTI服务器
-	 * 
-	 * @param key 操作键  {@link OperatorKey}
-	 * @param channel {@link SocketChannel}
-	 * @param selector {@link Selector}
-	 * @param address CTI服务地址  {@link InetSocketAddress}
-	 * @return true 连接成功
-	 * @throws IOException 
-	 * @throws InterruptedException 
-	 */
-	protected boolean waitConnection(OperatorKey key,
-			SocketChannel channel, Selector selector,
-			InetSocketAddress address)throws IOException{
-		
-		channel.configureBlocking(false);
-		channel.connect(address);
-		channel.register(selector,  SelectionKey.OP_CONNECT,key);
-		boolean connection = false;
-		
-		int delay= 10;
-		int count= (_timeOut / delay);
-		for(int i= 0; (!connection && (i< count)); i++){
-			logger.debug("{}.Wait connection......",i);
-			
-			if(selector.select(delay) == 0){
-				continue;
-			}
-			
-			Set<SelectionKey> selectedKeys = selector.selectedKeys();
-			Iterator<SelectionKey> iterator = selectedKeys.iterator();
-			try{
-				for(;iterator.hasNext();){
-					SelectionKey sk = iterator.next();
-					if(sk.attachment().equals(key) && sk.isConnectable()){
-						if(channel.isConnectionPending() && channel.finishConnect()){
-							logger.debug("{}.{} connection success", i, sk.attachment());
-							channel.register(selector, SelectionKey.OP_READ, key);
-							connection = true;
-							break;
-						}	
-					}
-				}				
-			}catch(ConnectException e){
-				logger.error("{}.{} connection fail", i, key);
-				if(channel.isOpen()){
-					channel.close();
-				}
-				throw e;
-			}
-		}
-		
-		return connection;
-	}
 	
 	@Override
 	public void unRegister(String companyId,String opId)throws ClientException{
@@ -210,9 +154,13 @@ public class TcpCtiClient implements CtiClientable{
 			if(oc == null){
 				return ;
 			}
-			if( oc.isStart() || oc.isConnecting()){
-				oc.close();			
-			}	
+			try{
+				if( oc.isStart() || oc.isConnecting()){
+					oc.close();			
+				}		
+			}catch(IOException e){
+				throw new ClientException(e);
+			}
 		}
 	}
 
@@ -238,6 +186,7 @@ public class TcpCtiClient implements CtiClientable{
 		OperatorKey key = new OperatorKey(
 				message.getCompayId(), message.getOpId());
 		OperatorChannel channel = _channelPool.get(key);
+		
 		if(channel.isStart()){
 			channel.send(message);
 		}

@@ -6,14 +6,12 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.OperatorChannel;
-import com.tcc.cti.core.client.OperatorKey;
 
 /**
  * 从Stocket栈接收服务服务端信息
@@ -26,24 +24,17 @@ public class StocketReceiveTask implements Runnable {
 	
 	private final Selector _selector;
 	private final ByteBuffer _buffer ;
-	private final Map<OperatorKey, OperatorChannel> _channelPool;
 	private final Object _monitor = new Object();
 	
 	private volatile boolean _suspend = false;
 	
-	public StocketReceiveTask(Selector selector,
-			Map<OperatorKey, OperatorChannel> channelPool){
-		
-		this(selector,channelPool,DEFAULT_BUFFER_SIZE);
+	public StocketReceiveTask(Selector selector){
+		this(selector,DEFAULT_BUFFER_SIZE);
 	}
 	
-	public StocketReceiveTask(Selector selector,
-			Map<OperatorKey, OperatorChannel> channelPool,
-			int bufferSize){
-		
+	public StocketReceiveTask(Selector selector,int bufferSize){
 		_selector = selector;
 		_buffer =  ByteBuffer.allocateDirect(bufferSize);
-		_channelPool = channelPool;
 	}
 
 	@Override
@@ -62,12 +53,6 @@ public class StocketReceiveTask implements Runnable {
 					logger.debug("Start close stocketReaderTask...");
 					_selector.close();	
 					break;
-				}
-				
-				if(_selector.isOpen()){
-					logger.debug("selector is open......");
-				}else{
-					logger.debug("select is close......");
 				}
 
 				recevice(_selector,_buffer);
@@ -94,9 +79,6 @@ public class StocketReceiveTask implements Runnable {
 			Iterator<SelectionKey> iterator = selectedKeys.iterator();					
 			while(iterator.hasNext()){
 				SelectionKey sk = iterator.next();
-				if(sk.channel().isOpen()){
-					logger.debug("Sk channel is open.blocking is {}",sk.channel().isBlocking());
-				}
 				appendBuffer(buffer,sk);
 				iterator.remove();
 			}	
@@ -118,14 +100,18 @@ public class StocketReceiveTask implements Runnable {
 			return ;
 		}
 		SocketChannel sc =(SocketChannel) sk.channel();
-		sc.read(buffer);
-		buffer.flip();
-		byte[] bytes = new byte[buffer.remaining()];
-		buffer.get(bytes);
-		OperatorKey key = (OperatorKey)sk.attachment();
-		OperatorChannel oc = _channelPool.get(key);
-		oc.append(bytes);
-		buffer.clear();
+		int len = sc.read(buffer);
+		OperatorChannel oc = (OperatorChannel)sk.attachment();
+		if(len == 0 || len == -1){
+			logger.debug("{} server close...",oc.getOperatorKey().toString());
+			oc.close();
+		}else{
+			buffer.flip();
+			byte[] bytes = new byte[buffer.remaining()];
+			buffer.get(bytes);
+			oc.append(bytes);
+			buffer.clear();	
+		}
 	}
 	
 	/**

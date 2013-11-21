@@ -30,19 +30,18 @@ public class HeartbeatSendTask implements Runnable{
 	
 	@Override
 	public void run() {
-		if(_channel.isStart()){
-			sendHeartbeat(_channel);
+		if(!_channel.isStart()){
+			return ;
 		}
-	}
-	
-	private void sendHeartbeat(OperatorChannel channel){
+		
+		OperatorKey key = _channel.getOperatorKey();
 		try{
-			logger.debug("{}-{} send hb......",new Date(),channel.getOperatorKey());
 			_channel.send(HB_REQUEST);
+			logger.debug("{}-{} send hb...",new Date(),key.toString());
 		}catch(ClientException e){
-			OperatorKey ok = channel.getOperatorKey();
-			logger.error("{} Heartbeat send is error:{}",ok.toString(),e.getMessage());
 			_event.fail(e);
+			logger.error("{} Heartbeat send is error:{}",
+					key.toString(),e.getMessage());
 		}
 	}
 	
