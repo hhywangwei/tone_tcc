@@ -203,7 +203,9 @@ public class TcpCtiClient implements CtiClientable{
 
 	@Override
 	public Status getStatus(String companyId, String opId) {
-		// TODO Auto-generated method stub
-		return null;
+		OperatorKey key = new OperatorKey(companyId, opId);
+		Sessionable channel = _channelPool.get(key);
+		
+		return channel == null ? Status.None : channel.getStatus();
 	}
 }
