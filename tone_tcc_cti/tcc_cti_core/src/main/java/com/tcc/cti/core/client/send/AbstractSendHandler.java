@@ -8,7 +8,6 @@ import java.nio.charset.Charset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.RequestMessage;
 
@@ -30,16 +29,12 @@ public abstract class AbstractSendHandler implements SendHandler {
 
 	@Override
 	public void send(SocketChannel channel, RequestMessage message, GeneratorSeq generator,
-			String charset) throws ClientException {
-		try {
-			if (isSend(message)) {
-				byte[] m = getMessage(message, generator, charset);
-				ByteBuffer buffer = ByteBuffer.wrap(m);
-				channel.write(buffer);
-			}
-		} catch (IOException e) {
-			logger.error("Tcp client send message is error \"{}\"", e);
-			throw new ClientException(e);
+			String charset) throws IOException {
+		
+		if (isSend(message)) {
+			byte[] m = getMessage(message, generator, charset);
+			ByteBuffer buffer = ByteBuffer.wrap(m);
+			channel.write(buffer);
 		}
 	}
 

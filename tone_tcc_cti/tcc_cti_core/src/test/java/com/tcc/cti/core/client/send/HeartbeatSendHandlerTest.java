@@ -24,12 +24,13 @@ public class HeartbeatSendHandlerTest {
 	}
 	
 	@Test
-	public void testBuildMessage(){
+	public void testGetMessage()throws Exception{
 		HeartbeatSendHandler handler = new HeartbeatSendHandler();
 		HeartbeatRequest r =new HeartbeatRequest();
 		GeneratorSeq generator = mock(GeneratorSeq.class);
 		when(generator.next()).thenReturn("1");
-		String m = handler.buildMessage(r, generator);
-		Assert.assertEquals("<head>00013</head><msg>hb</msg>", m);
+		String charset = "iso-8859-1";
+		byte[] m = handler.getMessage(r, generator, charset);
+		Assert.assertEquals("<head>00013</head><msg>hb</msg>", new String(m,charset));
 	}
 }

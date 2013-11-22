@@ -1,7 +1,7 @@
 package com.tcc.cti.core.client.receive;
 
 import com.tcc.cti.core.client.ClientException;
-import com.tcc.cti.core.client.OperatorChannel;
+import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 
 /**
@@ -14,11 +14,11 @@ public interface ReceiveHandler {
 	/**
 	 * 接受消息处理
 	 * @param pool 存放接受消息池{@link CtiMessagePool}
-	 * @param channel 操作频道{@link OperatorChannel}
+	 * @param session 操作频道{@link Sessionable}
 	 * @param message 接受消息字符串
 	 * 
 	 * @throws ClientException
 	 */
-	void receive(CtiMessagePool pool,OperatorChannel channel, String message)throws ClientException;
+	void receive(CtiMessagePool pool,Sessionable session, String message)throws ClientException;
 	
 }

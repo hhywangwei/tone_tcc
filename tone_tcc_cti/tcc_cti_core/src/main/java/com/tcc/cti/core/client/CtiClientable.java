@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
+import com.tcc.cti.core.client.session.Sessionable.Status;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.request.RequestMessage;
 
@@ -48,6 +49,15 @@ public interface CtiClientable {
 	void unRegister(String companyId,String opId)throws ClientException;
 	
 	/**
+	 * 得到客户连接状态
+	 * 
+	 * @param companyId 公司编号
+	 * @param opId      操作员编号
+	 * @return
+	 */
+	Status getStatus(String companyId,String opId);
+	
+	/**
 	 * 发送消息
 	 * 
 	 * @param message 消息对象
@@ -72,9 +82,9 @@ public interface CtiClientable {
 	/**
 	 * 设置连接超时
 	 * 
-	 * @param timeOut 单位秒
+	 * @param timeout 单位秒
 	 */
-	void setTimeOut(int timeOut);
+	void setTimeout(int timeOut);
 
 	/**
 	 * 设置与cti服务器通信字符集编码

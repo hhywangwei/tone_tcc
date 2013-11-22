@@ -11,7 +11,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tcc.cti.core.client.OperatorChannel;
+import com.tcc.cti.core.client.session.Sessionable;
 
 /**
  * 从Stocket栈接收服务服务端信息
@@ -101,7 +101,7 @@ public class StocketReceiveTask implements Runnable {
 		}
 		SocketChannel sc =(SocketChannel) sk.channel();
 		int len = sc.read(buffer);
-		OperatorChannel oc = (OperatorChannel)sk.attachment();
+		Sessionable oc = (Sessionable)sk.attachment();
 		if(len == 0 || len == -1){
 			logger.debug("{} server close...",oc.getOperatorKey().toString());
 			oc.close();

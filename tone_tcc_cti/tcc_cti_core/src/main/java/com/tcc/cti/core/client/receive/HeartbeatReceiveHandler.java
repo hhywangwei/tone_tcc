@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.ClientException;
-import com.tcc.cti.core.client.OperatorChannel;
+import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.response.ResponseMessage;
 
@@ -26,11 +26,11 @@ public class HeartbeatReceiveHandler extends AbstractReceiveHandler{
 	}
 	
 	@Override
-	protected void receiveHandler(CtiMessagePool pool, OperatorChannel channel,
+	protected void receiveHandler(CtiMessagePool pool, Sessionable session,
 			Map<String, String> content) throws ClientException {
-		logger.debug("Receive {} hb.....",channel.getOperatorKey());
 		
-		channel.heartbeatTouch();
+		logger.debug("Receive {} hb.....",session.getOperatorKey());
+		session.heartbeatTouch();
 	}
 
 	@Override

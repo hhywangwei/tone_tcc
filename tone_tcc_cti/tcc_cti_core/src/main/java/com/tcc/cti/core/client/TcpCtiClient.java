@@ -3,7 +3,6 @@ package com.tcc.cti.core.client;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -16,6 +15,9 @@ import com.tcc.cti.core.client.connection.Connectionable;
 import com.tcc.cti.core.client.connection.NioConnection;
 import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
+import com.tcc.cti.core.client.session.Session;
+import com.tcc.cti.core.client.session.Sessionable.Status;
+import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.client.task.StocketReceiveTask;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
@@ -23,20 +25,20 @@ import com.tcc.cti.core.message.request.RequestMessage;
 import com.tcc.cti.core.model.ServerConfigure;
 
 /**
- * 通过tcp协议实现客户端与cti服务器消息通信
+ * 通过TCP协议实现客户端与CTI服务器消息通信
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 public class TcpCtiClient implements CtiClientable{
-	static final Logger logger = LoggerFactory.getLogger(TcpCtiClient.class);
+	private static final Logger logger = LoggerFactory.getLogger(TcpCtiClient.class);
 	private static final String DEFAULT_CHARSET_NAME = "ISO-8859-1";
 	private static final int DEFAULT_TIMEOUT = 30 * 1000;
 	private static final int HEART_POOL_SIZE = 5;
 
 	private final CtiMessagePool _messagePool;
 	private final InetSocketAddress _address;
-	private final ConcurrentHashMap<OperatorKey, OperatorChannel> _channelPool = 
-			new ConcurrentHashMap<OperatorKey, OperatorChannel>();
+	private final ConcurrentHashMap<OperatorKey, Session> _channelPool = 
+			new ConcurrentHashMap<OperatorKey, Session>();
 	private final Object _monitor = new Object();
 	
 	private List<SendHandler> _sendHandlers;
@@ -45,7 +47,7 @@ public class TcpCtiClient implements CtiClientable{
 	private Thread _receiveThread;
 	private Selector _selector;
 	private ScheduledExecutorService _heartExcecutorService;
-	private int _timeOut = DEFAULT_TIMEOUT;
+	private int _timeout = DEFAULT_TIMEOUT;
 	private String _charset = DEFAULT_CHARSET_NAME;
 	private volatile boolean _start = false;
 	
@@ -78,70 +80,50 @@ public class TcpCtiClient implements CtiClientable{
 	
 	@Override
 	public boolean register(String companyId,String opId)throws ClientException{
-		
-		OperatorKey key = null;
-		OperatorChannel oc = null;
+		OperatorKey key = new OperatorKey(companyId, opId);
+		Session session = null;
+		boolean success = false;
 		
 		synchronized (_monitor) {
 			if(!_start){
-				throw new RuntimeException("TcpCtiClient must start");
+				throw new ClientException("TcpCtiClient must start");
 			}
 			
-			key =new OperatorKey(companyId, opId);
 			if(isRegister(key)){
 				return true;
 			}
 			
-			try{
-				SocketChannel channel = SocketChannel.open();
-				oc = new OperatorChannel.
-						Builder(key,channel,_messagePool).
-						setScheduledExecutorService(_heartExcecutorService).
-						setReceiveHandlers(_receiveHandlers).
-						setSendHandlers(_sendHandlers).
-						setCharset(_charset).
-						build();
-				oc.connecting();
-				_channelPool.put(key, oc);
-			}catch(IOException e){
-				logger.error("Open socketchannel is error {}",e.toString());
-				return false;
-			}
+			Connectionable conn = 
+					new NioConnection(_selector,_address,_timeout);
+			session = new Session.
+					Builder(key,conn,_messagePool).
+					setScheduledExecutorService(_heartExcecutorService).
+					setReceiveHandlers(_receiveHandlers).
+					setSendHandlers(_sendHandlers).
+					setCharset(_charset).
+					build();
+			_channelPool.put(key, session);
 		}
-		return connectionServer(oc);	
-	}
-	
-	private boolean isRegister(OperatorKey key){
-		OperatorChannel oc = _channelPool.get(key);
 		
-		return (oc != null) && (oc.isConnecting() || oc.isStart());
-	}
-	
-	private boolean connectionServer(OperatorChannel oc)throws ClientException{
-		boolean success = false;
-		
-		try {
+		try{
 			_receiveTask.suspend();
-			Connectionable connection = new NioConnection(_selector,_address);
-			if(connection.connect(oc)){
-				oc.start();
-				success = true;
-			}else{
-				String host = _address.getHostName();
-				int port = _address.getPort();
-				logger.error("Connection {}:{} is timeout",host,port);
-				throw new ClientException("Connection "+ host + ":" + port +" is timeout");
-			}
+			session.start();
+			success = true;
 		}catch(IOException e){
-			logger.error("Tcp client start is error {}",e.toString());
+			logger.error("Register {} is error:{}",
+					key.toString(),e.toString());
 			throw new ClientException(e);
 		}finally{
-			oc.connected();
 			_receiveTask.restart();
 		}
+		
 		return success;
 	}
 	
+	private boolean isRegister(OperatorKey key){
+		Sessionable oc = _channelPool.get(key);
+		return oc != null;
+	}
 	
 	@Override
 	public void unRegister(String companyId,String opId)throws ClientException{
@@ -150,15 +132,15 @@ public class TcpCtiClient implements CtiClientable{
 				return ;
 			}
 			OperatorKey key = new OperatorKey(companyId, opId);
-			OperatorChannel  oc = _channelPool.remove(key);
+			Sessionable  oc = _channelPool.remove(key);
 			if(oc == null){
 				return ;
 			}
 			try{
-				if( oc.isStart() || oc.isConnecting()){
-					oc.close();			
-				}		
+				oc.close();			
 			}catch(IOException e){
+				logger.error("Unregister {} is error:{}",
+						key.toString(),e.toString());
 				throw new ClientException(e);
 			}
 		}
@@ -185,13 +167,15 @@ public class TcpCtiClient implements CtiClientable{
 		}
 		OperatorKey key = new OperatorKey(
 				message.getCompayId(), message.getOpId());
-		OperatorChannel channel = _channelPool.get(key);
-		
-		if(channel.isStart()){
-			channel.send(message);
+		Sessionable channel = _channelPool.get(key);
+		try{
+			channel.send(message);	
+		}catch(IOException e){
+			logger.error("Send message is error {}",e.toString());
+			throw new ClientException(e);
 		}
 	}
-
+	
 	@Override
 	public void setReceiveHandlers(List<ReceiveHandler> handlers) {
 		this._receiveHandlers = handlers;
@@ -203,8 +187,8 @@ public class TcpCtiClient implements CtiClientable{
 	}
 	
 	@Override
-	public void setTimeOut(int timeOut){
-		_timeOut = timeOut * 1000 ;
+	public void setTimeout(int timeout){
+		_timeout = timeout * 1000 ;
 	}
 	
 	@Override
@@ -215,5 +199,11 @@ public class TcpCtiClient implements CtiClientable{
 	@Override
 	public CtiMessagePool getMessagePool(){
 		return _messagePool;
+	}
+
+	@Override
+	public Status getStatus(String companyId, String opId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

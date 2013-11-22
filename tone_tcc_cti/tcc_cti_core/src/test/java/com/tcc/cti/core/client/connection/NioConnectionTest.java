@@ -9,12 +9,21 @@ import junit.framework.Assert;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.client.OperatorKey;
+import com.tcc.cti.core.client.session.Session;
+import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.model.ServerConfigure;
 
+/**
+ * {@link NioConnection}单元测试
+ * 
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ */
 public class NioConnectionTest {
+	private static final Logger logger = LoggerFactory.getLogger(NioConnectionTest.class);
 	private ServerConfigure _configure;
 	
 	@Before
@@ -26,38 +35,40 @@ public class NioConnectionTest {
 	
 	@Test
 	public void testWaitConnection()throws Exception{
-		OperatorKey key = new OperatorKey("1", "8001");
-		
 		InetSocketAddress address = new InetSocketAddress(
 				_configure.getHost(), _configure.getPort());
-		SocketChannel channel = SocketChannel.open();
 		Selector selector = Selector.open();
-		
-		OperatorChannel oc = new OperatorChannel.Builder(key,channel,null).build();
-		
 		Connectionable conn = new NioConnection(selector,address);
-		boolean connection = conn.connect(oc);
 		
-		Assert.assertTrue(connection);
+		OperatorKey key = new OperatorKey("1", "8001");
+		Sessionable oc = new Session.Builder(key,conn,null).build();
+		
+		SocketChannel channel = conn.connect(oc);
+		Assert.assertNotNull(channel);
+		Assert.assertTrue(channel.isOpen());
+		channel.close();
 	}
 	
-	@Test(expected= IOException.class)
-	public void testWaitConnectionAddressError()throws Exception{
+	@Test
+	public void testWaitConnectionAddressErrorOrTimeOut()throws Exception{
 		ServerConfigure configure = new ServerConfigure();
 		configure.setHost("211.136.173.134");
 		configure.setPort(9999);
 		
-		OperatorKey key = new OperatorKey("1", "8001");
 		InetSocketAddress address = new InetSocketAddress(
 				configure.getHost(), configure.getPort());
-		SocketChannel channel = SocketChannel.open();
 		Selector selector = Selector.open();
-		OperatorChannel oc = new OperatorChannel.Builder(key,channel,null).build();
-		
 		Connectionable conn = new NioConnection(selector,address);
-		conn.connect(oc);
 		
-		Assert.fail("Connection not exception");
+		OperatorKey key = new OperatorKey("1", "8001");
+		Sessionable oc = new Session.Builder(key,conn,null).build();
+		
+		try{
+			conn.connect(oc);
+			Assert.fail("Connection not exception");
+		}catch(IOException e){
+			logger.debug("Connection error is {}",e.toString());
+		}
 	}
 	
 	@Test
@@ -66,15 +77,20 @@ public class NioConnectionTest {
 		configure.setHost("211.136.173.134");
 		configure.setPort(9999);
 		
-		OperatorKey key = new OperatorKey("1", "8001");
 		InetSocketAddress address = new InetSocketAddress(
 				configure.getHost(), configure.getPort());
-		SocketChannel channel = SocketChannel.open();
 		Selector selector = Selector.open();
-		OperatorChannel oc = new OperatorChannel.Builder(key,channel,null).build();
-		
 		Connectionable conn = new NioConnection(selector,address,10);
-		boolean c = conn.connect(oc);
-		Assert.assertFalse(c);
+		
+		OperatorKey key = new OperatorKey("1", "8001");
+		Sessionable oc = new Session.Builder(key,conn,null).build();
+		
+		try{
+			conn.connect(oc);
+			Assert.fail("Connection not exception");
+		}catch(IOException e){
+			logger.debug("Connection timeout:{}",e.getMessage());
+			Assert.assertEquals("Connection timed out,timeout is 10", e.getMessage());
+		}
 	}
 }

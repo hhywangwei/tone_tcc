@@ -18,7 +18,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.tcc.cti.core.client.ClientException;
-import com.tcc.cti.core.client.OperatorChannel;
+import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.response.ResponseMessage;
 
@@ -39,7 +39,7 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	protected static final String SEQ_PARAMETER = "seq";
 	
 	@Override
-	public void receive(CtiMessagePool pool,OperatorChannel channel, String message)throws ClientException{
+	public void receive(CtiMessagePool pool,Sessionable channel, String message)throws ClientException{
 		
 		logger.debug("receive message is \"{}\"",message);
 		
@@ -95,16 +95,16 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	/**
 	 * 处理接受消息
 	 * @param pool 消息接收池
-	 * @param channel 操作频道
+	 * @param session {@link Sessionable}
 	 * @param content 接受消息内容
 	 * 
 	 * @throws ClientException
 	 */
-	protected void receiveHandler(CtiMessagePool pool, OperatorChannel channel,
+	protected void receiveHandler(CtiMessagePool pool, Sessionable session,
 			Map<String, String> content) throws ClientException {
 		
-		String companyId = channel.getOperatorKey().getCompanyId();
-		String opId = channel.getOperatorKey().getOpId();
+		String companyId = session.getOperatorKey().getCompanyId();
+		String opId = session.getOperatorKey().getOpId();
 		String seq = content.get(SEQ_PARAMETER);
 		
 		ResponseMessage message = 

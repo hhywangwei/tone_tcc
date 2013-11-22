@@ -12,8 +12,14 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tcc.cti.core.client.OperatorChannel;
+import com.tcc.cti.core.client.session.Session;
+import com.tcc.cti.core.client.session.Sessionable;
 
+/**
+ * 通过NIO实现服务器链接
+ * 
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ */
 public class NioConnection implements Connectionable{
 	private static final Logger logger = LoggerFactory.getLogger(NioConnection.class);
 	private static final int DEFAULT_TIMEOUT = 30 * 1000;
@@ -33,27 +39,27 @@ public class NioConnection implements Connectionable{
 	}
 
 	@Override
-	public boolean connect(OperatorChannel oc) throws IOException {
-		return waitConnection(oc,_selector,_address);
+	public SocketChannel connect(Sessionable session) throws IOException {
+		return waitConnection(session,_selector,_address);
 	}
 	
 	/**
 	 * 等待连接CTI服务器
 	 * 
-	 * @param oc {@link OperatorChannel}
+	 * @param session {@link Session}
 	 * @param selector {@link Selector}
 	 * @param address CTI服务地址  {@link InetSocketAddress}
 	 * @return true 连接成功
 	 * @throws IOException 
 	 * @throws InterruptedException 
 	 */
-	protected boolean waitConnection(OperatorChannel oc,
+	protected SocketChannel waitConnection(Sessionable session,
 			Selector selector,InetSocketAddress address)throws IOException{
 		
-		SocketChannel channel = oc.getChannel();
+		SocketChannel channel = SocketChannel.open();
 		channel.configureBlocking(false);
 		channel.connect(address);
-		channel.register(selector, SelectionKey.OP_CONNECT, oc);
+		channel.register(selector, SelectionKey.OP_CONNECT, session);
 		boolean connection = false;
 		
 		int delay = 10;
@@ -70,18 +76,18 @@ public class NioConnection implements Connectionable{
 			try{
 				for(;iterator.hasNext();){
 					SelectionKey sk = iterator.next();
-					if(!sk.attachment().equals(oc) || !sk.isConnectable()){
+					if(!sk.attachment().equals(session) || !sk.isConnectable()){
 						continue;
 					}
 					if(channel.isConnectionPending() && channel.finishConnect()){
 						logger.debug("{}.{} connection success", i, sk.attachment().toString());
-						channel.register(selector, SelectionKey.OP_READ, oc);
+						channel.register(selector, SelectionKey.OP_READ, session);
 						connection = true;
 						break;
 					}	
 				}				
 			}catch(ConnectException e){
-				logger.error("{}.{} connection fail", i, oc.toString());
+				logger.error("{}.{} connection fail", i, session.toString());
 				if(channel.isOpen()){
 					channel.close();
 				}
@@ -89,6 +95,11 @@ public class NioConnection implements Connectionable{
 			}
 		}
 		
-		return connection;
+		if(!connection){
+			throw new ConnectException(
+					"Connection timed out,timeout is " + _timeout);
+		}
+		
+		return channel;
 	}
 }

@@ -8,9 +8,9 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tcc.cti.core.client.OperatorChannel;
 import com.tcc.cti.core.client.monitor.event.HeartbeatEvent;
 import com.tcc.cti.core.client.monitor.event.NoneHeartbeatEvent;
+import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.client.task.HeartbeatSendTask;
 
 /**
@@ -23,63 +23,88 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable, HeartbeatListe
 	private static final int DEFAULT_INIT_DELAY = 0;
 	private static final int DEFAULT_DELAY = 20;
 	
-	private Object _monitor = new Object();
-	private OperatorChannel _channel;
-	private int _initDelay;
-	private int _delay;
-	private ScheduledExecutorService _executorService;
+	private final Object _monitor = new Object();
+	private final Sessionable _session;
+	private final int _initDelay;
+	private final int _delay;
+	private final ScheduledExecutorService _executorService;
+	private final boolean _independent;
 	private volatile ScheduledFuture<?> _future ;
-	private volatile boolean _independent = false;
+	
+	private volatile boolean _start = false;
+	private volatile boolean _shutdown = false;
 	
 	private HeartbeatEvent _event = new NoneHeartbeatEvent();
 	
-	public ScheduledHeartbeatKeep(OperatorChannel channel){
-		init(channel,null,DEFAULT_INIT_DELAY,DEFAULT_DELAY);
+	public ScheduledHeartbeatKeep(Sessionable session){
+		this(session,null,DEFAULT_INIT_DELAY,DEFAULT_DELAY);
 	}
 	
-	public ScheduledHeartbeatKeep(OperatorChannel channel,
+	public ScheduledHeartbeatKeep(Sessionable session,
+			ScheduledExecutorService executorService){
+		
+		this(session,executorService,DEFAULT_INIT_DELAY,DEFAULT_DELAY);
+	}
+	
+	public ScheduledHeartbeatKeep(Sessionable session,
 			ScheduledExecutorService executorService,int initDelay,int delay){
 		
-		init(channel,executorService,initDelay,delay);
-	}
-	
-	private void init(OperatorChannel channel,
-			ScheduledExecutorService executorService,int initDelay,int delay){
-	 
-		_channel = channel;
-		_executorService = executorService;
+		_session = session;
 		_initDelay = initDelay;
 		_delay = delay;
+		_independent = (executorService == null);
+		_executorService = initExecutorService(executorService);
+	}
+	
+	private ScheduledExecutorService initExecutorService(ScheduledExecutorService executorService){
+		return executorService != null ? 
+				executorService : Executors.newSingleThreadScheduledExecutor();
 	}
 	
 	@Override
 	public void start() {
 		synchronized (_monitor) {
-			if(_executorService == null){
-				logger.debug("Start new single thread scheduled...");
-				_executorService = Executors.newSingleThreadScheduledExecutor();
-				_independent = true;
+			if(_start){
+				logger.debug("{} Already heartbeat", _session.getOperatorKey().toString());
+				return ;
 			}
-			HeartbeatSendTask runner = new HeartbeatSendTask(_channel);
-			runner.setEvent(_event);
+			HeartbeatSendTask task = new HeartbeatSendTask(_session);
+			task.setEvent(_event);
 			_future = _executorService.scheduleWithFixedDelay(
-					runner, _initDelay, _delay, TimeUnit.SECONDS);	
+					task, _initDelay, _delay, TimeUnit.SECONDS);
+			_start = true;
 		}
 	}
 	
 	@Override
 	public void shutdown() {
 		synchronized (_monitor) {
-			if(_future == null){
-				return ;
+			if(_start && _future != null){
+				_future.cancel(true);
 			}
-			
-			_future.cancel(true);
-			
 			if(_independent){
 				_executorService.shutdownNow();		
 			}
+			_shutdown = true;
 		}
+	}
+	
+	protected ScheduledExecutorService getExecutorService(){
+		return _executorService;
+	}
+	
+	protected boolean isIndependent(){
+		return _independent;
+	}
+	
+	@Override
+	public boolean isStart(){
+		return _start;
+	}
+	
+	@Override
+	public boolean isShutdown(){
+		return _shutdown;
 	}
 	
 	@Override

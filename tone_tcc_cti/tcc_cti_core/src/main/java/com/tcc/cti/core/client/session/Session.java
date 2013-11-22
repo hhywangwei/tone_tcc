@@ -1,4 +1,4 @@
-package com.tcc.cti.core.client;
+package com.tcc.cti.core.client.session;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
@@ -10,8 +10,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tcc.cti.core.client.ClientException;
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.buffer.ByteMessageBuffer;
 import com.tcc.cti.core.client.buffer.MessageBuffer;
+import com.tcc.cti.core.client.connection.Connectionable;
 import com.tcc.cti.core.client.monitor.HeartbeatKeepable;
 import com.tcc.cti.core.client.monitor.ScheduledHeartbeatKeep;
 import com.tcc.cti.core.client.receive.CallReceiveHandler;
@@ -47,8 +50,8 @@ import com.tcc.cti.core.message.request.RequestMessage;
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class OperatorChannel {
-	private static final Logger logger = LoggerFactory.getLogger(OperatorChannel.class);
+public class Session implements Sessionable {
+	private static final Logger logger = LoggerFactory.getLogger(Session.class);
 	private static final int DEFAULT_HEARTBEAT_INIT_DELAY = 0;
 	private static final int DEFAULT_HEARTBEAT_DELAY = 20;
 	private static final int DEFAULT_HEARTBEAT_TIMEOUT = 65;
@@ -56,8 +59,8 @@ public class OperatorChannel {
 	
 	public static class Builder{
 		private final OperatorKey _key;
-		private final SocketChannel _channel;
 		private final CtiMessagePool _pool;
+		private Connectionable _conn; 
 		private List<ReceiveHandler> _receiveHandlers;
 		private List<SendHandler> _sendHandlers;
 		private GeneratorSeq _generatorSeq ;
@@ -68,11 +71,10 @@ public class OperatorChannel {
 		private int _heartbeatTimeout = DEFAULT_HEARTBEAT_TIMEOUT; 
 
 		
-		public Builder(OperatorKey key,SocketChannel channel,CtiMessagePool pool){
+		public Builder(OperatorKey key, Connectionable conn, CtiMessagePool pool){
 	    	_key = key;
-	    	_channel = channel;
+	    	_conn = conn;
 	    	_pool = pool;
-	    	_generatorSeq = new MemoryGeneratorSeq(key._companyId, key._opId);
 	    }
 		
 		public Builder setReceiveHandlers(List<ReceiveHandler> receiveHandlers){
@@ -115,15 +117,18 @@ public class OperatorChannel {
 			return this;
 		}
 		
-		public OperatorChannel build(){
+		public Session build(){
 			_receiveHandlers = _receiveHandlers != null ?
 					_receiveHandlers : defaultReceiveHandlers();
 			_sendHandlers = _sendHandlers != null ?
 					_sendHandlers : defaultSendHandlers();
+			_generatorSeq = _generatorSeq != null ?
+					_generatorSeq : defaultGreneratorSeq();
 			
-			return new OperatorChannel(_key,_channel,_pool,_receiveHandlers,
-					_sendHandlers,_generatorSeq,_charset,_executorService,
-					_heartbeatInitDelay,_heartbeatDelay,_heartbeatTimeout);
+			return new Session(_key,_conn,_pool,
+					_receiveHandlers,_sendHandlers,_generatorSeq,
+					_charset,_executorService,_heartbeatInitDelay,
+					_heartbeatDelay,_heartbeatTimeout);
 			
 		}
 		
@@ -162,27 +167,15 @@ public class OperatorChannel {
 			return handlers;
 		}
 		
-	}
-	
-	/**
-	 * {@link OperatorChannel}状态
-	 * 
-	 * @author wwang
-	 */
-	enum Status {
-		None,
-		Connecting,
-		ConnectError,
-		Connected,
-		Start,
-		Login,
-		LoginError,
-		Close;
+		private GeneratorSeq defaultGreneratorSeq(){
+			return new MemoryGeneratorSeq(
+					_key.getCompanyId(), _key.getCompanyId());
+		}
 	}
 	
 	private final OperatorKey _key;
-	private final SocketChannel _channel;
 	private final CtiMessagePool _pool;
+	private final Connectionable _conn; 
 	private final List<ReceiveHandler> _receiveHandlers;
 	private final List<SendHandler> _sendHandlers;
 	private final GeneratorSeq _generator;
@@ -194,20 +187,19 @@ public class OperatorChannel {
 	private final Object _bufferMonitor = new Object();
 	private final Thread _receiveThread ;
 	private final Object _monitor = new Object();
-	private volatile boolean _start = false;
-	private volatile boolean _connecting = false;
-	private volatile boolean _loginSuccessful = false;
-	private volatile Status status = Status.None;
-	private volatile long _lastHeartbeanTime = System.currentTimeMillis();
 	
+	private volatile Status status = Status.None;
+	private volatile long _lastTime = System.currentTimeMillis();
+	
+	private SocketChannel _channel;
 
-	protected OperatorChannel(OperatorKey operatorKey,SocketChannel channel,
-			CtiMessagePool pool,List<ReceiveHandler> receiveHandlers,List<SendHandler> sendHandlers,
+	protected Session(OperatorKey operatorKey,Connectionable conn,CtiMessagePool pool,
+			List<ReceiveHandler> receiveHandlers,List<SendHandler> sendHandlers,
 			GeneratorSeq generator,String charset,ScheduledExecutorService executorService,
 			int heartbeatInitDelay,int heartbeatDelay,int heartbeatTimeout){
 		
 		_key = operatorKey;
-		_channel = channel;
+		_conn = conn;
 		_generator = generator;
 		_messageBuffer = new ByteMessageBuffer(charset);
 		_receiveHandlers = receiveHandlers;
@@ -227,68 +219,42 @@ public class OperatorChannel {
 				executorService,heartbeatInitDelay,heartbeatDelay);
 	}
 
-	public void connecting(){
-		status = Status.Connecting;
-	}
-	
-	public void connected(){
-		status = Status.Connected;
-	}
-	
-	public void connectError(){
-		status = Status.ConnectError;
-	}
-	
-	public void start(){
+	/**
+	 * 链接服务端开始服务
+	 * 
+	 * @throws ClientException
+	 */
+	@Override
+	public void start()throws IOException{
 		synchronized (_monitor) {
+			if(isVaild()) return ;
 			
-			if(status == Status.Start 
-					|| status == Status.Login){
-				return ;
-			}
-			
-			if(status == Status.Close){
+			if(isClose()){
 				throw new RuntimeException("Already close ");
 			}
 			
-			if(status != Status.Connected){
-				throw new RuntimeException("Not connection service,so not start");
-			}
-			
-			_start = true;
+			status = Status.Connecting;
+			_channel =  _conn.connect(this);
+			status = Status.Connected;
+			//TODO 在这开始吗？
 			_receiveThread.start();
 		}
 	}
 	
-	
-	
-	
-	
-	public boolean isConnecting(){
-		return _connecting;
-	}
-	
-	
-	public boolean isStart(){
-		return _start;
-	}
-	
-	public boolean isStartHeartbeatKeep(){
-		return _loginSuccessful;
-	}
-	
-	public boolean isOffline(){
-		long now = System.currentTimeMillis();
-		int deff =(int)(now - _lastHeartbeanTime);
-		return deff > _heartbeatTimeout;
-	}
-	
-	public void heartbeatTouch(){
-		_lastHeartbeanTime = System.currentTimeMillis();
-	}
-	
+	/**
+	 * 登录是否成功成功开始心跳
+	 * 
+	 * @param success
+	 */
+	@Override
 	public void login(boolean success){
 		synchronized (_monitor) {
+			if(!isVaild()){
+				throw new RuntimeException("Not start ");
+			}
+			if(isClose()){
+				throw new RuntimeException("Already close ");
+			}
 			status = success ? Status.Login : Status.LoginError;
 			if(success){
 				_heartbeatKeep.start();	
@@ -296,20 +262,54 @@ public class OperatorChannel {
 		}
 	}
 	
+	@Override
+	public boolean isVaild(){
+		return status == Status.Connected 
+				|| status == Status.Login 
+				|| status == Status.LoginError;
+	}
+	
+	@Override
+	public boolean isLogin(){
+		return status == Status.Login;
+	}
+	
+	@Override
+	public boolean isClose(){
+		return status == Status.Close;
+	}
+	
+	@Override
+	public boolean isOffline(){
+		long now = System.currentTimeMillis();
+		int deff =(int)(now - _lastTime);
+		return deff > _heartbeatTimeout;
+	}
+	
+	@Override
+	public void heartbeatTouch(){
+		_lastTime = System.currentTimeMillis();
+	}
+	
+	@Override
 	public void close()throws IOException{
 		synchronized (_monitor) {
-			if(isStart()){
+			if(isClose()){
+				return ;
+			}
+			if(isVaild()){
 				_receiveThread.interrupt();
 			}
-			if(_loginSuccessful){
+			if(isLogin()){
 				_heartbeatKeep.shutdown();
 			}
 			if(_channel.isOpen()){
 				_channel.close();
-			}
+			}	
 		}
 	}
 	
+	@Override
 	public void append(byte[] bytes)  {
 		synchronized (_bufferMonitor) {
 			_messageBuffer.append(bytes);
@@ -317,24 +317,28 @@ public class OperatorChannel {
 		}
 	}
 	
-	public void send(RequestMessage message)throws ClientException {
+	@Override
+	public void send(RequestMessage message)throws IOException {
+		if(!isVaild()){
+			throw new RuntimeException("Not start ");
+		}
+		if(isClose()){
+			throw new RuntimeException("Already close ");
+		}
 		for(SendHandler handler : _sendHandlers){
 			handler.send(_channel, message, _generator,_charset);
 		}
 	}
 	
-	public SocketChannel getChannel() {
-		return _channel;
-	}
-
-	public GeneratorSeq getGenerator() {
-		return _generator;
-	}
-
+	@Override
 	public OperatorKey getOperatorKey() {
 		return _key;
 	}
-
+	
+	@Override
+	public Status getStatus(){
+		return status;
+	}
 	
 	@Override
 	public int hashCode() {
@@ -353,7 +357,7 @@ public class OperatorChannel {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		OperatorChannel other = (OperatorChannel) obj;
+		Session other = (Session) obj;
 		if (_key == null) {
 			if (other._key != null)
 				return false;
@@ -406,7 +410,7 @@ public class OperatorChannel {
 			
 			for(ReceiveHandler r : _receiveHandlers){
 				try{
-					r.receive(_pool,OperatorChannel.this, m);	
+					r.receive(_pool,Session.this, m);	
 				}catch(ClientException e){
 					logger.error("Receive client exception {}",e.getMessage());
 				}

@@ -20,4 +20,18 @@ public interface HeartbeatKeepable {
 	 */
 	void shutdown();
 	
+	/**
+	 * 开始心跳
+	 * 
+	 * @return true 已经开始心跳
+	 */
+	boolean isStart();
+	
+	/**
+	 * 停止心跳
+	 * 
+	 * @return true 已经停止心跳
+	 */
+	boolean isShutdown();
+	
 }
