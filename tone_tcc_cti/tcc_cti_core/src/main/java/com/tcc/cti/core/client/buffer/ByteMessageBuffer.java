@@ -9,7 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 使用{@link ByteBuffer}为容器，实现{@link MessageBuffer}功能
+ * 使用{@link ByteBuffer}为容器来缓存从Socket中读出的数据，
+ * 在该缓冲区可完成服务端消息整合，最后客户端读到的是完整的消息。
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
@@ -20,10 +21,10 @@ public class ByteMessageBuffer implements MessageBuffer{
 	private static final int HEAD_VALUE_LENGTH = 5;
 	private static final int HEAD_VALUE_OFFSET = 6;
 	private static final int MESSAGE_MAX_LENGTH = 32 * 1024;
-	private static final int MISS_MESSAGE_MAX_LENGTH = 8 * 1024;
-	
 	private static final int DEFAULT_CAPACITY = 256 * 1024;
 	private static final Pattern DEFAULT_HEAD_PATTERN = Pattern.compile("<head>\\d{5}</head>");
+	private static final int NONE_MESSAGE_LENGTH = -1;
+	private static final int MESSAGE_LEN_NOT_INTEGER = -2;
 	
 	
 	private final int _maxLength; 
@@ -57,36 +58,43 @@ public class ByteMessageBuffer implements MessageBuffer{
 	}
 
 	@Override
-	public String next() {
+	public String next()throws InterruptedException{
 		synchronized (_buffer) {
-			int remaining = _buffer.reset().remaining();
-			
-			if(remaining ==  0){
-				logger.debug("message is empty");
-				return null;
+			while(true){
+				int remaining = _buffer.reset().remaining();
+				
+				if(remaining < HEAD_LENGTH){
+					logger.debug("message is empty");
+					_buffer.wait();
+					continue;
+				}
+				
+				int len =  getNextMessageLength();
+				if(isError(len,remaining)){
+					clearBuffer();
+					continue;
+				}
+				
+				if(notComplete(len,remaining)){
+					logger.debug("message is not complete");
+					_buffer.wait();
+					continue;
+				}
+				
+				_buffer.reset();
+				byte[] m = new byte[len];
+				_buffer.get(m);
+				_buffer.mark();
+				
+				String message = new String(m,_charset);
+				logger.debug("Message is \"{}\"",message);
+				return message;	
 			}
-			
-			int len =  getMessageLength(remaining);
-			if(len > _maxLength){
-				logger.debug("message {} too length",len);
-				clearBuffer();
-				return null;
-			}
-			
-			if(notComplete(len,remaining)){
-				logger.debug("message is not complete");
-				return null;
-			}
-			
-			_buffer.reset();
-			byte[] m = new byte[len];
-			_buffer.get(m);
-			_buffer.mark();
-			
-			String message = new String(m,_charset);
-			logger.debug("Message is \"{}\"",message);
-			return message;
 		}
+	}
+	
+	private boolean isError(int len,int remaining){
+		return len == -1 && remaining >= _maxLength;
 	}
 	
 	/**
@@ -97,7 +105,7 @@ public class ByteMessageBuffer implements MessageBuffer{
 	 * @return
 	 */
 	private boolean notComplete(int len,int remaining){
-		return len == -1 || len > remaining;
+		return len == -1 || len > remaining ;
 	}
 	
 	/**
@@ -112,107 +120,133 @@ public class ByteMessageBuffer implements MessageBuffer{
 	 * 
 	 * @return
 	 */
-	private int getMessageLength(int remaining){		
-		int headLength = HEAD_LENGTH;
-		if(remaining < headLength){
-			return -1;
-		}
-		byte[] head = new byte[headLength];
-		logger.debug("message head is {}",new String(head));
-		_buffer.get(head);
-		boolean enable = isHead(head);
-		if(enable){
-			return parseMessageLength(head,headLength);
+	private int getNextMessageLength(){		
+		boolean head = isPositionHead();
+		int len = NONE_MESSAGE_LENGTH;
+		if(head){
+			len = parseMessageLength();
 		}else{
-			boolean hasNext = positionNextHead();
-			return hasNext ? getMessageLength(remaining) : -1;
+			boolean next = positionNextHead();
+			if(next){
+				len = getNextMessageLength();
+			}
 		}
+		
+		if(len == MESSAGE_LEN_NOT_INTEGER ||
+				len >= _maxLength){
+			
+			boolean next = positionNextHead();
+			if(next){
+				len = getNextMessageLength();
+			}else{
+				clearBuffer();
+				len = NONE_MESSAGE_LENGTH;
+			}
+		}
+		
+		return len ;
 	}
 	
 	/**
-	 * 判断读取的消息头是否正确
+	 * 判断{@code position}是指到消息头
+	 * 
 	 * <pre>
 	 * 消息头格式：<head>00001</head>
 	 * <pre>
-	 * @param bytes 读取的消息头
-	 * @return
+	 * @return true 是消息头
 	 */
-	private boolean isHead(byte[] bytes){
+	private boolean isPositionHead(){
+		byte[] bytes = new byte[HEAD_LENGTH];
+		_buffer.get(bytes);
 		String s = new String(bytes,_charset);
 		Matcher matcher = headPatter.matcher(s);
-		return matcher.matches();
+		boolean head = matcher.matches();
+		_buffer.reset();
+		
+		return head;
 	}
 	
 	/**
 	 * 解析消息头得到消息长度
 	 * 
-	 * @param bytes 消息头
-	 * @param headLength 消息头长度
 	 * @return
 	 */
-	private int parseMessageLength(byte[] bytes,int headLength){
-		int len = HEAD_VALUE_LENGTH;
-		byte[] lenValues = new byte[len];
-		int offset = HEAD_VALUE_OFFSET;
-		System.arraycopy(bytes, offset, lenValues, 0, len);
-		String l = new String(lenValues,_charset);
-		logger.debug("Message len is \"{}\"",l);
-		return Integer.valueOf(l) + headLength;
+	private int parseMessageLength(){
+		byte[] bytes = new byte[HEAD_LENGTH];
+		_buffer.get(bytes);
+		byte[] values = new byte[HEAD_VALUE_LENGTH];
+		System.arraycopy(bytes, HEAD_VALUE_OFFSET, values, 0, HEAD_VALUE_LENGTH);
+		String lenStr = new String(values,_charset);
+		logger.debug("Parse message len is \"{}\"", lenStr);
+		
+		try{
+			int len = Integer.valueOf(lenStr) + HEAD_LENGTH;
+			_buffer.reset();
+			return len;
+		}catch(Exception e){
+			logger.error("Message len type is error \"{}\"",e.getMessage());
+			_buffer.mark();
+			return MESSAGE_LEN_NOT_INTEGER;
+		}
 	}
 	
 	/**
 	 * 指定下一个消息头位置
+	 * 
+	 * @param position true 移动到下一个节点
 	 */
 	private boolean positionNextHead(){
-		int remaining = _buffer.reset().remaining();
+		int remaining = _buffer.remaining();
 		byte[] bytes = new byte[remaining];
 		_buffer.get(bytes);
 		String s = new String(bytes,_charset);
+		
 		Matcher matcher = headPatter.matcher(s);
-		boolean hasNext = false;
-		if(matcher.find()){
-			int start = matcher.start();
-			int position = getBytesLength(s,0,start) ;
-			_buffer.position(position).mark();
-			hasNext = true;
+		boolean has = matcher.find();
+		if(has){
+			int len = matcher.start();
+			int p = getBytesLength(s,len);
+			_buffer.position(p).mark();				
 		}else{
-			if(remaining > MISS_MESSAGE_MAX_LENGTH){
-				clearBuffer();
-			}			
+			_buffer.reset();
 		}
-		return hasNext;
+		
+		return has;
 	}
 	
 	/**
 	 * 通过得字符转换byte数据组长度，得到字符在{@link ByteBuffer}中所占长度。
 	 * 
 	 * @param s 字符串
-	 * @param offset 起始位置
 	 * @param len 长度
 	 * @return
 	 */
-	private int getBytesLength(String s,int offset,int len){
-		return s.substring(offset, len).getBytes(_charset).length;
+	private int getBytesLength(String s,int len){
+		return s.substring(0, len).getBytes(_charset).length;
 	}
 	
-	
 	@Override
-	public void append(byte[] bytes) {
-		
-		if(bytes == null || bytes.length == 0){
-			logger.debug("Message is empty");
-			return ;
+	public boolean append(byte[] bytes) {
+		if(bytes == null){
+			bytes = new byte[0];
 		}
 		
-		if(bytes.length > _maxLength){
-			logger.warn("Append message \"{}\" is too length",new String(bytes,_charset));
-			return ;
+		int len = bytes.length;
+		if(len == 0){
+			logger.debug("Message is empty");
+			return true;
+		}
+		
+		String m = new String(bytes,_charset);
+		logger.debug("Append message is \"{}\"", m);
+		
+		if(len > _maxLength){
+			logger.warn("Append message must length < {}",len);
+			return false;
 		}
 		
 		synchronized (_buffer) {
-			int len = bytes.length;
 			int free= _buffer.capacity() - _buffer.limit() ;
-			
 			if(free < len ){
 				int position = _buffer.reset().position();
 				if((free + position) > len){
@@ -223,12 +257,11 @@ public class ByteMessageBuffer implements MessageBuffer{
 					clearBuffer();
 				}
 			}
-			
 			int limit = _buffer.limit();
 			_buffer.position(limit).limit(limit + len);
-			String m = new String(bytes,_charset);
-			logger.debug("Append message is \"{}\"", m);
 			_buffer.put(bytes);
+			_buffer.reset();
+			return true;
 		}
 	}
 	
