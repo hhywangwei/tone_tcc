@@ -23,8 +23,9 @@ public class ByteMessageBuffer implements MessageBuffer{
 	private static final int MESSAGE_MAX_LENGTH = 32 * 1024;
 	private static final int DEFAULT_CAPACITY = 256 * 1024;
 	private static final Pattern DEFAULT_HEAD_PATTERN = Pattern.compile("<head>\\d{5}</head>");
-	private static final int NONE_MESSAGE_LENGTH = -1;
+	private static final int NONE_MESSAGE_LEN = -1;
 	private static final int MESSAGE_LEN_NOT_INTEGER = -2;
+	private static final int MESSAGE_OVER_MAX_LENGTH = -3;
 	
 	
 	private final int _maxLength; 
@@ -61,21 +62,14 @@ public class ByteMessageBuffer implements MessageBuffer{
 	public String next()throws InterruptedException{
 		synchronized (_buffer) {
 			while(true){
-				int remaining = _buffer.reset().remaining();
-				
-				if(remaining < HEAD_LENGTH){
+				int len =  getNextMessageLength();
+				if(isNone(len)){
 					logger.debug("message is empty");
 					_buffer.wait();
 					continue;
 				}
 				
-				int len =  getNextMessageLength();
-				if(isError(len,remaining)){
-					clearBuffer();
-					continue;
-				}
-				
-				if(notComplete(len,remaining)){
+				if(notComplete(len)){
 					logger.debug("message is not complete");
 					_buffer.wait();
 					continue;
@@ -93,19 +87,19 @@ public class ByteMessageBuffer implements MessageBuffer{
 		}
 	}
 	
-	private boolean isError(int len,int remaining){
-		return len == -1 && remaining >= _maxLength;
+	private boolean isNone(int len){
+		return len == NONE_MESSAGE_LEN;
 	}
 	
 	/**
 	 * 消息不完整
 	 * 
 	 * @param len 消息长度
-	 * @param remaining buff中真实消息长度
 	 * @return
 	 */
-	private boolean notComplete(int len,int remaining){
-		return len == -1 || len > remaining ;
+	private boolean notComplete(int len){
+		int remaining = _buffer.remaining();
+		return len > remaining ;
 	}
 	
 	/**
@@ -122,7 +116,7 @@ public class ByteMessageBuffer implements MessageBuffer{
 	 */
 	private int getNextMessageLength(){		
 		boolean head = isPositionHead();
-		int len = NONE_MESSAGE_LENGTH;
+		int len = NONE_MESSAGE_LEN;
 		if(head){
 			len = parseMessageLength();
 		}else{
@@ -133,14 +127,14 @@ public class ByteMessageBuffer implements MessageBuffer{
 		}
 		
 		if(len == MESSAGE_LEN_NOT_INTEGER ||
-				len >= _maxLength){
+				len == MESSAGE_OVER_MAX_LENGTH){
 			
 			boolean next = positionNextHead();
 			if(next){
 				len = getNextMessageLength();
 			}else{
 				clearBuffer();
-				len = NONE_MESSAGE_LENGTH;
+				len = NONE_MESSAGE_LEN;
 			}
 		}
 		
@@ -156,6 +150,11 @@ public class ByteMessageBuffer implements MessageBuffer{
 	 * @return true 是消息头
 	 */
 	private boolean isPositionHead(){
+		int remaining = _buffer.remaining();
+		if(remaining < HEAD_LENGTH){
+			return false;
+		}
+		
 		byte[] bytes = new byte[HEAD_LENGTH];
 		_buffer.get(bytes);
 		String s = new String(bytes,_charset);
@@ -181,7 +180,12 @@ public class ByteMessageBuffer implements MessageBuffer{
 		
 		try{
 			int len = Integer.valueOf(lenStr) + HEAD_LENGTH;
-			_buffer.reset();
+			if(len > _maxLength){
+				_buffer.mark();
+				len = MESSAGE_OVER_MAX_LENGTH;
+			}else{
+				_buffer.reset();	
+			}
 			return len;
 		}catch(Exception e){
 			logger.error("Message len type is error \"{}\"",e.getMessage());
@@ -261,6 +265,7 @@ public class ByteMessageBuffer implements MessageBuffer{
 			_buffer.position(limit).limit(limit + len);
 			_buffer.put(bytes);
 			_buffer.reset();
+			_buffer.notifyAll();
 			return true;
 		}
 	}
