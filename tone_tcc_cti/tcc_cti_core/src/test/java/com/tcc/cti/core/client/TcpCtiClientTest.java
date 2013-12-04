@@ -13,15 +13,14 @@ import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.message.pool.NoneMessagePool;
 import com.tcc.cti.core.message.request.LoginRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
-import com.tcc.cti.core.model.ServerConfigure;
 
 public class TcpCtiClientTest {
 	
-	private ServerConfigure _configure;
+	private Configure _configure;
 	
 	@Before
 	public void before()throws Exception{
-		_configure = new ServerConfigure();
+		_configure = new Configure();
 		_configure.setHost("211.136.173.132");
 		_configure.setPort(9999);
 	}

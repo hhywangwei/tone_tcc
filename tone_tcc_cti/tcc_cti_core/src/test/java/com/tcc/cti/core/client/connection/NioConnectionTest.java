@@ -12,10 +12,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tcc.cti.core.client.Configure;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.session.Session;
 import com.tcc.cti.core.client.session.Sessionable;
-import com.tcc.cti.core.model.ServerConfigure;
 
 /**
  * {@link NioConnection}单元测试
@@ -24,11 +24,11 @@ import com.tcc.cti.core.model.ServerConfigure;
  */
 public class NioConnectionTest {
 	private static final Logger logger = LoggerFactory.getLogger(NioConnectionTest.class);
-	private ServerConfigure _configure;
+	private Configure _configure;
 	
 	@Before
 	public void before()throws Exception{
-		_configure = new ServerConfigure();
+		_configure = new Configure();
 		_configure.setHost("211.136.173.132");
 		_configure.setPort(9999);
 	}
@@ -51,7 +51,7 @@ public class NioConnectionTest {
 	
 	@Test
 	public void testWaitConnectionAddressErrorOrTimeOut()throws Exception{
-		ServerConfigure configure = new ServerConfigure();
+		Configure configure = new Configure();
 		configure.setHost("211.136.173.134");
 		configure.setPort(9999);
 		
@@ -73,7 +73,7 @@ public class NioConnectionTest {
 	
 	@Test
 	public void testWaitConnectionTimeOut()throws Exception{
-		ServerConfigure configure = new ServerConfigure();
+		Configure configure = new Configure();
 		configure.setHost("211.136.173.134");
 		configure.setPort(9999);
 		

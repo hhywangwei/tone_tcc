@@ -9,13 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.ClientException;
+import com.tcc.cti.core.client.Configure;
 import com.tcc.cti.core.client.TcpCtiClient;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
 import com.tcc.cti.core.message.request.GroupRequest;
 import com.tcc.cti.core.message.request.LoginRequest;
 import com.tcc.cti.core.message.response.ResponseMessage;
-import com.tcc.cti.core.model.ServerConfigure;
 
 /**
  * 整合测试CTI
@@ -40,8 +40,8 @@ public class CtiMain {
 		_receiveThread = new Thread(new ReceiveRunner(_pool,_companyId,_opId,_client));
 	}
 	
-	private ServerConfigure initConfigure(){
-		ServerConfigure configure = new ServerConfigure();
+	private Configure initConfigure(){
+		Configure configure = new Configure();
 		configure.setHost("211.136.173.132");
 		configure.setPort(9999);
 		
