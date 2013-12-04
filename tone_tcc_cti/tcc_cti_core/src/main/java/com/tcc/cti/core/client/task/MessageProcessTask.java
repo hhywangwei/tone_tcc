@@ -24,7 +24,6 @@ public class MessageProcessTask implements Runnable{
 	private final CtiMessagePool _pool;
 	private final Sessionable _session;
 	private final MessageBuffer _mBuffer;
-	private final Object _monitor = new Object();
 
 	public MessageProcessTask(CtiMessagePool pool,Sessionable session,
 			MessageBuffer mBuffer,List<ReceiveHandler> receiveHandlers){
@@ -42,14 +41,7 @@ public class MessageProcessTask implements Runnable{
 				if(Thread.interrupted()){
 					break;
 				}
-				String m = null;
-				synchronized (_monitor) {
-					m = _mBuffer.next();
-					if(m == null){
-						_monitor.wait();
-						continue;
-					}
-				}
+				String m = _mBuffer.next();
 				receiveHandle(m,_pool,_session,_receiveHandlers);	
 			}catch(InterruptedException e){
 				logger.error("Receive message interruped {}",e.getMessage());
@@ -71,9 +63,5 @@ public class MessageProcessTask implements Runnable{
 				logger.error("Receive client exception {}",e.getMessage());
 			}
 		}
-	}
-	
-	public void notifyReceive(){
-		_monitor.notifyAll();
 	}
 }

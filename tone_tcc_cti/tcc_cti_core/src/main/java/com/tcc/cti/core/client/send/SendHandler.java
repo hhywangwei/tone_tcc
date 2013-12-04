@@ -2,6 +2,7 @@ package com.tcc.cti.core.client.send;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
 
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -24,9 +25,9 @@ public interface SendHandler {
 	 * @param channel {@link SocketChannel}
 	 * @param message 发送的消息对象
 	 * @param generator 生成消息序列号
-	 * @param charset 发送对象字符集
+	 * @param Charset 发送对象字符集
 	 * @throws IOException
 	 */
-	void send(SocketChannel channel, RequestMessage message, GeneratorSeq generator, String charset)throws IOException;
+	void send(SocketChannel channel, RequestMessage message, GeneratorSeq generator, Charset charset)throws IOException;
 	
 }

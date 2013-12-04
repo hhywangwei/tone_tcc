@@ -37,8 +37,19 @@ public class ByteMessageBuffer implements MessageBuffer{
 	
 	/**
 	 * 实例{@link ByteMessageBuffer}对象
+	 * 
+	 *  @param charsetName 消息字符集名
 	 */
-	public ByteMessageBuffer(String charset){
+	public ByteMessageBuffer(String charsetName){
+		this(DEFAULT_CAPACITY,Charset.forName(charsetName));
+	}
+	
+	/**
+	 * 实例{@link ByteMessageBuffer}对象
+	 * 
+	 *  @param charset 消息字符集
+	 */
+	public ByteMessageBuffer(Charset charset){
 		this(DEFAULT_CAPACITY,charset);
 	}
 	
@@ -46,11 +57,21 @@ public class ByteMessageBuffer implements MessageBuffer{
 	 * 实例{@link ByteMessageBuffer}对象
 	 * 
 	 * @param capacity 缓冲区大小
-	 * @param charsetName 消息字符集
+	 * @param charsetName 消息字符集名
 	 */
-	public ByteMessageBuffer(int capacity,String charset){
+	public ByteMessageBuffer(int capacity,String charsetName){
+		this(capacity,Charset.forName(charsetName));
+	}
+	
+	/**
+	 * 实例{@link ByteMessageBuffer}对象
+	 * 
+	 * @param capacity 缓冲区大小
+	 * @param charset 消息字符集
+	 */
+	public ByteMessageBuffer(int capacity,Charset charset){
 		_maxLength = (capacity < MESSAGE_MAX_LENGTH)? capacity: MESSAGE_MAX_LENGTH;
-		_charset = Charset.forName(charset);
+		_charset = charset;
 		_buffer =(ByteBuffer)ByteBuffer.
 				allocate(capacity).
 				position(0).

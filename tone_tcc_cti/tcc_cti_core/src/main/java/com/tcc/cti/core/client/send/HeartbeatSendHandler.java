@@ -22,9 +22,8 @@ public class HeartbeatSendHandler extends AbstractSendHandler {
 	}
 
 	@Override
-	protected byte[] getMessage(RequestMessage message,GeneratorSeq generator,String charset) {
-		Charset c = Charset.forName(charset);
-		return HB_MSG.getBytes(c);
+	protected byte[] getMessage(RequestMessage message,GeneratorSeq generator,Charset charset) {
+		return HB_MSG.getBytes(charset);
 	}
 	
 	@Override

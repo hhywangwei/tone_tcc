@@ -1,7 +1,6 @@
 package com.tcc.cti.core.client;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.channels.Selector;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,18 +10,15 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tcc.cti.core.client.connection.Connectionable;
-import com.tcc.cti.core.client.connection.NioConnection;
 import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.session.Session;
-import com.tcc.cti.core.client.session.Sessionable.Status;
 import com.tcc.cti.core.client.session.Sessionable;
+import com.tcc.cti.core.client.session.Sessionable.Status;
 import com.tcc.cti.core.client.task.StocketReceiveTask;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
 import com.tcc.cti.core.message.request.RequestMessage;
-import com.tcc.cti.core.model.ServerConfigure;
 
 /**
  * 通过TCP协议实现客户端与CTI服务器消息通信
@@ -31,12 +27,9 @@ import com.tcc.cti.core.model.ServerConfigure;
  */
 public class TcpCtiClient implements CtiClientable{
 	private static final Logger logger = LoggerFactory.getLogger(TcpCtiClient.class);
-	private static final String DEFAULT_CHARSET_NAME = "ISO-8859-1";
-	private static final int DEFAULT_TIMEOUT = 30 * 1000;
-	private static final int HEART_POOL_SIZE = 5;
 
 	private final CtiMessagePool _messagePool;
-	private final InetSocketAddress _address;
+	private final Configure _configure;
 	private final ConcurrentHashMap<OperatorKey, Session> _channelPool = 
 			new ConcurrentHashMap<OperatorKey, Session>();
 	private final Object _monitor = new Object();
@@ -47,18 +40,15 @@ public class TcpCtiClient implements CtiClientable{
 	private Thread _receiveThread;
 	private Selector _selector;
 	private ScheduledExecutorService _heartExcecutorService;
-	private int _timeout = DEFAULT_TIMEOUT;
-	private String _charset = DEFAULT_CHARSET_NAME;
 	private volatile boolean _start = false;
 	
-	public TcpCtiClient(ServerConfigure configure){
+	public TcpCtiClient(Configure configure){
 		this(configure,new OperatorCtiMessagePool());
 	}
 		
-	public TcpCtiClient(ServerConfigure configure,CtiMessagePool messagePool){
+	public TcpCtiClient(Configure configure,CtiMessagePool messagePool){
 		_messagePool = messagePool;
-		_address = new InetSocketAddress(
-				configure.getHost(), configure.getPort());
+		_configure = configure;
 	}
 
 	@Override
@@ -69,7 +59,7 @@ public class TcpCtiClient implements CtiClientable{
 				_receiveTask= new StocketReceiveTask(_selector);
 				_receiveThread = new Thread(_receiveTask);
 				_receiveThread.start();
-				_heartExcecutorService = Executors.newScheduledThreadPool(HEART_POOL_SIZE);
+				_heartExcecutorService = Executors.newScheduledThreadPool(_configure.getHeartPoolSize());
 				_start = true;
 			}
 		} catch (IOException e) {
@@ -93,14 +83,11 @@ public class TcpCtiClient implements CtiClientable{
 				return true;
 			}
 			
-			Connectionable conn = 
-					new NioConnection(_selector,_address,_timeout);
 			session = new Session.
-					Builder(key,conn,_messagePool).
+					Builder(key,_selector,_configure,_messagePool).
 					setScheduledExecutorService(_heartExcecutorService).
 					setReceiveHandlers(_receiveHandlers).
 					setSendHandlers(_sendHandlers).
-					setCharset(_charset).
 					build();
 			_channelPool.put(key, session);
 		}
@@ -184,16 +171,6 @@ public class TcpCtiClient implements CtiClientable{
 	@Override
 	public void setSendHandlers(List<SendHandler> handlers) {
 		this._sendHandlers = handlers;
-	}
-	
-	@Override
-	public void setTimeout(int timeout){
-		_timeout = timeout * 1000 ;
-	}
-	
-	@Override
-	public void setCharset(String charset){
-		_charset = charset;
 	}
 	
 	@Override

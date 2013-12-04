@@ -79,20 +79,7 @@ public interface CtiClientable {
 	 */
 	void setSendHandlers(List<SendHandler> handlers);
 	
-	/**
-	 * 设置连接超时
-	 * 
-	 * @param timeout 单位秒
-	 */
-	void setTimeout(int timeOut);
-
-	/**
-	 * 设置与cti服务器通信字符集编码
-	 * 
-	 * @param charset
-	 */
-	void setCharset(String charset);
-	
+	 
 	/**
 	 * 得到接收服务器消息池
 	 * 

@@ -1,20 +1,23 @@
 package com.tcc.cti.core.client.session;
 
 import java.io.IOException;
+import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.ClientException;
+import com.tcc.cti.core.client.Configure;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.buffer.ByteMessageBuffer;
 import com.tcc.cti.core.client.buffer.MessageBuffer;
 import com.tcc.cti.core.client.connection.Connectionable;
+import com.tcc.cti.core.client.connection.NioConnection;
 import com.tcc.cti.core.client.monitor.HeartbeatKeepable;
 import com.tcc.cti.core.client.monitor.ScheduledHeartbeatKeep;
 import com.tcc.cti.core.client.receive.CallReceiveHandler;
@@ -42,6 +45,7 @@ import com.tcc.cti.core.client.send.RecordSendHandler;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.sequence.MemoryGeneratorSeq;
+import com.tcc.cti.core.client.task.MessageProcessTask;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.request.RequestMessage;
 
@@ -52,28 +56,22 @@ import com.tcc.cti.core.message.request.RequestMessage;
  */
 public class Session implements Sessionable {
 	private static final Logger logger = LoggerFactory.getLogger(Session.class);
-	private static final int DEFAULT_HEARTBEAT_INIT_DELAY = 0;
-	private static final int DEFAULT_HEARTBEAT_DELAY = 20;
-	private static final int DEFAULT_HEARTBEAT_TIMEOUT = 65;
-	
 	
 	public static class Builder{
 		private final OperatorKey _key;
 		private final CtiMessagePool _pool;
-		private Connectionable _conn; 
+		private final Selector _selector;
+		private final Configure _configure;
 		private List<ReceiveHandler> _receiveHandlers;
 		private List<SendHandler> _sendHandlers;
 		private GeneratorSeq _generatorSeq ;
-		private String _charset = "UTF-8";
 		private ScheduledExecutorService _executorService;
-		private int _heartbeatInitDelay = DEFAULT_HEARTBEAT_INIT_DELAY;
-		private int _heartbeatDelay = DEFAULT_HEARTBEAT_DELAY;
-		private int _heartbeatTimeout = DEFAULT_HEARTBEAT_TIMEOUT; 
 
 		
-		public Builder(OperatorKey key, Connectionable conn, CtiMessagePool pool){
+		public Builder(OperatorKey key, Selector selector,Configure configure, CtiMessagePool pool){
 	    	_key = key;
-	    	_conn = conn;
+	    	_selector = selector;
+	    	_configure = configure;
 	    	_pool = pool;
 	    }
 		
@@ -87,11 +85,6 @@ public class Session implements Sessionable {
 			return this;
 		}
 		
-		public Builder setCharset(String charset){
-			_charset = charset;
-			return this;
-		}
-		
 		public Builder setGeneratorSeq(GeneratorSeq generatorSeq){
 			_generatorSeq = generatorSeq;
 			return this;
@@ -99,21 +92,6 @@ public class Session implements Sessionable {
 		
 		public Builder setScheduledExecutorService(ScheduledExecutorService executorService){
 			_executorService = executorService;
-			return this;
-		}
-		
-		public Builder setHeartbeatInitDelay(int initDelay){
-			_heartbeatInitDelay = initDelay;
-			return this;
-		}
-		
-		public Builder setHeartbeatDelay(int delay){
-			_heartbeatDelay = delay;
-			return this;
-		}
-		
-		public Builder setHeartbeatTimeout(int timeout){
-			_heartbeatTimeout = timeout;
 			return this;
 		}
 		
@@ -125,10 +103,11 @@ public class Session implements Sessionable {
 			_generatorSeq = _generatorSeq != null ?
 					_generatorSeq : defaultGreneratorSeq();
 			
-			return new Session(_key,_conn,_pool,
+			Connectionable conn = new NioConnection(
+					_selector,_configure.getAddress(),_configure.getConnectionTimeout());
+			return new Session(_key,conn,_pool,
 					_receiveHandlers,_sendHandlers,_generatorSeq,
-					_charset,_executorService,_heartbeatInitDelay,
-					_heartbeatDelay,_heartbeatTimeout);
+					_executorService,_configure);
 			
 		}
 		
@@ -174,18 +153,15 @@ public class Session implements Sessionable {
 	}
 	
 	private final OperatorKey _key;
-	private final CtiMessagePool _pool;
 	private final Connectionable _conn; 
-	private final List<ReceiveHandler> _receiveHandlers;
 	private final List<SendHandler> _sendHandlers;
 	private final GeneratorSeq _generator;
-	private final String _charset;
 	private final HeartbeatKeepable _heartbeatKeep ;
 	private final int _heartbeatTimeout;
 	private final MessageBuffer _messageBuffer;
+	private final Charset _charset;
 	
-	private final Object _bufferMonitor = new Object();
-	private final Thread _receiveThread ;
+	private final Thread _messageProcessThread ;
 	private final Object _monitor = new Object();
 	
 	private volatile Status status = Status.None;
@@ -195,21 +171,20 @@ public class Session implements Sessionable {
 
 	protected Session(OperatorKey operatorKey,Connectionable conn,CtiMessagePool pool,
 			List<ReceiveHandler> receiveHandlers,List<SendHandler> sendHandlers,
-			GeneratorSeq generator,String charset,ScheduledExecutorService executorService,
-			int heartbeatInitDelay,int heartbeatDelay,int heartbeatTimeout){
+			GeneratorSeq generator,ScheduledExecutorService executorService,
+			Configure configure){
 		
 		_key = operatorKey;
 		_conn = conn;
 		_generator = generator;
-		_messageBuffer = new ByteMessageBuffer(charset);
-		_receiveHandlers = receiveHandlers;
+		_messageBuffer = new ByteMessageBuffer(configure.getCharset());
 		_sendHandlers = sendHandlers;
-		_pool = pool;
-		_charset = charset;
 		_heartbeatKeep = initHeartbeatKeep(
-				executorService,heartbeatInitDelay,heartbeatDelay);
-		_heartbeatTimeout = heartbeatTimeout * 1000;
-		_receiveThread = new Thread(new ReceiveRun());
+				executorService,configure.getHeartbeatInitDelay(),configure.getHeartbeatDelay());
+		_heartbeatTimeout = configure.getHeartbeatTimeout() * 1000;
+		_messageProcessThread = new Thread(new MessageProcessTask(
+				pool,this,_messageBuffer,receiveHandlers));
+		_charset = configure.getCharset();
 	}
 	
 	private HeartbeatKeepable initHeartbeatKeep(ScheduledExecutorService executorService,
@@ -227,17 +202,19 @@ public class Session implements Sessionable {
 	@Override
 	public void start()throws IOException{
 		synchronized (_monitor) {
+			logger.debug("{} Session is start",_key.toString());
+			
 			if(isVaild()) return ;
 			
 			if(isClose()){
+				logger.warn("{} Session is closed",_key.toString());
 				throw new RuntimeException("Already close ");
 			}
 			
 			status = Status.Connecting;
 			_channel =  _conn.connect(this);
 			status = Status.Connected;
-			//TODO 在这开始吗？
-			_receiveThread.start();
+			_messageProcessThread.start();
 		}
 	}
 	
@@ -298,7 +275,7 @@ public class Session implements Sessionable {
 				return ;
 			}
 			if(isVaild()){
-				_receiveThread.interrupt();
+				_messageProcessThread.interrupt();
 			}
 			if(isLogin()){
 				_heartbeatKeep.shutdown();
@@ -311,10 +288,7 @@ public class Session implements Sessionable {
 	
 	@Override
 	public void append(byte[] bytes)  {
-		synchronized (_bufferMonitor) {
-			_messageBuffer.append(bytes);
-			_bufferMonitor.notifyAll();
-		}
+		_messageBuffer.append(bytes);
 	}
 	
 	@Override
@@ -373,49 +347,5 @@ public class Session implements Sessionable {
 		builder.append(_key.toString());
 		builder.append("]");
 		return builder.toString();
-	}
-	
-	private class ReceiveRun implements Runnable{
-
-		@Override
-		public void run() {
-			while(true){
-				try{
-					
-					if(Thread.interrupted()){
-						break;
-					}
-					
-					String m = null;
-					synchronized (_bufferMonitor) {
-						m = _messageBuffer.next();
-						if(m == null){
-							_bufferMonitor.wait();
-						}
-					}
-					
-					receiveHandle(m);	
-				}catch(InterruptedException e){
-					logger.error("Receive message interruped {}",e.getMessage());
-					Thread.currentThread().interrupt();
-				}
-			}
-		}
-		
-		private void receiveHandle(String m){
-			
-			if(StringUtils.isBlank(m)){
-				return;
-			}
-			
-			for(ReceiveHandler r : _receiveHandlers){
-				try{
-					r.receive(_pool,Session.this, m);	
-				}catch(ClientException e){
-					logger.error("Receive client exception {}",e.getMessage());
-				}
-			}
-		}
-		
 	}
 }

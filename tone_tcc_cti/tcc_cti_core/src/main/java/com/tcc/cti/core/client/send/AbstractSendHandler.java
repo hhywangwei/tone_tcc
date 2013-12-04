@@ -29,7 +29,7 @@ public abstract class AbstractSendHandler implements SendHandler {
 
 	@Override
 	public void send(SocketChannel channel, RequestMessage message, GeneratorSeq generator,
-			String charset) throws IOException {
+			Charset charset) throws IOException {
 		
 		if (isSend(message)) {
 			byte[] m = getMessage(message, generator, charset);
@@ -58,7 +58,7 @@ public abstract class AbstractSendHandler implements SendHandler {
 	 *            字符集
 	 * @return
 	 */
-	protected byte[] getMessage(RequestMessage message,GeneratorSeq generator,String charset) {
+	protected byte[] getMessage(RequestMessage message,GeneratorSeq generator,Charset charset) {
 		
 		String m = buildMessage(message,generator);
 	    return headCompletion(m,charset);
@@ -80,9 +80,8 @@ public abstract class AbstractSendHandler implements SendHandler {
 	 * @param charset 字符集
 	 * @return
 	 */
-	protected byte[] headCompletion (String message,String charset){
-    	Charset c = Charset.forName(charset);
-    	byte[] bytes = message.getBytes(c);
+	protected byte[] headCompletion (String message,Charset charset){
+    	byte[] bytes = message.getBytes(charset);
     	int length = bytes.length;
     	if(length > MESSAGE_MAX_LENGTH){
     		logger.error("Login message is {},but upper limit {}",
@@ -91,7 +90,7 @@ public abstract class AbstractSendHandler implements SendHandler {
     	}
     	
     	String m = getHeadSegment(length) + message;
-    	return m.getBytes(c);
+    	return m.getBytes(charset);
 	}
 	
 	/**
