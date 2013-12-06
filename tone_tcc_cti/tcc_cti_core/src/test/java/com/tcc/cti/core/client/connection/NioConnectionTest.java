@@ -28,9 +28,9 @@ public class NioConnectionTest {
 	
 	@Before
 	public void before()throws Exception{
-		_configure = new Configure();
-		_configure.setHost("211.136.173.132");
-		_configure.setPort(9999);
+		_configure = new Configure.
+				Builder("211.136.173.132",9999).
+				build();
 	}
 	
 	@Test
@@ -41,7 +41,7 @@ public class NioConnectionTest {
 		Connectionable conn = new NioConnection(selector,address);
 		
 		OperatorKey key = new OperatorKey("1", "8001");
-		Sessionable oc = new Session.Builder(key,conn,null).build();
+		Sessionable oc = new Session.Builder(key,selector,_configure,null).build();
 		
 		SocketChannel channel = conn.connect(oc);
 		Assert.assertNotNull(channel);
@@ -51,9 +51,9 @@ public class NioConnectionTest {
 	
 	@Test
 	public void testWaitConnectionAddressErrorOrTimeOut()throws Exception{
-		Configure configure = new Configure();
-		configure.setHost("211.136.173.134");
-		configure.setPort(9999);
+		Configure configure = new Configure.
+				Builder("211.136.173.134",9999).
+				build();
 		
 		InetSocketAddress address = new InetSocketAddress(
 				configure.getHost(), configure.getPort());
@@ -61,7 +61,7 @@ public class NioConnectionTest {
 		Connectionable conn = new NioConnection(selector,address);
 		
 		OperatorKey key = new OperatorKey("1", "8001");
-		Sessionable oc = new Session.Builder(key,conn,null).build();
+		Sessionable oc = new Session.Builder(key,selector,_configure,null).build();
 		
 		try{
 			conn.connect(oc);
@@ -73,9 +73,9 @@ public class NioConnectionTest {
 	
 	@Test
 	public void testWaitConnectionTimeOut()throws Exception{
-		Configure configure = new Configure();
-		configure.setHost("211.136.173.134");
-		configure.setPort(9999);
+		Configure configure = new Configure.
+				Builder("211.136.173.134",9999).
+				build();
 		
 		InetSocketAddress address = new InetSocketAddress(
 				configure.getHost(), configure.getPort());
@@ -83,7 +83,7 @@ public class NioConnectionTest {
 		Connectionable conn = new NioConnection(selector,address,10);
 		
 		OperatorKey key = new OperatorKey("1", "8001");
-		Sessionable oc = new Session.Builder(key,conn,null).build();
+		Sessionable oc = new Session.Builder(key,selector,_configure,null).build();
 		
 		try{
 			conn.connect(oc);

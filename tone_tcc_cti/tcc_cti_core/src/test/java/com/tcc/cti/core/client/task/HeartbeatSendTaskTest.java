@@ -45,7 +45,7 @@ public class HeartbeatSendTaskTest {
 	@Test
 	public void testRunError()throws Exception{
         Sessionable session = initSession();
-        when(session.isVaild()).thenReturn(true);
+        when(session.isActive()).thenReturn(true);
         HeartbeatSendTask t = new HeartbeatSendTask(session);
 		AtomicInteger count =new AtomicInteger(0);
 		AtomicInteger errorCount =new AtomicInteger(0);
@@ -61,7 +61,7 @@ public class HeartbeatSendTaskTest {
 	
 	private Sessionable initSession(){
 		Sessionable session = mock(Sessionable.class);
-		when(session.isVaild()).thenReturn(true);
+		when(session.isActive()).thenReturn(true);
 		OperatorKey key = new OperatorKey("1", "1");
 		when(session.getOperatorKey()).thenReturn(key);
 		return session;

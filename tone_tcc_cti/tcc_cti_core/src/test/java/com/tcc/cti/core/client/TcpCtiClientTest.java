@@ -20,9 +20,9 @@ public class TcpCtiClientTest {
 	
 	@Before
 	public void before()throws Exception{
-		_configure = new Configure();
-		_configure.setHost("211.136.173.132");
-		_configure.setPort(9999);
+		_configure = new Configure.
+				Builder("211.136.173.132",9999).
+				build();
 	}
 	
 	@Test

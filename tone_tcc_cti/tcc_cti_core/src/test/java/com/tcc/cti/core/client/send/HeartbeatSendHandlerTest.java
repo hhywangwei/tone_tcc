@@ -3,6 +3,8 @@ package com.tcc.cti.core.client.send;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.nio.charset.Charset;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,7 +32,7 @@ public class HeartbeatSendHandlerTest {
 		GeneratorSeq generator = mock(GeneratorSeq.class);
 		when(generator.next()).thenReturn("1");
 		String charset = "iso-8859-1";
-		byte[] m = handler.getMessage(r, generator, charset);
+		byte[] m = handler.getMessage(r, generator, Charset.forName(charset));
 		Assert.assertEquals("<head>00013</head><msg>hb</msg>", new String(m,charset));
 	}
 }

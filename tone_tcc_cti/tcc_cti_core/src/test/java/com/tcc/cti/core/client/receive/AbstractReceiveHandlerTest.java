@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.tcc.cti.core.client.Configure;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.session.Session;
 import com.tcc.cti.core.client.session.Sessionable;
@@ -44,9 +45,11 @@ public class AbstractReceiveHandlerTest {
 		String companyId = "1";
 		String opId = "1";
 		CtiMessagePool pool = Mockito.mock(CtiMessagePool.class);
-		OperatorKey key = 
-				new OperatorKey(companyId, opId);
-		Sessionable channel = new Session.Builder(key,null,null).build();
+		OperatorKey key = new OperatorKey(companyId, opId);
+		Configure configure = new Configure.
+				Builder("211.136.173.134",9999).
+				build();
+		Sessionable channel = new Session.Builder(key,null,configure,null).build();
 		
 		handler.receiveHandler(pool, channel, content);
 		Mockito.verify(pool,Mockito.atLeastOnce()).

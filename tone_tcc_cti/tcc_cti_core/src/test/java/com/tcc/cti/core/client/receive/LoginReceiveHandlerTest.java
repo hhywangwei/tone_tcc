@@ -37,7 +37,7 @@ public class LoginReceiveHandlerTest {
 		LoginReceiveHandler handler = new LoginReceiveHandler();
 		CtiMessagePool pool = Mockito.mock(CtiMessagePool.class);
 		Sessionable session = Mockito.mock(Sessionable.class);
-		Mockito.when(session.isVaild()).thenReturn(true);
+		Mockito.when(session.isActive()).thenReturn(true);
 		Mockito.when(session.isClose()).thenReturn(false);
 		OperatorKey key = new OperatorKey("1", "1");
 		Mockito.when(session.getOperatorKey()).thenReturn(key);
@@ -50,7 +50,7 @@ public class LoginReceiveHandlerTest {
 				Mockito.any(ResponseMessage.class));
 		Mockito.verify(session,Mockito.atLeast(1)).login(false);
 		
-		Assert.assertFalse(session.isLogin());
+		Assert.assertFalse(session.isService());
 		session.close();
 	}
 	
@@ -59,7 +59,7 @@ public class LoginReceiveHandlerTest {
 		LoginReceiveHandler handler = new LoginReceiveHandler();
 		CtiMessagePool pool = Mockito.mock(CtiMessagePool.class);
 		Sessionable session = Mockito.mock(Sessionable.class);
-		Mockito.when(session.isVaild()).thenReturn(true);
+		Mockito.when(session.isActive()).thenReturn(true);
 		Mockito.when(session.isClose()).thenReturn(false);
 		OperatorKey key = new OperatorKey("1", "1");
 		Mockito.when(session.getOperatorKey()).thenReturn(key);

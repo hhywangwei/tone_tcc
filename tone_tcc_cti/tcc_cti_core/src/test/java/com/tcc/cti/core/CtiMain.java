@@ -36,14 +36,14 @@ public class CtiMain {
 		_companyId = "1";
 		_pool = new OperatorCtiMessagePool();
 		_client = new TcpCtiClient(initConfigure(),_pool);
-		_client.setCharset("gbk");
 		_receiveThread = new Thread(new ReceiveRunner(_pool,_companyId,_opId,_client));
 	}
 	
 	private Configure initConfigure(){
-		Configure configure = new Configure();
-		configure.setHost("211.136.173.132");
-		configure.setPort(9999);
+		Configure configure = new Configure.
+				Builder("211.136.173.132",9999).
+				setCharsetName("GBK").
+				build();
 		
 		return configure;
 	}

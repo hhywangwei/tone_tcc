@@ -28,7 +28,7 @@ public class AbstractSendHanlderTest {
 		SendHandlerImpl handler = new SendHandlerImpl();
 		String m = "ddddd";
 		String charset = "iso-8859-1";
-		byte[] head = handler.headCompletion(m, charset);
+		byte[] head = handler.headCompletion(m, Charset.forName(charset));
 		Assert.assertEquals("<head>00005</head>ddddd", new String(head,Charset.forName(charset)));
 	}
 
