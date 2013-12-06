@@ -30,7 +30,7 @@ public class HeartbeatSendTask implements Runnable{
 	
 	@Override
 	public void run() {
-		if(!_session.isVaild()){
+		if(!_session.isActive()){
 			return ;
 		}
 		

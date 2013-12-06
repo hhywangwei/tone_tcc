@@ -16,6 +16,7 @@ public class Configure {
 		private static final int DEFAULT_HEARTBEAT_DELAY = 20;
 		private static final int DEFAULT_HEARTBEAT_TIMEOUT = 65;
 		private static final int DEFAULT_CONNECTION_TIMEOUT = 30 * 1000;
+		private static final int DEFAULT_MAX_OPERATOR = 256;
 		private static final Charset DEFAULT_CHARSET = Charset.forName("GBK");
 		
 		private final String _host;
@@ -25,6 +26,7 @@ public class Configure {
 		private int _heartbeatDelay = DEFAULT_HEARTBEAT_DELAY;
 		private int _heartbeatTimeout = DEFAULT_HEARTBEAT_TIMEOUT; 
 		private int _connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+		private int _maxOperator = DEFAULT_MAX_OPERATOR;
 		private  Charset _charset = DEFAULT_CHARSET;
 		
 		public Builder(String host,int port){
@@ -72,7 +74,15 @@ public class Configure {
 			return this;
 		}
 		
-		public Builder setChartsetName(String charsetName){
+		public Builder setMaxOperator(int max){
+			if(max <= 0){
+				throw new IllegalArgumentException("Max operator must >= 0");
+			}
+			_maxOperator = (max == 0 ? Integer.MAX_VALUE : max);
+			return this;
+		}
+		
+		public Builder setCharsetName(String charsetName){
 			_charset = Charset.forName(charsetName);
 			return this;
 		}
@@ -86,7 +96,7 @@ public class Configure {
 			return new Configure(_host,_port,
 					_heartPoolSize,_heartbeatInitDelay,
 					_heartbeatDelay,_heartbeatTimeout,
-					_connectionTimeout,_charset);
+					_connectionTimeout,_maxOperator,_charset);
 		}
 	}
 	
@@ -97,12 +107,13 @@ public class Configure {
 	private final int _heartbeatDelay ;
 	private final int _heartbeatTimeout ;
 	private final int _connectionTimeout;
+	private final int _maxOperator;
 	private final Charset _charset;
 	private final InetSocketAddress _address;
 	
 	public Configure(String host,int port,int heartPoolSize,
 			int heartbeatInitDelay, int heartbeatDelay, int heartbeatTimeout,
-			int connectionTimeout,Charset charset){
+			int connectionTimeout,int maxOperator,Charset charset){
 		
 		this._host = host;
 		this._port = port;
@@ -111,6 +122,7 @@ public class Configure {
 		this._heartbeatDelay = heartbeatDelay;
 		this._heartbeatTimeout = heartbeatTimeout;
 		this._connectionTimeout = connectionTimeout;
+		this._maxOperator = maxOperator;
 		this._charset = charset;
 		_address = new InetSocketAddress(host,port);
 	}
@@ -151,6 +163,10 @@ public class Configure {
 		return _address;
 	}
 	
+	public int getMaxOperator() {
+		return _maxOperator;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -196,6 +212,8 @@ public class Configure {
 		builder2.append(_heartbeatTimeout);
 		builder2.append(", _connectionTimeout=");
 		builder2.append(_connectionTimeout);
+		builder2.append(", _maxOperator=");
+		builder2.append(_maxOperator);
 		builder2.append(", _charset=");
 		builder2.append(_charset);
 		builder2.append("]");

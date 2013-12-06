@@ -183,6 +183,6 @@ public class TcpCtiClient implements CtiClientable{
 		OperatorKey key = new OperatorKey(companyId, opId);
 		Sessionable channel = _channelPool.get(key);
 		
-		return channel == null ? Status.None : channel.getStatus();
+		return channel == null ? Status.New : channel.getStatus();
 	}
 }

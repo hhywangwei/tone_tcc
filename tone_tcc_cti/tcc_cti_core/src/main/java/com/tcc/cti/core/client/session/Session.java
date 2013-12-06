@@ -164,7 +164,7 @@ public class Session implements Sessionable {
 	private final Thread _messageProcessThread ;
 	private final Object _monitor = new Object();
 	
-	private volatile Status status = Status.None;
+	private volatile Status status = Status.New;
 	private volatile long _lastTime = System.currentTimeMillis();
 	
 	private SocketChannel _channel;
@@ -202,19 +202,19 @@ public class Session implements Sessionable {
 	@Override
 	public void start()throws IOException{
 		synchronized (_monitor) {
-			logger.debug("{} Session is start",_key.toString());
-			
-			if(isVaild()) return ;
-			
-			if(isClose()){
-				logger.warn("{} Session is closed",_key.toString());
-				throw new RuntimeException("Already close ");
+			Status status = getStatus();
+			if(status == Status.New){
+				logger.debug("{} Session is start",_key.toString());
+				try{
+					status = Status.Active;
+					_channel =  _conn.connect(this);
+					_messageProcessThread.start();	
+				}catch(IOException e){
+					logger.error("{} Session start is fail,error is {}",e.getMessage());
+					status = Status.Close;
+					throw e;
+				}
 			}
-			
-			status = Status.Connecting;
-			_channel =  _conn.connect(this);
-			status = Status.Connected;
-			_messageProcessThread.start();
 		}
 	}
 	
@@ -226,41 +226,12 @@ public class Session implements Sessionable {
 	@Override
 	public void login(boolean success){
 		synchronized (_monitor) {
-			if(!isVaild()){
-				throw new RuntimeException("Not start ");
-			}
-			if(isClose()){
-				throw new RuntimeException("Already close ");
-			}
-			status = success ? Status.Login : Status.LoginError;
 			if(success){
+				status = Status.Service;
 				_heartbeatKeep.start();	
 			}
+			heartbeatTouch();
 		}
-	}
-	
-	@Override
-	public boolean isVaild(){
-		return status == Status.Connected 
-				|| status == Status.Login 
-				|| status == Status.LoginError;
-	}
-	
-	@Override
-	public boolean isLogin(){
-		return status == Status.Login;
-	}
-	
-	@Override
-	public boolean isClose(){
-		return status == Status.Close;
-	}
-	
-	@Override
-	public boolean isOffline(){
-		long now = System.currentTimeMillis();
-		int deff =(int)(now - _lastTime);
-		return deff > _heartbeatTimeout;
 	}
 	
 	@Override
@@ -274,15 +245,15 @@ public class Session implements Sessionable {
 			if(isClose()){
 				return ;
 			}
-			if(isVaild()){
-				_messageProcessThread.interrupt();
-			}
-			if(isLogin()){
+			
+			if(isService() || isTimeout()){
 				_heartbeatKeep.shutdown();
 			}
-			if(_channel.isOpen()){
+			
+			if(isActive()){
 				_channel.close();
-			}	
+				_messageProcessThread.interrupt();
+			}
 		}
 	}
 	
@@ -293,7 +264,7 @@ public class Session implements Sessionable {
 	
 	@Override
 	public void send(RequestMessage message)throws IOException {
-		if(!isVaild()){
+		if(!isActive()){
 			throw new RuntimeException("Not start ");
 		}
 		if(isClose()){
@@ -311,7 +282,39 @@ public class Session implements Sessionable {
 	
 	@Override
 	public Status getStatus(){
+		
+		if(status == Status.New ||status == Status.Close){
+			return status;
+		}
+		
+		//HeartBeat timeout
+		long now = System.currentTimeMillis();
+		int deff =(int)(now - _lastTime);
+		if(deff > _heartbeatTimeout){
+			status = Status.Timeout;
+		}
+		
 		return status;
+	}
+	
+	@Override
+	public boolean isActive(){
+		return getStatus() == Status.Active ;
+	}
+	
+	@Override
+	public boolean isService(){
+		return getStatus() == Status.Service;
+	}
+	
+	@Override
+	public boolean isClose(){
+		return getStatus() == Status.Close;
+	}
+	
+	@Override
+	public boolean isTimeout(){
+		return getStatus() == Status.Timeout;
 	}
 	
 	@Override

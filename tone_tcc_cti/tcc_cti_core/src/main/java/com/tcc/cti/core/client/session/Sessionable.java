@@ -15,21 +15,17 @@ public interface Sessionable {
 	/**
 	 * {@link Session}状态
 	 * 
-	 * <pre>None:初始状态</pre>
-	 * <pre>Connecting:开始连接</pre>
-	 * <pre>ConnectError:连接错误</pre>
-	 * <pre>Connected:连接成功</pre>
-	 * <pre>Login:登录成功</pre>
-	 * <pre>LoginError:登录错误</pre>
-	 * <pre>Close:关闭</pre>
+	 * <pre>New:初始状态。</pre>
+	 * <pre>Active:激活状态，已经连接CTI服务器，但是用户还未登陆成功。</pre>
+	 * <pre>Service:开始服务状态，已经连接CTI服务器，用户已经登陆成功。</pre>
+	 * <pre>Timeout:连接超时状态，在规定的时间内，未接收到服务端心跳。</pre>
+	 * <pre>Close:关闭状态。</pre>
 	 */
 	public enum Status {
-		None,
-		Connecting,
-		ConnectError,
-		Connected,
-		Login,
-		LoginError,
+		New,
+		Active,
+		Service,
+		Timeout,
 		Close;}
 
 	/**
@@ -52,34 +48,6 @@ public interface Sessionable {
 	 * @param success true:登录成功
 	 */
 	void login(boolean success);
-	
-	/**
-	 * 是否有效，连接上服务器
-	 * 
-	 * @return true 有效
-	 */
-	boolean isVaild();
-	
-	/**
-	 * 是否登录
-	 * 
-	 * @return true 登录成功
-	 */
-	boolean isLogin();
-	
-	/**
-	 * 是否关闭
-	 * 
-	 * @return true 关闭
-	 */
-	boolean isClose();
-	
-	/**
-	 * 是否离线，接收服务器心跳超过最大超时
-	 * 
-	 * @return
-	 */
-	boolean isOffline();
 	
 	/**
 	 * 接收到心跳后调用该方法，保存Session处于不离线状态
@@ -114,4 +82,32 @@ public interface Sessionable {
 	 * @return
 	 */
 	Status getStatus();
+	
+	/**
+	 * 是激活状态，已经连接CTI服务器，但是用户还未登陆成功
+	 * 
+	 * @return true 激活状态
+	 */
+	boolean isActive();
+	
+	/**
+	 * 是开始服务状态，已经连接CTI服务器，用户已经登陆成功
+	 * 
+	 * @return true 开始服务状态
+	 */
+	boolean isService();
+	
+	/**
+	 * 是关闭状态
+	 * 
+	 * @return true 关闭状态
+	 */
+	boolean isClose();
+	
+	/**
+	 * 是连接超时状态，在规定的时间内，未接收到服务端心跳
+	 * 
+	 * @return
+	 */
+	boolean isTimeout();
 }
