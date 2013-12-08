@@ -4,7 +4,6 @@ import static com.tcc.cti.core.message.MessageType.Login;
 
 import java.util.Map;
 
-import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.response.LoginResponse;
@@ -26,7 +25,7 @@ public class LoginReceiveHandler extends AbstractReceiveHandler{
 
 	@Override
 	protected void receiveHandler(CtiMessagePool pool,
-			Sessionable session, Map<String, String> content) throws ClientException {
+			Sessionable session, Map<String, String> content) {
 		
 		String result = content.get(RESULT_PARAMETER);
 		boolean success = loginSuccess(result);

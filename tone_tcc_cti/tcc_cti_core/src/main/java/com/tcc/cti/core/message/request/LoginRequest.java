@@ -21,7 +21,7 @@ public class LoginRequest extends RequestMessage{
 	private String _type;
 	
 	public LoginRequest(){
-		super(Login.response());
+		super(Login.request());
 	}
 	
 	public String getOpNumber() {

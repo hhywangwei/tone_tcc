@@ -27,8 +27,9 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable, HeartbeatListe
 	private final Sessionable _session;
 	private final int _initDelay;
 	private final int _delay;
-	private final ScheduledExecutorService _executorService;
 	private final boolean _independent;
+	
+	private ScheduledExecutorService _executorService;
 	private volatile ScheduledFuture<?> _future ;
 	
 	private volatile boolean _start = false;
@@ -46,6 +47,10 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable, HeartbeatListe
 		this(session,executorService,DEFAULT_INIT_DELAY,DEFAULT_DELAY);
 	}
 	
+	public ScheduledHeartbeatKeep(Sessionable session,int initDelay,int delay){
+		this(session,null,initDelay,delay);
+	}
+	
 	public ScheduledHeartbeatKeep(Sessionable session,
 			ScheduledExecutorService executorService,int initDelay,int delay){
 		
@@ -53,12 +58,7 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable, HeartbeatListe
 		_initDelay = initDelay;
 		_delay = delay;
 		_independent = (executorService == null);
-		_executorService = initExecutorService(executorService);
-	}
-	
-	private ScheduledExecutorService initExecutorService(ScheduledExecutorService executorService){
-		return executorService != null ? 
-				executorService : Executors.newSingleThreadScheduledExecutor();
+		_executorService = executorService;
 	}
 	
 	@Override
@@ -70,10 +70,16 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable, HeartbeatListe
 			}
 			HeartbeatSendTask task = new HeartbeatSendTask(_session);
 			task.setEvent(_event);
+			_executorService = initExecutorService(_executorService);
 			_future = _executorService.scheduleWithFixedDelay(
 					task, _initDelay, _delay, TimeUnit.SECONDS);
 			_start = true;
 		}
+	}
+	
+	private ScheduledExecutorService initExecutorService(ScheduledExecutorService executorService){
+		return executorService != null ? 
+				executorService : Executors.newSingleThreadScheduledExecutor();
 	}
 	
 	@Override
@@ -82,7 +88,7 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable, HeartbeatListe
 			if(_start && _future != null){
 				_future.cancel(true);
 			}
-			if(_independent){
+			if(_independent && _executorService != null){
 				_executorService.shutdownNow();		
 			}
 			_shutdown = true;

@@ -17,7 +17,7 @@ public interface CtiMessagePool {
 	 * @param message   消息
 	 * @throws Exception 插入消息异常
 	 */
-	void put(String companyId,String opId,ResponseMessage message)throws Exception;
+	void put(String companyId,String opId,ResponseMessage message)throws InterruptedException;
 	
 	/**
 	 * 得到服务返回消息，消息必须未过期。
@@ -27,7 +27,7 @@ public interface CtiMessagePool {
 	 * @return          服务端消息
 	 * @throws Exception  得到消息异常
 	 */
-	ResponseMessage poll(String companyId,String opId)throws Exception;
+	ResponseMessage poll(String companyId,String opId)throws InterruptedException;
 	
 	 /**
 	  * 压缩消息池，回收已经过期的消息池（用户已经下线）

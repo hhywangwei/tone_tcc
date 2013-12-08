@@ -6,8 +6,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.buffer.MessageBuffer;
+import com.tcc.cti.core.client.receive.ParseMessageException;
 import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
@@ -24,6 +24,8 @@ public class MessageProcessTask implements Runnable{
 	private final CtiMessagePool _pool;
 	private final Sessionable _session;
 	private final MessageBuffer _mBuffer;
+	
+	private volatile boolean _closed = false;
 
 	public MessageProcessTask(CtiMessagePool pool,Sessionable session,
 			MessageBuffer mBuffer,List<ReceiveHandler> receiveHandlers){
@@ -38,14 +40,19 @@ public class MessageProcessTask implements Runnable{
 	public void run() {
 		while(true){
 			try{
-				if(Thread.interrupted()){
+				if(_closed){
+					logger.debug("Message process is close");
 					break;
 				}
+				
 				String m = _mBuffer.next();
-				receiveHandle(m,_pool,_session,_receiveHandlers);	
+				if(StringUtils.isNotBlank(m)){
+					receiveHandle(m,_pool,_session,_receiveHandlers);
+	
+				}
 			}catch(InterruptedException e){
-				logger.error("Receive message interruped {}",e.getMessage());
-				Thread.currentThread().interrupt();
+				logger.error("Receive message process is interruped {}",e.getMessage());
+				Thread.interrupted();
 			}
 		}
 	}
@@ -59,9 +66,14 @@ public class MessageProcessTask implements Runnable{
 		for(ReceiveHandler handler : receiveHandlers){
 			try{
 				handler.receive(pool,session, m);	
-			}catch(ClientException e){
-				logger.error("Receive client exception {}",e.getMessage());
+			}catch(ParseMessageException e){
+				logger.error("Receive process client exception {}",e.getMessage());
 			}
 		}
+	}
+	
+	public void close(){
+		_closed = false;
+		Thread.currentThread().interrupt();
 	}
 }

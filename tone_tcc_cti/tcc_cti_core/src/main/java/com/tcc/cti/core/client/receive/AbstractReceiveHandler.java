@@ -17,7 +17,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.response.ResponseMessage;
@@ -39,7 +38,7 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	protected static final String SEQ_PARAMETER = "seq";
 	
 	@Override
-	public void receive(CtiMessagePool pool,Sessionable channel, String message)throws ClientException{
+	public void receive(CtiMessagePool pool,Sessionable channel, String message)throws ParseMessageException{
 		
 		logger.debug("receive message is \"{}\"",message);
 		
@@ -50,7 +49,7 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 				receiveHandler(pool,channel,content);
 			}
 		}catch(SAXException e){
-			throw new ClientException(e);
+			throw new ParseMessageException(e);
 		}
 	}
 	
@@ -94,14 +93,13 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	
 	/**
 	 * 处理接受消息
+	 * 
 	 * @param pool 消息接收池
 	 * @param session {@link Sessionable}
 	 * @param content 接受消息内容
-	 * 
-	 * @throws ClientException
 	 */
 	protected void receiveHandler(CtiMessagePool pool, Sessionable session,
-			Map<String, String> content) throws ClientException {
+			Map<String, String> content) {
 		
 		String companyId = session.getOperatorKey().getCompanyId();
 		String opId = session.getOperatorKey().getOpId();
@@ -109,14 +107,12 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 		
 		ResponseMessage message = 
 				buildMessage(companyId,opId,seq,content);
-		
 		try{
 			if(message != null){
 				pool.put(companyId, opId, message);				
-			}
+			}	
 		}catch(Exception e){
-			logger.error("Company = {} and opId = {},Put message pool error {}",
-					new Object[]{companyId,opId,e.getMessage()});
+			//TODO 是整合到Session????? 2013-12-09
 		}
 	}
 	

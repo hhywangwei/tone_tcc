@@ -1,6 +1,5 @@
 package com.tcc.cti.core.client.receive;
 
-import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 
@@ -17,8 +16,8 @@ public interface ReceiveHandler {
 	 * @param session 操作频道{@link Sessionable}
 	 * @param message 接受消息字符串
 	 * 
-	 * @throws ClientException
+	 * @throws ParseMessageException
 	 */
-	void receive(CtiMessagePool pool,Sessionable session, String message)throws ClientException;
+	void receive(CtiMessagePool pool,Sessionable session, String message)throws ParseMessageException;
 	
 }

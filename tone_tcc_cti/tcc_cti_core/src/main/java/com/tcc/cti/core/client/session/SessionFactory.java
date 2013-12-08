@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.Configure;
 import com.tcc.cti.core.client.OperatorKey;
+import com.tcc.cti.core.client.monitor.HeartbeatKeepable;
+import com.tcc.cti.core.client.monitor.ScheduledHeartbeatKeep;
 import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.task.StocketReceiveTask;
@@ -38,7 +40,6 @@ public class SessionFactory {
 	private final CtiMessagePool _messagePool;
 	private final Selector _selector;
 	private final StocketReceiveTask _receiveTask;
-	private final Thread _receiveThread;
 	private final int _recoverySessionIndex ;
 	
 	private List<SendHandler> _sendHandlers;
@@ -49,17 +50,21 @@ public class SessionFactory {
 		_messagePool = new OperatorCtiMessagePool();
 		_selector = openSelector();
 		_receiveTask= new StocketReceiveTask(_selector);
-		_receiveThread = new Thread(_receiveTask);
-		_receiveThread.start();
 		_heartExcecutorService = Executors.newScheduledThreadPool(_configure.getHeartPoolSize());
 		_recoverySessionIndex = (configure.getMaxOperator() * RECOVERY_SESSION_PERCENT) / 100;
+		startReceiveTask(_receiveTask);
+	}
+	
+	private void startReceiveTask(StocketReceiveTask task){
+		Thread t = new Thread(_receiveTask);
+		t.start();
 	}
 	
 	private Selector openSelector(){
 		try{
 			return Selector.open();			
 		}catch(IOException e){
-			logger.debug("Open selector fial,Error is {}",e.getMessage());
+			logger.debug("Open selector fail,Error is {}",e.getMessage());
 			throw new IllegalAccessError("Open selector fail,Error is " + e.getMessage());
 		}		
 	}
@@ -99,7 +104,7 @@ public class SessionFactory {
 			
 			session = new Session.
 					Builder(key,_selector,_configure,_messagePool).
-					setScheduledExecutorService(_heartExcecutorService).
+					setHeartbeatKeep(createHeartbeatKeep(session)).
 					setReceiveHandlers(_receiveHandlers).
 					setSendHandlers(_sendHandlers).
 					build();
@@ -155,14 +160,19 @@ public class SessionFactory {
 		return _configure.getMaxOperator() < _sessionPool.size();
 	}
 	
+	private HeartbeatKeepable createHeartbeatKeep(Sessionable session){
+		return new ScheduledHeartbeatKeep(session, _heartExcecutorService,
+				_configure.getHeartbeatInitDelay(), _configure.getHeartbeatDelay());
+	}
+	
 	public void close(){
 		synchronized (_monitor) {
 			for(Sessionable session : _sessionPool.values()){
 				closeSession(session);
 			}
+			_receiveTask.close();
 			_sessionPool.clear();
 			_heartExcecutorService.shutdownNow();
-			_receiveThread.interrupt();			
 		}
 	}
 	

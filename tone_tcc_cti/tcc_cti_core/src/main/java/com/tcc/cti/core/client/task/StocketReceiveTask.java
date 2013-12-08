@@ -27,6 +27,7 @@ public class StocketReceiveTask implements Runnable {
 	private final Object _monitor = new Object();
 	
 	private volatile boolean _suspend = false;
+	private volatile boolean _closed = false;
 	
 	public StocketReceiveTask(Selector selector){
 		this(selector,DEFAULT_BUFFER_SIZE);
@@ -41,6 +42,12 @@ public class StocketReceiveTask implements Runnable {
 	public void run() {
 		while(true){
 			try{
+				
+				if(_closed){
+					logger.debug("Start close stocketReaderTask...");
+					break;
+				}
+				
 				if(_suspend){
 					logger.debug("StocketReaderTask is suspend...");
 					synchronized (_monitor) {
@@ -49,14 +56,7 @@ public class StocketReceiveTask implements Runnable {
 					}
 				}
 
-				if(Thread.interrupted()){
-					logger.debug("Start close stocketReaderTask...");
-					_selector.close();	
-					break;
-				}
-
 				recevice(_selector,_buffer);
-
 			}catch(InterruptedException e){
 				logger.error("StocketReaderTask spspend is error:{}",e.toString());
 				Thread.currentThread().interrupt();
@@ -133,5 +133,10 @@ public class StocketReceiveTask implements Runnable {
 			_suspend = true;
 			_selector.wakeup();	
 		}
+	}
+	
+	public void close(){
+		_closed = true;
+		Thread.currentThread().interrupt();
 	}
 }

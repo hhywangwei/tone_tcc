@@ -6,12 +6,10 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tcc.cti.core.client.ClientException;
 import com.tcc.cti.core.client.Configure;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.buffer.ByteMessageBuffer;
@@ -46,6 +44,7 @@ import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.sequence.MemoryGeneratorSeq;
 import com.tcc.cti.core.client.task.MessageProcessTask;
+import com.tcc.cti.core.message.MessageType;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.request.RequestMessage;
 
@@ -65,8 +64,8 @@ public class Session implements Sessionable {
 		private List<ReceiveHandler> _receiveHandlers;
 		private List<SendHandler> _sendHandlers;
 		private GeneratorSeq _generatorSeq ;
-		private ScheduledExecutorService _executorService;
-
+		private HeartbeatKeepable _heartbeatKeep;
+		private Connectionable _connection;
 		
 		public Builder(OperatorKey key, Selector selector,Configure configure, CtiMessagePool pool){
 	    	_key = key;
@@ -90,8 +89,13 @@ public class Session implements Sessionable {
 			return this;
 		}
 		
-		public Builder setScheduledExecutorService(ScheduledExecutorService executorService){
-			_executorService = executorService;
+		public Builder setHeartbeatKeep(HeartbeatKeepable heartbeatKeep){
+			_heartbeatKeep = heartbeatKeep;
+			return this;
+		}
+		
+		public Builder setConnection(Connectionable connection){
+			_connection = connection;
 			return this;
 		}
 		
@@ -102,12 +106,12 @@ public class Session implements Sessionable {
 					_sendHandlers : defaultSendHandlers();
 			_generatorSeq = _generatorSeq != null ?
 					_generatorSeq : defaultGreneratorSeq();
+			_connection = _connection != null ?
+					_connection : defaultConnection();
 			
-			Connectionable conn = new NioConnection(
-					_selector,_configure.getAddress(),_configure.getConnectionTimeout());
-			return new Session(_key,conn,_pool,
+			return new Session(_key, _connection, _pool,
 					_receiveHandlers,_sendHandlers,_generatorSeq,
-					_executorService,_configure);
+					_heartbeatKeep,_configure);
 			
 		}
 		
@@ -150,6 +154,12 @@ public class Session implements Sessionable {
 			return new MemoryGeneratorSeq(
 					_key.getCompanyId(), _key.getCompanyId());
 		}
+		
+		private Connectionable defaultConnection(){
+			return new NioConnection(
+					_selector,_configure.getAddress(),
+					_configure.getConnectionTimeout());
+		}
 	}
 	
 	private final OperatorKey _key;
@@ -161,7 +171,7 @@ public class Session implements Sessionable {
 	private final MessageBuffer _messageBuffer;
 	private final Charset _charset;
 	
-	private final Thread _messageProcessThread ;
+	private final MessageProcessTask _messageProcessTask ;
 	private final Object _monitor = new Object();
 	
 	private volatile Status status = Status.New;
@@ -171,7 +181,7 @@ public class Session implements Sessionable {
 
 	protected Session(OperatorKey operatorKey,Connectionable conn,CtiMessagePool pool,
 			List<ReceiveHandler> receiveHandlers,List<SendHandler> sendHandlers,
-			GeneratorSeq generator,ScheduledExecutorService executorService,
+			GeneratorSeq generator,HeartbeatKeepable heartbeatKeep,
 			Configure configure){
 		
 		_key = operatorKey;
@@ -179,19 +189,22 @@ public class Session implements Sessionable {
 		_generator = generator;
 		_messageBuffer = new ByteMessageBuffer(configure.getCharset());
 		_sendHandlers = sendHandlers;
-		_heartbeatKeep = initHeartbeatKeep(
-				executorService,configure.getHeartbeatInitDelay(),configure.getHeartbeatDelay());
+		_heartbeatKeep = heartbeatKeep != null ? heartbeatKeep :
+			defaultHeartbeatKeep(configure.getHeartbeatInitDelay(),configure.getHeartbeatDelay());
 		_heartbeatTimeout = configure.getHeartbeatTimeout() * 1000;
-		_messageProcessThread = new Thread(new MessageProcessTask(
-				pool,this,_messageBuffer,receiveHandlers));
+		_messageProcessTask = new MessageProcessTask(
+				pool,this,_messageBuffer,receiveHandlers);
 		_charset = configure.getCharset();
 	}
 	
-	private HeartbeatKeepable initHeartbeatKeep(ScheduledExecutorService executorService,
-			int heartbeatInitDelay,int heartbeatDelay){
+	private HeartbeatKeepable defaultHeartbeatKeep(int heartbeatInitDelay,int heartbeatDelay){
 		
-		return 	new ScheduledHeartbeatKeep(this,
-				executorService,heartbeatInitDelay,heartbeatDelay);
+		return 	new ScheduledHeartbeatKeep(this,heartbeatInitDelay,heartbeatDelay);
+	}
+	
+	private void startMessageProcess(MessageProcessTask task){
+		Thread t = new Thread(task);
+		t.start();
 	}
 
 	/**
@@ -202,15 +215,14 @@ public class Session implements Sessionable {
 	@Override
 	public void start()throws IOException{
 		synchronized (_monitor) {
-			Status status = getStatus();
-			if(status == Status.New){
+			if(isNew()){
 				logger.debug("{} Session is start",_key.toString());
 				try{
 					status = Status.Active;
 					_channel =  _conn.connect(this);
-					_messageProcessThread.start();	
+					startMessageProcess(_messageProcessTask);	
 				}catch(IOException e){
-					logger.error("{} Session start is fail,error is {}",e.getMessage());
+					logger.error("{} Session start is fail,error is {}",_key.toString(),e.getMessage());
 					status = Status.Close;
 					throw e;
 				}
@@ -226,11 +238,11 @@ public class Session implements Sessionable {
 	@Override
 	public void login(boolean success){
 		synchronized (_monitor) {
-			if(success){
+			if(success && isActive()){
 				status = Status.Service;
 				_heartbeatKeep.start();	
+				heartbeatTouch();
 			}
-			heartbeatTouch();
 		}
 	}
 	
@@ -242,17 +254,21 @@ public class Session implements Sessionable {
 	@Override
 	public void close()throws IOException{
 		synchronized (_monitor) {
+			
 			if(isClose()){
 				return ;
 			}
 			
-			if(isService() || isTimeout()){
-				_heartbeatKeep.shutdown();
+			if(isNew()){
+				status = Status.Close;
+				return ;
 			}
 			
-			if(isActive()){
-				_channel.close();
-				_messageProcessThread.interrupt();
+			status = Status.Close;
+			_messageProcessTask.close();
+			_heartbeatKeep.shutdown();
+			if(_channel != null && _channel.isOpen()){
+				_channel.close();	
 			}
 		}
 	}
@@ -264,15 +280,35 @@ public class Session implements Sessionable {
 	
 	@Override
 	public void send(RequestMessage message)throws IOException {
-		if(!isActive()){
-			throw new RuntimeException("Not start ");
+		synchronized (_monitor) {
+			if(isNew()){
+				start();
+			}
 		}
 		if(isClose()){
-			throw new RuntimeException("Already close ");
+			logger.debug("{} Send message,but closed",_key.toString());
+			throw new IOException("Session already closed,not send message.");
 		}
-		for(SendHandler handler : _sendHandlers){
-			handler.send(_channel, message, _generator,_charset);
+		if(isAccess(message)){
+			for(SendHandler handler : _sendHandlers){
+				handler.send(_channel, message, _generator,_charset);
+			}	
+		}else{
+			logger.debug("{} not access cti server.", _key.toString());
+			throw new SessionAccessException(_key);
 		}
+	}
+	
+	private boolean isAccess(RequestMessage message){
+		boolean access = false;
+		if(isService()){
+			access = true;
+		}
+		if(isActive() && MessageType.Login.isRequest(message.getMessageType())){
+			access = true;
+		}
+		
+		return access;
 	}
 	
 	@Override
@@ -295,6 +331,11 @@ public class Session implements Sessionable {
 		}
 		
 		return status;
+	}
+	
+	@Override
+	public boolean isNew(){
+		return getStatus() == Status.New;
 	}
 	
 	@Override

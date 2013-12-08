@@ -84,6 +84,13 @@ public interface Sessionable {
 	Status getStatus();
 	
 	/**
+	 * 是初始状态，还未连接到CTI服务器
+	 * 
+	 * @return true 初始状态
+	 */
+	boolean isNew();
+	
+	/**
 	 * 是激活状态，已经连接CTI服务器，但是用户还未登陆成功
 	 * 
 	 * @return true 激活状态
