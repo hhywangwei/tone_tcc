@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.tcc.cti.web.sys.dao.SysUserMapper" >
+  <resultMap id="BaseResultMap" type="com.tcc.cti.web.sys.model.SysUser" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="CompanyID" property="companyid" jdbcType="INTEGER" />
+    <result column="uname" property="uname" jdbcType="VARCHAR" />
+    <result column="Name" property="name" jdbcType="VARCHAR" />
+    <result column="upass" property="upass" jdbcType="VARCHAR" />
+    <result column="user_limit" property="userLimit" jdbcType="INTEGER" />
+    <result column="Field1" property="field1" jdbcType="VARCHAR" />
+    <result column="Field2" property="field2" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, CompanyID, uname, Name, upass, user_limit, Field1, Field2
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from admin20
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from admin20
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.tcc.cti.web.sys.model.SysUser" >
+    insert into admin20 (id, CompanyID, uname, 
+      Name, upass, user_limit, 
+      Field1, Field2)
+    values (#{id,jdbcType=INTEGER}, #{companyid,jdbcType=INTEGER}, #{uname,jdbcType=VARCHAR}, 
+      #{name,jdbcType=VARCHAR}, #{upass,jdbcType=VARCHAR}, #{userLimit,jdbcType=INTEGER}, 
+      #{field1,jdbcType=VARCHAR}, #{field2,jdbcType=VARCHAR})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.tcc.cti.web.sys.model.SysUser" >
+    update admin20
+    set CompanyID = #{companyid,jdbcType=INTEGER},
+      uname = #{uname,jdbcType=VARCHAR},
+      Name = #{name,jdbcType=VARCHAR},
+      upass = #{upass,jdbcType=VARCHAR},
+      user_limit = #{userLimit,jdbcType=INTEGER},
+      Field1 = #{field1,jdbcType=VARCHAR},
+      Field2 = #{field2,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  
+  <select id="findSysUserByUnamePwd" resultMap="BaseResultMap" parameterType="com.tcc.cti.web.sys.model.SysUser" >
+    select 
+    <include refid="Base_Column_List" />
+    from admin20 where 1 = 1
+    <if test="uname != null and uname != ''">
+	    and uname = '${uname}'
+	</if>
+	<if test="upass != null and upass != ''">
+	    and upass = '${upass}'
+	</if>
+  </select>
+</mapper>
