@@ -1,4 +1,4 @@
-package com.tcc.cti.core.client.task;
+package com.tcc.cti.core.client.session.task;
 
 import java.util.List;
 
@@ -38,23 +38,23 @@ public class MessageProcessTask implements Runnable{
 	
 	@Override
 	public void run() {
-		while(true){
-			try{
-				if(_closed){
-					logger.debug("Message process is close");
-					break;
-				}
-				
-				String m = _mBuffer.next();
-				if(StringUtils.isNotBlank(m)){
-					receiveHandle(m,_pool,_session,_receiveHandlers);
-	
-				}
-			}catch(InterruptedException e){
-				logger.error("Receive message process is interruped {}",e.getMessage());
-				Thread.interrupted();
-			}
-		}
+//		while(true){
+//			try{
+//				if(_closed){
+//					logger.debug("Message process is close");
+//					break;
+//				}
+//				
+//				String m = _mBuffer.next();
+//				if(StringUtils.isNotBlank(m)){
+//					receiveHandle(m,_pool,_session,_receiveHandlers);
+//	
+//				}
+//			}catch(InterruptedException e){
+//				logger.error("Receive message process is interruped {}",e.getMessage());
+//				Thread.interrupted();
+//			}
+//		}
 	}
 	
 	private void receiveHandle(String m,CtiMessagePool pool,

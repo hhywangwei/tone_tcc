@@ -1,4 +1,4 @@
-package com.tcc.cti.core.client.monitor.event;
+package com.tcc.cti.core.client.heartbeat.event;
 
 /**
  * 心跳发生事件

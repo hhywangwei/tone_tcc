@@ -80,31 +80,27 @@ public class ByteMessageBuffer implements MessageBuffer{
 	}
 
 	@Override
-	public String next()throws InterruptedException{
+	public String next(){
 		synchronized (_buffer) {
-			while(true){
-				int len =  getNextMessageLength();
-				if(isNone(len)){
-					logger.debug("message is empty");
-					_buffer.wait();
-					continue;
-				}
-				
-				if(notComplete(len)){
-					logger.debug("message is not complete");
-					_buffer.wait();
-					continue;
-				}
-				
-				_buffer.reset();
-				byte[] m = new byte[len];
-				_buffer.get(m);
-				_buffer.mark();
-				
-				String message = new String(m,_charset);
-				logger.debug("Message is \"{}\"",message);
-				return message;	
+			int len =  getNextMessageLength();
+			if(isNone(len)){
+				logger.debug("message is empty");
+				return null;
 			}
+				
+			if(notComplete(len)){
+				logger.debug("message is not complete");
+				return null;
+			}
+				
+			_buffer.reset();
+			byte[] m = new byte[len];
+			_buffer.get(m);
+			_buffer.mark();
+			
+			String message = new String(m,_charset);
+			logger.debug("Message is \"{}\"",message);
+			return message;	
 		}
 	}
 	

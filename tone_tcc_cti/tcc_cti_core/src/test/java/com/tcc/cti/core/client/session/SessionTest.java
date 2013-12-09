@@ -15,7 +15,7 @@ import org.mockito.Mockito;
 import com.tcc.cti.core.client.Configure;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.connection.Connectionable;
-import com.tcc.cti.core.client.monitor.HeartbeatKeepable;
+import com.tcc.cti.core.client.heartbeat.HeartbeatKeepable;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.CallRequest;

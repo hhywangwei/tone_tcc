@@ -8,12 +8,11 @@ package com.tcc.cti.core.client.buffer;
 public interface MessageBuffer {
 	
 	/**
-	 * 得到服务端消息,当消息池为空时{@code wait}等待新的消息进入
+	 * 得到服务端消息,当消息池为空时返回{@code null}
 	 * 
 	 * @return 服务端消息
-	 * @throws InterruptedException 
-	 */
-	String next()throws InterruptedException;
+ 	 */
+	String next();
 	
 	/**
 	 * 添加接受服务端消息到缓存中等待处理，如果缓存已满则直接清除老缓存，再添加新消息。

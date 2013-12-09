@@ -1,4 +1,4 @@
-package com.tcc.cti.core.client.monitor;
+package com.tcc.cti.core.client.heartbeat;
 
 
 /**

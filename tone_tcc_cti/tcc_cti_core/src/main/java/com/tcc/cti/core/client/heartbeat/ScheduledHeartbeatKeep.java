@@ -1,4 +1,4 @@
-package com.tcc.cti.core.client.monitor;
+package com.tcc.cti.core.client.heartbeat;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -8,10 +8,9 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tcc.cti.core.client.monitor.event.HeartbeatEvent;
-import com.tcc.cti.core.client.monitor.event.NoneHeartbeatEvent;
+import com.tcc.cti.core.client.heartbeat.event.HeartbeatEvent;
+import com.tcc.cti.core.client.heartbeat.event.NoneHeartbeatEvent;
 import com.tcc.cti.core.client.session.Sessionable;
-import com.tcc.cti.core.client.task.HeartbeatSendTask;
 
 /**
  * 实现心跳程序

@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +17,8 @@ import com.tcc.cti.core.client.buffer.ByteMessageBuffer;
 import com.tcc.cti.core.client.buffer.MessageBuffer;
 import com.tcc.cti.core.client.connection.Connectionable;
 import com.tcc.cti.core.client.connection.NioConnection;
-import com.tcc.cti.core.client.monitor.HeartbeatKeepable;
-import com.tcc.cti.core.client.monitor.ScheduledHeartbeatKeep;
+import com.tcc.cti.core.client.heartbeat.HeartbeatKeepable;
+import com.tcc.cti.core.client.heartbeat.ScheduledHeartbeatKeep;
 import com.tcc.cti.core.client.receive.CallReceiveHandler;
 import com.tcc.cti.core.client.receive.CloseCallReceiveHandler;
 import com.tcc.cti.core.client.receive.GroupMemberReceiveHandler;
@@ -43,7 +44,7 @@ import com.tcc.cti.core.client.send.RecordSendHandler;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.sequence.MemoryGeneratorSeq;
-import com.tcc.cti.core.client.task.MessageProcessTask;
+import com.tcc.cti.core.client.session.task.MessageProcessTask;
 import com.tcc.cti.core.message.MessageType;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -276,6 +277,10 @@ public class Session implements Sessionable {
 	@Override
 	public void append(byte[] bytes)  {
 		_messageBuffer.append(bytes);
+		String m = _messageBuffer.next();
+		if(StringUtils.isNotBlank(m)){
+			
+		}
 	}
 	
 	@Override

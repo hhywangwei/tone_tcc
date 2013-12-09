@@ -71,56 +71,22 @@ public class ByteMessageBufferTest {
 	}
 	
 	@Test
-	public void testBufferEmptyNextWait(){
+	public void testBufferEmpt(){
 		final ByteMessageBuffer buffer = new ByteMessageBuffer(40,charset);
-		try{
-			interruptWait();
-			buffer.next();	
-			Assert.fail("Next wait is error");
-		}catch(InterruptedException e){
-			//none instance
-		}
-	}
-	
-	private void interruptWait(){
-		final Thread current = Thread.currentThread();
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try{
-					Thread.sleep(1000);	
-					current.interrupt();
-				}catch(InterruptedException e){
-					Assert.fail("sleep is error");
-				}
-			}
-		});
-		t.start();
+		String m = buffer.next();
+		Assert.assertNull(m);
 	}
 	
 	@Test
-	public void testBufferNotCompletionNext()throws InterruptedException{
+	public void testBufferNotCompletionNext(){
 		final ByteMessageBuffer buffer = new ByteMessageBuffer(40,charset);
 		String mes = "<head>00005</head>12";
 		buffer.append(mes.getBytes());
-		waitWrite(buffer,"345");
 		String m = buffer.next();
+		Assert.assertNull(m);
+		buffer.append("345".getBytes());
+		m = buffer.next();
 		Assert.assertEquals("<head>00005</head>12345", m);
-	}
-	
-	private void waitWrite(final ByteMessageBuffer buffer,final String m){
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try{
-					Thread.sleep(1000);	
-					buffer.append(m.getBytes());
-				}catch(InterruptedException e){
-					Assert.fail("sleep is error");
-				}
-			}
-		});
-		t.start();
 	}
 	
 	@Test
@@ -128,24 +94,22 @@ public class ByteMessageBufferTest {
 		final ByteMessageBuffer buffer = new ByteMessageBuffer(400,charset);
 		String mes = "<head>32769</head>dddddd";
 		buffer.append(mes.getBytes());
-		try{
-			interruptWait();
-			buffer.next();	
-			Assert.fail("Next wait is error");
-		}catch(InterruptedException e){
-			Assert.assertTrue(buffer.getPosition()==0);
-			Assert.assertTrue(buffer.getLimit()==0);
-		}
+		String m = buffer.next();
+		Assert.assertNull(m);
+		Assert.assertTrue(buffer.getPosition()==0);
+		Assert.assertTrue(buffer.getLimit()==0);
 	}
 	
 	@Test
-	public void testMissMessage()throws InterruptedException{
+	public void testMissMessage(){
 		final ByteMessageBuffer buffer = new ByteMessageBuffer(400,charset);
 		String mes = "12345678<head>";
 		buffer.append(mes.getBytes());
+		String m = buffer.next();
+		Assert.assertNull(m);
 		mes ="<head>00005</head>12345"; 
-		waitWrite(buffer,mes);
-		String m = buffer.next();	
+		buffer.append(mes.getBytes());
+		m = buffer.next();	
 		Assert.assertEquals(mes, m);
 		Assert.assertTrue(buffer.getPosition()== buffer.getLimit());
 	}

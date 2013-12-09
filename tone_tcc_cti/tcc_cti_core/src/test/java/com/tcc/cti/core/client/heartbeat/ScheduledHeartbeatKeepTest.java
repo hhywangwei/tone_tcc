@@ -1,4 +1,4 @@
-package com.tcc.cti.core.client.monitor;
+package com.tcc.cti.core.client.heartbeat;
 
 import static org.mockito.Mockito.mock;
 
@@ -9,6 +9,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import com.tcc.cti.core.client.heartbeat.ScheduledHeartbeatKeep;
 import com.tcc.cti.core.client.session.Sessionable;
 
 /**

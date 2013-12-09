@@ -14,11 +14,11 @@ import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.Configure;
 import com.tcc.cti.core.client.OperatorKey;
-import com.tcc.cti.core.client.monitor.HeartbeatKeepable;
-import com.tcc.cti.core.client.monitor.ScheduledHeartbeatKeep;
+import com.tcc.cti.core.client.heartbeat.HeartbeatKeepable;
+import com.tcc.cti.core.client.heartbeat.ScheduledHeartbeatKeep;
 import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
-import com.tcc.cti.core.client.task.StocketReceiveTask;
+import com.tcc.cti.core.client.session.task.StocketReceiveTask;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
 

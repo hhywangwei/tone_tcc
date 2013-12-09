@@ -1,4 +1,4 @@
-package com.tcc.cti.core.client.task;
+package com.tcc.cti.core.client.heartbeat;
 
 import java.io.IOException;
 import java.util.Date;
@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.OperatorKey;
-import com.tcc.cti.core.client.monitor.event.HeartbeatEvent;
-import com.tcc.cti.core.client.monitor.event.NoneHeartbeatEvent;
+import com.tcc.cti.core.client.heartbeat.event.HeartbeatEvent;
+import com.tcc.cti.core.client.heartbeat.event.NoneHeartbeatEvent;
 import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.message.request.HeartbeatRequest;
 

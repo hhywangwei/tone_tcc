@@ -1,4 +1,4 @@
-package com.tcc.cti.core.client.task;
+package com.tcc.cti.core.client.heartbeat;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.atLeast;
@@ -15,7 +15,8 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import com.tcc.cti.core.client.OperatorKey;
-import com.tcc.cti.core.client.monitor.event.HeartbeatEvent;
+import com.tcc.cti.core.client.heartbeat.HeartbeatSendTask;
+import com.tcc.cti.core.client.heartbeat.event.HeartbeatEvent;
 import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.message.request.HeartbeatRequest;
 
