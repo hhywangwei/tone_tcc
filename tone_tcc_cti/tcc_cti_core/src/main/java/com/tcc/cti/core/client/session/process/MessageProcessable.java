@@ -45,4 +45,11 @@ public interface MessageProcessable {
 	 * 关闭消息处理
 	 */
 	void close();
+	
+	/**
+	 * 判断消息处理开始
+	 * 
+	 * @return {@value true}开始消息处理
+	 */
+	boolean isStart();
 }

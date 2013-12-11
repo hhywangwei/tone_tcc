@@ -44,13 +44,13 @@ import com.tcc.cti.core.client.send.RecordSendHandler;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.sequence.MemoryGeneratorSeq;
-import com.tcc.cti.core.client.session.task.MessageProcessTask;
+import com.tcc.cti.core.client.session.process.MessageProcessable;
 import com.tcc.cti.core.message.MessageType;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.request.RequestMessage;
 
 /**
- * 每个操作员与通过一个socket与cti服务器连接
+ * 每个与CTI服务连接的用户都会创建于服务连接{@link Session},该方法封装了网络连接的复杂度。
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
@@ -62,17 +62,22 @@ public class Session implements Sessionable {
 		private final CtiMessagePool _pool;
 		private final Selector _selector;
 		private final Configure _configure;
+		private final MessageProcessable _messageProcess;
 		private List<ReceiveHandler> _receiveHandlers;
 		private List<SendHandler> _sendHandlers;
 		private GeneratorSeq _generatorSeq ;
 		private HeartbeatKeepable _heartbeatKeep;
 		private Connectionable _connection;
 		
-		public Builder(OperatorKey key, Selector selector,Configure configure, CtiMessagePool pool){
+		public Builder(OperatorKey key, Selector selector,
+				MessageProcessable messageProcess,Configure configure,
+				CtiMessagePool pool){
+			
 	    	_key = key;
 	    	_selector = selector;
 	    	_configure = configure;
 	    	_pool = pool;
+	    	_messageProcess = messageProcess;
 	    }
 		
 		public Builder setReceiveHandlers(List<ReceiveHandler> receiveHandlers){
@@ -112,7 +117,7 @@ public class Session implements Sessionable {
 			
 			return new Session(_key, _connection, _pool,
 					_receiveHandlers,_sendHandlers,_generatorSeq,
-					_heartbeatKeep,_configure);
+					_heartbeatKeep,_configure,_messageProcess);
 			
 		}
 		
@@ -171,11 +176,10 @@ public class Session implements Sessionable {
 	private final int _heartbeatTimeout;
 	private final MessageBuffer _messageBuffer;
 	private final Charset _charset;
-	
-	private final MessageProcessTask _messageProcessTask ;
+	private final MessageProcessable _messageProcess;
 	private final Object _monitor = new Object();
 	
-	private volatile Status status = Status.New;
+	private volatile Status _status = Status.New;
 	private volatile long _lastTime = System.currentTimeMillis();
 	
 	private SocketChannel _channel;
@@ -183,7 +187,7 @@ public class Session implements Sessionable {
 	protected Session(OperatorKey operatorKey,Connectionable conn,CtiMessagePool pool,
 			List<ReceiveHandler> receiveHandlers,List<SendHandler> sendHandlers,
 			GeneratorSeq generator,HeartbeatKeepable heartbeatKeep,
-			Configure configure){
+			Configure configure,MessageProcessable messageProcess){
 		
 		_key = operatorKey;
 		_conn = conn;
@@ -193,21 +197,14 @@ public class Session implements Sessionable {
 		_heartbeatKeep = heartbeatKeep != null ? heartbeatKeep :
 			defaultHeartbeatKeep(configure.getHeartbeatInitDelay(),configure.getHeartbeatDelay());
 		_heartbeatTimeout = configure.getHeartbeatTimeout() * 1000;
-		_messageProcessTask = new MessageProcessTask(
-				pool,this,_messageBuffer,receiveHandlers);
 		_charset = configure.getCharset();
+		_messageProcess = messageProcess;
 	}
 	
 	private HeartbeatKeepable defaultHeartbeatKeep(int heartbeatInitDelay,int heartbeatDelay){
-		
 		return 	new ScheduledHeartbeatKeep(this,heartbeatInitDelay,heartbeatDelay);
 	}
 	
-	private void startMessageProcess(MessageProcessTask task){
-		Thread t = new Thread(task);
-		t.start();
-	}
-
 	/**
 	 * 链接服务端开始服务
 	 * 
@@ -219,12 +216,11 @@ public class Session implements Sessionable {
 			if(isNew()){
 				logger.debug("{} Session is start",_key.toString());
 				try{
-					status = Status.Active;
+					_status = Status.Active;
 					_channel =  _conn.connect(this);
-					startMessageProcess(_messageProcessTask);	
 				}catch(IOException e){
 					logger.error("{} Session start is fail,error is {}",_key.toString(),e.getMessage());
-					status = Status.Close;
+					_status = Status.Close;
 					throw e;
 				}
 			}
@@ -240,7 +236,7 @@ public class Session implements Sessionable {
 	public void login(boolean success){
 		synchronized (_monitor) {
 			if(success && isActive()){
-				status = Status.Service;
+				_status = Status.Service;
 				_heartbeatKeep.start();	
 				heartbeatTouch();
 			}
@@ -261,12 +257,11 @@ public class Session implements Sessionable {
 			}
 			
 			if(isNew()){
-				status = Status.Close;
+				_status = Status.Close;
 				return ;
 			}
 			
-			status = Status.Close;
-			_messageProcessTask.close();
+			_status = Status.Close;
 			_heartbeatKeep.shutdown();
 			if(_channel != null && _channel.isOpen()){
 				_channel.close();	
@@ -275,11 +270,11 @@ public class Session implements Sessionable {
 	}
 	
 	@Override
-	public void append(byte[] bytes)  {
+	public void append(byte[] bytes)throws InterruptedException{
 		_messageBuffer.append(bytes);
 		String m = _messageBuffer.next();
 		if(StringUtils.isNotBlank(m)){
-			
+			_messageProcess.put(this, m);
 		}
 	}
 	
@@ -324,18 +319,18 @@ public class Session implements Sessionable {
 	@Override
 	public Status getStatus(){
 		
-		if(status == Status.New ||status == Status.Close){
-			return status;
+		if(_status == Status.New ||_status == Status.Close){
+			return _status;
 		}
 		
 		//HeartBeat timeout
 		long now = System.currentTimeMillis();
 		int deff =(int)(now - _lastTime);
 		if(deff > _heartbeatTimeout){
-			status = Status.Timeout;
+			_status = Status.Timeout;
 		}
 		
-		return status;
+		return _status;
 	}
 	
 	@Override

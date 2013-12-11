@@ -16,6 +16,8 @@ import com.tcc.cti.core.client.Configure;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.session.Session;
 import com.tcc.cti.core.client.session.Sessionable;
+import com.tcc.cti.core.client.session.process.MessageProcessable;
+import com.tcc.cti.core.client.session.process.SingleMessageProcess;
 
 /**
  * {@link NioConnection}单元测试
@@ -41,7 +43,8 @@ public class NioConnectionTest {
 		Connectionable conn = new NioConnection(selector,address);
 		
 		OperatorKey key = new OperatorKey("1", "8001");
-		Sessionable oc = new Session.Builder(key,selector,_configure,null).build();
+		MessageProcessable process = new SingleMessageProcess();
+		Sessionable oc = new Session.Builder(key,selector,process,_configure,null).build();
 		
 		SocketChannel channel = conn.connect(oc);
 		Assert.assertNotNull(channel);
@@ -61,7 +64,8 @@ public class NioConnectionTest {
 		Connectionable conn = new NioConnection(selector,address);
 		
 		OperatorKey key = new OperatorKey("1", "8001");
-		Sessionable oc = new Session.Builder(key,selector,_configure,null).build();
+		MessageProcessable process = new SingleMessageProcess();
+		Sessionable oc = new Session.Builder(key,selector,process,_configure,null).build();
 		
 		try{
 			conn.connect(oc);
@@ -83,7 +87,8 @@ public class NioConnectionTest {
 		Connectionable conn = new NioConnection(selector,address,10);
 		
 		OperatorKey key = new OperatorKey("1", "8001");
-		Sessionable oc = new Session.Builder(key,selector,_configure,null).build();
+		MessageProcessable process = new SingleMessageProcess();
+		Sessionable oc = new Session.Builder(key,selector,process,_configure,null).build();
 		
 		try{
 			conn.connect(oc);

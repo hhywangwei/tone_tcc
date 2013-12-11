@@ -18,6 +18,8 @@ import com.tcc.cti.core.client.connection.Connectionable;
 import com.tcc.cti.core.client.heartbeat.HeartbeatKeepable;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
+import com.tcc.cti.core.client.session.process.MessageProcessable;
+import com.tcc.cti.core.client.session.process.SingleMessageProcess;
 import com.tcc.cti.core.message.request.CallRequest;
 import com.tcc.cti.core.message.request.LoginRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -47,7 +49,8 @@ public class SessionTest {
 		Configure configure =  new Configure.
 				Builder("211.136.173.132",9999).
 				build();
-		return new Session.Builder(key, selector, configure, null).
+		MessageProcessable process = new SingleMessageProcess();
+		return new Session.Builder(key, selector,process, configure, null).
 				setConnection(connection).
 				setSendHandlers(new ArrayList<SendHandler>(0)).
 				build();
@@ -155,7 +158,8 @@ public class SessionTest {
 		Configure configure =  new Configure.
 				Builder("211.136.173.132",9999).
 				build();
-		return new Session.Builder(key, selector, configure, null).
+		MessageProcessable process = new SingleMessageProcess();
+		return new Session.Builder(key, selector,process, configure, null).
 				setConnection(connection).
 				setHeartbeatKeep(heartbeatKeep).
 				build();
@@ -258,7 +262,8 @@ public class SessionTest {
 		sendHandler = Mockito.mock(SendHandler.class);
 		List<SendHandler> handlers = new ArrayList<SendHandler>();
 		handlers.add(sendHandler);
-		return new Session.Builder(key, selector, configure, null).
+		MessageProcessable process = new SingleMessageProcess();
+		return new Session.Builder(key, selector,process, configure, null).
 				setConnection(connection).
 				setSendHandlers(handlers).
 				build();

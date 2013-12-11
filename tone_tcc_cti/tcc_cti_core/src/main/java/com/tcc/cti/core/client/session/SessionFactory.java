@@ -18,6 +18,8 @@ import com.tcc.cti.core.client.heartbeat.HeartbeatKeepable;
 import com.tcc.cti.core.client.heartbeat.ScheduledHeartbeatKeep;
 import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
+import com.tcc.cti.core.client.session.process.MessageProcessable;
+import com.tcc.cti.core.client.session.process.SingleMessageProcess;
 import com.tcc.cti.core.client.session.task.StocketReceiveTask;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
@@ -29,7 +31,7 @@ import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
  */
 public class SessionFactory {
 	private static final Logger logger = LoggerFactory.getLogger(SessionFactory.class);
-	private static final int RECOVERY_SESSION_PERCENT = 70;
+	private static final int CLEAN_SESSION_PERCENT = 70;
 	private static final Object _monitor = new Object();
 	private static volatile SessionFactory factory ;
 	
@@ -40,10 +42,12 @@ public class SessionFactory {
 	private final CtiMessagePool _messagePool;
 	private final Selector _selector;
 	private final StocketReceiveTask _receiveTask;
-	private final int _recoverySessionIndex ;
+	private final Thread _receiveThread;
+	private final int _cleanSessionFireLine ;
 	
 	private List<SendHandler> _sendHandlers;
 	private List<ReceiveHandler> _receiveHandlers;
+	private MessageProcessable _messageProcess;
 
 	private SessionFactory(Configure configure){
 		_configure = configure;
@@ -51,13 +55,9 @@ public class SessionFactory {
 		_selector = openSelector();
 		_receiveTask= new StocketReceiveTask(_selector);
 		_heartExcecutorService = Executors.newScheduledThreadPool(_configure.getHeartPoolSize());
-		_recoverySessionIndex = (configure.getMaxOperator() * RECOVERY_SESSION_PERCENT) / 100;
-		startReceiveTask(_receiveTask);
-	}
-	
-	private void startReceiveTask(StocketReceiveTask task){
-		Thread t = new Thread(_receiveTask);
-		t.start();
+		_cleanSessionFireLine = (configure.getMaxOperator() * CLEAN_SESSION_PERCENT) / 100;
+		_receiveThread = new Thread(_receiveTask);
+		_receiveThread.start();
 	}
 	
 	private Selector openSelector(){
@@ -94,16 +94,23 @@ public class SessionFactory {
 				_sessionPool.remove(key);
 			}
 			
-			if(isRecoverySession()){
-				recoverySession();
+			if(isCleanSession()){
+				logger.debug("Session size is {},Start clean ...",_sessionPool.size());
+				cleanSession();
 			}
 			
 			if(isOverMaxOperator()){
+				logger.error("Override max operator ...");
 				throw new SessionRegisterException(key,"Alread over max operator.");
 			}
 			
+			if(_messageProcess == null){
+				_messageProcess = new SingleMessageProcess();
+				_messageProcess.start();
+			}
+			
 			session = new Session.
-					Builder(key,_selector,_configure,_messagePool).
+					Builder(key,_selector,_messageProcess,_configure,_messagePool).
 					setHeartbeatKeep(createHeartbeatKeep(session)).
 					setReceiveHandlers(_receiveHandlers).
 					setSendHandlers(_sendHandlers).
@@ -124,11 +131,11 @@ public class SessionFactory {
 		return session;
 	}
 	
-	private boolean isRecoverySession(){
-		return _recoverySessionIndex < _sessionPool.size();
+	private boolean isCleanSession(){
+		return _cleanSessionFireLine < _sessionPool.size();
 	}
 	
-	private void recoverySession(){
+	private void cleanSession(){
 		Iterator<OperatorKey> iterator = _sessionPool.keySet().iterator();
 		for(;iterator.hasNext();){
 			OperatorKey k = iterator.next();
@@ -170,21 +177,38 @@ public class SessionFactory {
 			for(Sessionable session : _sessionPool.values()){
 				closeSession(session);
 			}
-			_receiveTask.close();
+			_receiveThread.interrupt();
 			_sessionPool.clear();
+			_messageProcess.close();
 			_heartExcecutorService.shutdownNow();
 		}
 	}
 	
 	public void setReceiveHandlers(List<ReceiveHandler> handlers) {
+		if(handlers == null){
+			throw new IllegalArgumentException("Handlers not null");
+		}
 		synchronized (_monitor) {
 			_receiveHandlers = handlers;			
 		}
 	}
 
 	public void setSendHandlers(List<SendHandler> handlers) {
+		if(handlers == null){
+			throw new IllegalArgumentException("Handlers not null");
+		}
 		synchronized (_monitor) {
 			_sendHandlers = handlers;			
+		}
+	}
+	
+	public void setMessageProcess(MessageProcessable process){
+		if(process == null){
+			throw new IllegalArgumentException("MessageProcess not null");
+		}
+		synchronized (_monitor) {
+			_messageProcess = process;
+			_messageProcess.start();
 		}
 	}
 	

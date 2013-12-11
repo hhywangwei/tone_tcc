@@ -57,9 +57,10 @@ public interface Sessionable {
 	/**
 	 * 添加服务端接收消息到Session中处理
 	 * 
-	 * @param bytes
+	 * @param bytes 接收的消息
+	 * @throws InterruptedException
 	 */
-	void append(byte[] bytes);
+	void append(byte[] bytes)throws InterruptedException;
 	
 	/**
 	 * 发送消息
