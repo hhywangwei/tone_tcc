@@ -35,30 +35,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	
-	<profiles>
-		<profile>
-			<id>dev</id>
-			<properties>
-				<deploy.env>dev</deploy.env>
-			</properties>
-		</profile>	
-		<profile>
-			<id>test</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<properties>
-				<deploy.env>test</deploy.env>
-			</properties>
-		</profile>	
-		<profile>
-			<id>prd</id>
-			<properties>
-				<deploy.env>prd</deploy.env>
-			</properties>
-		</profile>	
-	</profiles>
-	
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
