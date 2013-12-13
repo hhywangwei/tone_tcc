@@ -46,11 +46,7 @@ public class LoginRequest extends RequestMessage{
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("Login [_compayId=");
-		builder.append(_compayId);
-		builder.append(", _opId=");
-		builder.append(_opId);
-		builder.append(", _opNumber=");
+		builder.append("Login [_opNumber=");
 		builder.append(_opNumber);
 		builder.append(", _password=");
 		builder.append(_password);

@@ -4,6 +4,7 @@ import static com.tcc.cti.core.message.MessageType.Heartbeat;
 
 import java.nio.charset.Charset;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.RequestMessage;
 
@@ -22,12 +23,12 @@ public class HeartbeatSendHandler extends AbstractSendHandler {
 	}
 
 	@Override
-	protected byte[] getMessage(RequestMessage message,GeneratorSeq generator,Charset charset) {
+	protected byte[] getMessage(RequestMessage message, OperatorKey key, GeneratorSeq generator,Charset charset) {
 		return HB_MSG.getBytes(charset);
 	}
 	
 	@Override
-	protected String buildMessage(RequestMessage message, GeneratorSeq generator) {
+	protected String buildMessage(RequestMessage message, OperatorKey key, GeneratorSeq generator) {
 		//None instance
 		return null;
 	}

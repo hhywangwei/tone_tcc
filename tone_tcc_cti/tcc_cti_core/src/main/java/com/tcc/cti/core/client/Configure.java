@@ -54,7 +54,7 @@ public class Configure {
 			if(timeout <= 0){
 				throw new IllegalArgumentException("Heartbeat timeOut must > 0");
 			}
-			_heartbeatTimeout = timeout;
+			_heartbeatTimeout = timeout * 1000;
 			return this;
 		}
 		

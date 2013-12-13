@@ -30,10 +30,6 @@ public class GroupMemberRequest extends RequestMessage {
 		builder.append(_groupId);
 		builder.append(", _messageType=");
 		builder.append(_messageType);
-		builder.append(", _compayId=");
-		builder.append(_compayId);
-		builder.append(", _opId=");
-		builder.append(_opId);
 		builder.append("]");
 		return builder.toString();
 	}

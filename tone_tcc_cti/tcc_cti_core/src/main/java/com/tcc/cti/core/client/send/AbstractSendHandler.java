@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.RequestMessage;
 
@@ -28,11 +29,12 @@ public abstract class AbstractSendHandler implements SendHandler {
 	protected static final String OPID_FORMAT = "<OPID>%s</OPID>";
 
 	@Override
-	public void send(SocketChannel channel, RequestMessage message, GeneratorSeq generator,
+	public void send(SocketChannel channel, OperatorKey key, 
+			RequestMessage message, GeneratorSeq generator,
 			Charset charset) throws IOException {
 		
 		if (isSend(message)) {
-			byte[] m = getMessage(message, generator, charset);
+			byte[] m = getMessage(message, key, generator, charset);
 			ByteBuffer buffer = ByteBuffer.wrap(m);
 			channel.write(buffer);
 		}
@@ -52,15 +54,17 @@ public abstract class AbstractSendHandler implements SendHandler {
 	 * 
 	 * @param message
 	 *            消息对象
+	 * @param key {@link OperatorKey}
+	 *            操作员Key
 	 * @param generator
 	 *            消息序号生成对象
 	 * @param charset
 	 *            字符集
 	 * @return
 	 */
-	protected byte[] getMessage(RequestMessage message,GeneratorSeq generator,Charset charset) {
+	protected byte[] getMessage(RequestMessage message, OperatorKey key, GeneratorSeq generator,Charset charset) {
 		
-		String m = buildMessage(message,generator);
+		String m = buildMessage(message,key,generator);
 	    return headCompletion(m,charset);
 	}
 
@@ -68,10 +72,12 @@ public abstract class AbstractSendHandler implements SendHandler {
 	 * 构建发送消息
 	 * 
 	 * @param message 消息
+	 * @param key {@link OperatorKey} 操作员Key
+	 * @param 
 	 * @param generator 创建序列对象
 	 * @return
 	 */
-	protected abstract String buildMessage(RequestMessage message,GeneratorSeq generator);
+	protected abstract String buildMessage(RequestMessage message, OperatorKey key, GeneratorSeq generator);
 	
 	/**
 	 * 替补消息头

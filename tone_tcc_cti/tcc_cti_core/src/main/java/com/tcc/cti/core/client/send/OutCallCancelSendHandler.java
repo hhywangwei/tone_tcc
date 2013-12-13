@@ -5,6 +5,7 @@ import static com.tcc.cti.core.message.MessageType.OutCallCancel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.OutCallCancelRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -34,15 +35,15 @@ public class OutCallCancelSendHandler extends AbstractSendHandler{
 	}
 
 	@Override
-	protected String buildMessage(RequestMessage message, GeneratorSeq generator) {
+	protected String buildMessage(RequestMessage message, OperatorKey key, GeneratorSeq generator) {
 		
         OutCallCancelRequest request = (OutCallCancelRequest)message;
 		
 		StringBuilder sb = new StringBuilder(128);
 		sb.append(String.format(MSG_FORMAT, OutCallCancel.request()));
 		sb.append(String.format(SEQ_FORMAT, generator.next()));
-		sb.append(String.format(COMPANY_ID_FORMAT, request.getCompayId()));
-		sb.append(String.format(OPID_FORMAT, request.getOpId()));
+		sb.append(String.format(COMPANY_ID_FORMAT, key.getCompanyId()));
+		sb.append(String.format(OPID_FORMAT, key.getOpId()));
 		sb.append(String.format(CALL_LEG_FORMAT, request.getCallLeg()));
 		
 		String m = sb.toString();

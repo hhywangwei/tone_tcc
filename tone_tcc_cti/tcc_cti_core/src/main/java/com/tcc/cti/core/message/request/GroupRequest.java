@@ -29,8 +29,6 @@ public class GroupRequest extends RequestMessage{
 		builder.append(_groupId);
 		builder.append(", _messageType=");
 		builder.append(_messageType);
-		builder.append(", _compayId=");
-		builder.append(_compayId);
 		builder.append("]");
 		return builder.toString();
 	}

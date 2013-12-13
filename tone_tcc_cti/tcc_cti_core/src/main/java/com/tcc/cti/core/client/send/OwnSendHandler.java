@@ -5,6 +5,7 @@ import static com.tcc.cti.core.message.MessageType.Own;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.OwnRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -32,14 +33,13 @@ public class OwnSendHandler extends AbstractSendHandler{
 	}
 
 	@Override
-	protected String buildMessage(RequestMessage message,GeneratorSeq generator) {
+	protected String buildMessage(RequestMessage message, OperatorKey key, GeneratorSeq generator) {
 		OwnRequest request = (OwnRequest)message;
 		
 		StringBuilder sb = new StringBuilder(128);
 		sb.append(String.format(MSG_FORMAT, request.getMessageType()));
 		sb.append(String.format(SEQ_FORMAT, generator.next()));
 		sb.append(WORK_ID_FORMAT);
-		
 		
 		String m = sb.toString();
 		logger.debug("self info send is {}",m);

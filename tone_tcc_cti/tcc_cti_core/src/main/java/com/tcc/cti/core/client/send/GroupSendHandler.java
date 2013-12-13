@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.GroupRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -34,13 +35,13 @@ public class GroupSendHandler extends AbstractSendHandler{
 	}
 
 	@Override
-	protected String buildMessage(RequestMessage message, GeneratorSeq generator) {
+	protected String buildMessage(RequestMessage message, OperatorKey key, GeneratorSeq generator) {
 		GroupRequest request = (GroupRequest)message;
 		
 		StringBuilder sb = new StringBuilder(512);
 		sb.append(String.format(MSG_FORMAT, request.getMessageType()));
 		sb.append(String.format(SEQ_FORMAT, generator.next()));
-		sb.append(String.format(COMPANY_ID_FORMAT, request.getCompayId()));
+		sb.append(String.format(COMPANY_ID_FORMAT, key.getCompanyId()));
 		if(StringUtils.isNotBlank(request.getGroupId())){
 			sb.append(String.format(GROUP_ID_FORMAT, request.getGroupId()));
 		}

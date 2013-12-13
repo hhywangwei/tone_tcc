@@ -5,6 +5,7 @@ import static com.tcc.cti.core.message.MessageType.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.RecordRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -34,14 +35,14 @@ public class RecordSendHandler extends AbstractSendHandler{
 	}
 
 	@Override
-	protected String buildMessage(RequestMessage message, GeneratorSeq generator) {
+	protected String buildMessage(RequestMessage message,OperatorKey key, GeneratorSeq generator) {
 		RecordRequest r = (RecordRequest)message;
 		
 		StringBuilder builder = new StringBuilder(256);
 		builder.append(String.format(MSG_FORMAT, r.getMessageType()));
 		builder.append(String.format(SEQ_FORMAT, generator.next()));
-		builder.append(String.format(COMPANY_ID_FORMAT, r.getCompayId()));
-		builder.append(String.format(OPID_FORMAT, r.getOpId()));
+		builder.append(String.format(COMPANY_ID_FORMAT, key.getCompanyId()));
+		builder.append(String.format(OPID_FORMAT, key.getOpId()));
 		builder.append(String.format(CALL_LEG_FORMAT, r.getCallLeg()));
 		
 		String m = builder.toString();

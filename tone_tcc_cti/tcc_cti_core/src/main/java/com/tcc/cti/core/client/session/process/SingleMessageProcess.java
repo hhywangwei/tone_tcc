@@ -35,13 +35,23 @@ public class SingleMessageProcess implements MessageProcessable {
 	private volatile ProcessTask _processTask;
 	private volatile Thread _processTaskThread;
 	
-	public SingleMessageProcess(){
-		this(DEFAULT_POOL_SIZE);
+	public SingleMessageProcess(List<ReceiveHandler> handlers,CtiMessagePool pool){
+		this(DEFAULT_POOL_SIZE,handlers,pool);
 	}
 	
-	public SingleMessageProcess(int poolSize){
+	public SingleMessageProcess(int poolSize,List<ReceiveHandler> handlers,CtiMessagePool pool){
+		if(handlers == null){
+			throw new IllegalArgumentException("Receive handlers not null");
+		}
+		
+		if(pool == null){
+			throw new IllegalArgumentException("Message poll not null");
+		}
+		
 		_messageQueue = new ArrayBlockingQueue<MessageWapper>(poolSize);
 		_warringLine = (poolSize * WARRING_LINE_PERCENT) / 100;
+		_handlers = handlers;
+		_messagePool = pool;
 	}
 	
 	@Override
@@ -54,23 +64,7 @@ public class SingleMessageProcess implements MessageProcessable {
 		w.message = m;
 		_messageQueue.put(w);
 	}
-
-	@Override
-	public void setReceiveHandlers(List<ReceiveHandler> handlers) {
-		if(handlers == null){
-			throw new IllegalArgumentException("Receive handlers not null");
-		}
-		_handlers = handlers;
-	}
 	
-	@Override
-	public void setMessagePool(CtiMessagePool pool) {
-		if(pool == null){
-			throw new IllegalArgumentException("Message poll not null");
-		}
-		_messagePool = pool;
-	}
-
 	@Override
 	public void start() {
 		if(_start){

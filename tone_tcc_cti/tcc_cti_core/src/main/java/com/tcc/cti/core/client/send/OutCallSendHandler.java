@@ -5,6 +5,7 @@ import static com.tcc.cti.core.message.MessageType.OutCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.OutCallRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -35,15 +36,15 @@ public class OutCallSendHandler extends AbstractSendHandler{
 	}
 
 	@Override
-	protected String buildMessage(RequestMessage message, GeneratorSeq generator) {
+	protected String buildMessage(RequestMessage message,OperatorKey key, GeneratorSeq generator) {
 		
 		OutCallRequest request = (OutCallRequest)message;
 		
 		StringBuilder sb = new StringBuilder(128);
 		sb.append(String.format(MSG_FORMAT, OutCall.request()));
 		sb.append(String.format(SEQ_FORMAT, generator.next()));
-		sb.append(String.format(COMPANY_ID_FORMAT, request.getCompayId()));
-		sb.append(String.format(OPID_FORMAT, request.getOpId()));
+		sb.append(String.format(COMPANY_ID_FORMAT, key.getCompanyId()));
+		sb.append(String.format(OPID_FORMAT, key.getOpId()));
 		sb.append(String.format(OP_NUMBER_FORMAT, request.getOpNumber()));
 		sb.append(String.format(PHONE_FORMAT, request.getPhone()));
 		

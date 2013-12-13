@@ -19,28 +19,6 @@ import com.tcc.cti.core.client.connection.Connectionable;
 import com.tcc.cti.core.client.connection.NioConnection;
 import com.tcc.cti.core.client.heartbeat.HeartbeatKeepable;
 import com.tcc.cti.core.client.heartbeat.ScheduledHeartbeatKeep;
-import com.tcc.cti.core.client.receive.CallReceiveHandler;
-import com.tcc.cti.core.client.receive.CloseCallReceiveHandler;
-import com.tcc.cti.core.client.receive.GroupMemberReceiveHandler;
-import com.tcc.cti.core.client.receive.GroupReceiveHandler;
-import com.tcc.cti.core.client.receive.HeartbeatReceiveHandler;
-import com.tcc.cti.core.client.receive.LoginReceiveHandler;
-import com.tcc.cti.core.client.receive.MonitorReceiveHandler;
-import com.tcc.cti.core.client.receive.OutCallReceiveHandler;
-import com.tcc.cti.core.client.receive.OutCallStateReceiveHandler;
-import com.tcc.cti.core.client.receive.OwnReceiveHandler;
-import com.tcc.cti.core.client.receive.ReceiveHandler;
-import com.tcc.cti.core.client.receive.RecordReceiveHandler;
-import com.tcc.cti.core.client.send.CallSendHandler;
-import com.tcc.cti.core.client.send.GroupMemberSendHandler;
-import com.tcc.cti.core.client.send.GroupSendHandler;
-import com.tcc.cti.core.client.send.HeartbeatSendHandler;
-import com.tcc.cti.core.client.send.LoginSendHandler;
-import com.tcc.cti.core.client.send.MonitorSendHandler;
-import com.tcc.cti.core.client.send.OutCallCancelSendHandler;
-import com.tcc.cti.core.client.send.OutCallSendHandler;
-import com.tcc.cti.core.client.send.OwnSendHandler;
-import com.tcc.cti.core.client.send.RecordSendHandler;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.sequence.MemoryGeneratorSeq;
@@ -63,8 +41,7 @@ public class Session implements Sessionable {
 		private final Selector _selector;
 		private final Configure _configure;
 		private final MessageProcessable _messageProcess;
-		private List<ReceiveHandler> _receiveHandlers;
-		private List<SendHandler> _sendHandlers;
+		private List<SendHandler> _sendHandlers = new ArrayList<SendHandler>(); 
 		private GeneratorSeq _generatorSeq ;
 		private HeartbeatKeepable _heartbeatKeep;
 		private Connectionable _connection;
@@ -79,11 +56,6 @@ public class Session implements Sessionable {
 	    	_pool = pool;
 	    	_messageProcess = messageProcess;
 	    }
-		
-		public Builder setReceiveHandlers(List<ReceiveHandler> receiveHandlers){
-			_receiveHandlers = receiveHandlers;
-			return this;
-		}
 		
 		public Builder setSendHandlers(List<SendHandler> sendHandlers){
 			_sendHandlers = sendHandlers;
@@ -106,54 +78,15 @@ public class Session implements Sessionable {
 		}
 		
 		public Session build(){
-			_receiveHandlers = _receiveHandlers != null ?
-					_receiveHandlers : defaultReceiveHandlers();
-			_sendHandlers = _sendHandlers != null ?
-					_sendHandlers : defaultSendHandlers();
 			_generatorSeq = _generatorSeq != null ?
 					_generatorSeq : defaultGreneratorSeq();
 			_connection = _connection != null ?
 					_connection : defaultConnection();
 			
 			return new Session(_key, _connection, _pool,
-					_receiveHandlers,_sendHandlers,_generatorSeq,
-					_heartbeatKeep,_configure,_messageProcess);
+					_sendHandlers,_generatorSeq,_heartbeatKeep,
+					_configure,_messageProcess);
 			
-		}
-		
-		private List<ReceiveHandler> defaultReceiveHandlers(){
-			List<ReceiveHandler> handlers = new ArrayList<>();
-
-			handlers.add(new HeartbeatReceiveHandler());
-			handlers.add(new LoginReceiveHandler());
-			handlers.add(new OwnReceiveHandler());
-			handlers.add(new GroupMemberReceiveHandler());
-			handlers.add(new GroupReceiveHandler());
-			handlers.add(new MonitorReceiveHandler());
-			handlers.add(new OutCallReceiveHandler());
-			handlers.add(new OutCallStateReceiveHandler());
-			handlers.add(new CallReceiveHandler());
-			handlers.add(new CloseCallReceiveHandler());
-			handlers.add(new RecordReceiveHandler());
-			
-			return handlers;
-		}
-		
-		private List<SendHandler> defaultSendHandlers(){
-			List<SendHandler> handlers = new ArrayList<>();
-			
-			handlers.add(new HeartbeatSendHandler());
-			handlers.add(new LoginSendHandler());
-			handlers.add(new OwnSendHandler());
-			handlers.add(new GroupMemberSendHandler());
-			handlers.add(new GroupSendHandler());
-			handlers.add(new MonitorSendHandler());
-			handlers.add(new OutCallSendHandler());
-			handlers.add(new OutCallCancelSendHandler());
-			handlers.add(new CallSendHandler());
-			handlers.add(new RecordSendHandler());
-			
-			return handlers;
 		}
 		
 		private GeneratorSeq defaultGreneratorSeq(){
@@ -185,9 +118,9 @@ public class Session implements Sessionable {
 	private SocketChannel _channel;
 
 	protected Session(OperatorKey operatorKey,Connectionable conn,CtiMessagePool pool,
-			List<ReceiveHandler> receiveHandlers,List<SendHandler> sendHandlers,
-			GeneratorSeq generator,HeartbeatKeepable heartbeatKeep,
-			Configure configure,MessageProcessable messageProcess){
+			List<SendHandler> sendHandlers,GeneratorSeq generator,
+			HeartbeatKeepable heartbeatKeep,Configure configure,
+			MessageProcessable messageProcess){
 		
 		_key = operatorKey;
 		_conn = conn;
@@ -196,7 +129,7 @@ public class Session implements Sessionable {
 		_sendHandlers = sendHandlers;
 		_heartbeatKeep = heartbeatKeep != null ? heartbeatKeep :
 			defaultHeartbeatKeep(configure.getHeartbeatInitDelay(),configure.getHeartbeatDelay());
-		_heartbeatTimeout = configure.getHeartbeatTimeout() * 1000;
+		_heartbeatTimeout = configure.getHeartbeatTimeout();
 		_charset = configure.getCharset();
 		_messageProcess = messageProcess;
 	}
@@ -291,8 +224,9 @@ public class Session implements Sessionable {
 		}
 		if(isAccess(message)){
 			for(SendHandler handler : _sendHandlers){
-				handler.send(_channel, message, _generator,_charset);
+				handler.send(_channel,_key, message, _generator,_charset);
 			}	
+			heartbeatTouch();
 		}else{
 			logger.debug("{} not access cti server.", _key.toString());
 			throw new SessionAccessException(_key);

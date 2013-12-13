@@ -41,10 +41,6 @@ public class OutCallRequest extends RequestMessage{
 		builder.append(_opNumber);
 		builder.append(", _messageType=");
 		builder.append(_messageType);
-		builder.append(", _compayId=");
-		builder.append(_compayId);
-		builder.append(", _opId=");
-		builder.append(_opId);
 		builder.append("]");
 		return builder.toString();
 	}
