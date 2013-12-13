@@ -16,10 +16,13 @@ import com.tcc.cti.core.client.Configure;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.connection.Connectionable;
 import com.tcc.cti.core.client.heartbeat.HeartbeatKeepable;
+import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.session.process.MessageProcessable;
 import com.tcc.cti.core.client.session.process.SingleMessageProcess;
+import com.tcc.cti.core.message.pool.CtiMessagePool;
+import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
 import com.tcc.cti.core.message.request.CallRequest;
 import com.tcc.cti.core.message.request.LoginRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -30,8 +33,10 @@ import com.tcc.cti.core.message.request.RequestMessage;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 public class SessionTest {
-	
 	private static Selector _selector;
+	
+	private final List<ReceiveHandler> receiveHandlers =new ArrayList<ReceiveHandler>();
+	private final CtiMessagePool pool =new OperatorCtiMessagePool();
 	
 	@BeforeClass
 	public static void beforeClass()throws IOException{
@@ -49,7 +54,7 @@ public class SessionTest {
 		Configure configure =  new Configure.
 				Builder("211.136.173.132",9999).
 				build();
-		MessageProcessable process = new SingleMessageProcess();
+		MessageProcessable process = new SingleMessageProcess(receiveHandlers,pool);
 		return new Session.Builder(key, selector,process, configure, null).
 				setConnection(connection).
 				setSendHandlers(new ArrayList<SendHandler>(0)).
@@ -158,7 +163,7 @@ public class SessionTest {
 		Configure configure =  new Configure.
 				Builder("211.136.173.132",9999).
 				build();
-		MessageProcessable process = new SingleMessageProcess();
+		MessageProcessable process = new SingleMessageProcess(receiveHandlers,pool);
 		return new Session.Builder(key, selector,process, configure, null).
 				setConnection(connection).
 				setHeartbeatKeep(heartbeatKeep).
@@ -262,7 +267,7 @@ public class SessionTest {
 		sendHandler = Mockito.mock(SendHandler.class);
 		List<SendHandler> handlers = new ArrayList<SendHandler>();
 		handlers.add(sendHandler);
-		MessageProcessable process = new SingleMessageProcess();
+		MessageProcessable process = new SingleMessageProcess(receiveHandlers,pool);
 		return new Session.Builder(key, selector,process, configure, null).
 				setConnection(connection).
 				setSendHandlers(handlers).
@@ -301,7 +306,7 @@ public class SessionTest {
 			LoginRequest r = new LoginRequest();
 			session.send(r);
 			Mockito.verify(sendHandler,Mockito.atLeastOnce()).send(
-					Mockito.any(SocketChannel.class), Mockito.any(RequestMessage.class) ,
+					Mockito.any(SocketChannel.class),Mockito.any(OperatorKey.class), Mockito.any(RequestMessage.class) ,
 					Mockito.any(GeneratorSeq.class), Mockito.any(Charset.class));
 		}finally{
 			if(session != null){

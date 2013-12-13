@@ -6,6 +6,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.MonitorRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -31,14 +32,14 @@ public class MonitorSendHandlerTest {
 	@Test
 	public void testBuildMessage(){
 		MonitorRequest request = new MonitorRequest();
-		request.setCompayId("1");
 		
 		GeneratorSeq generator = mock(GeneratorSeq.class);
 		when(generator.next()).thenReturn("1");
 		
 		String e = "<msg>monitor_info</msg><seq>1</seq><CompanyID>1</CompanyID>";
-		MonitorSendHandler handler = new MonitorSendHandler();		
-		String m = handler.buildMessage(request, generator);
+		MonitorSendHandler handler = new MonitorSendHandler();	
+		OperatorKey key = new OperatorKey("1","8001");
+		String m = handler.buildMessage(request,key, generator);
 		Assert.assertEquals(e, m);
 	}
 }

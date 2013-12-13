@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.List;
 
 import junit.framework.Assert;
 
@@ -14,10 +16,13 @@ import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.Configure;
 import com.tcc.cti.core.client.OperatorKey;
+import com.tcc.cti.core.client.receive.ReceiveHandler;
 import com.tcc.cti.core.client.session.Session;
 import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.client.session.process.MessageProcessable;
 import com.tcc.cti.core.client.session.process.SingleMessageProcess;
+import com.tcc.cti.core.message.pool.CtiMessagePool;
+import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
 
 /**
  * {@link NioConnection}单元测试
@@ -26,6 +31,8 @@ import com.tcc.cti.core.client.session.process.SingleMessageProcess;
  */
 public class NioConnectionTest {
 	private static final Logger logger = LoggerFactory.getLogger(NioConnectionTest.class);
+	private List<ReceiveHandler> handlers =new ArrayList<ReceiveHandler>();
+	private CtiMessagePool pool =new OperatorCtiMessagePool();
 	private Configure _configure;
 	
 	@Before
@@ -43,7 +50,7 @@ public class NioConnectionTest {
 		Connectionable conn = new NioConnection(selector,address);
 		
 		OperatorKey key = new OperatorKey("1", "8001");
-		MessageProcessable process = new SingleMessageProcess();
+		MessageProcessable process = new SingleMessageProcess(handlers,pool);
 		Sessionable oc = new Session.Builder(key,selector,process,_configure,null).build();
 		
 		SocketChannel channel = conn.connect(oc);
@@ -64,7 +71,7 @@ public class NioConnectionTest {
 		Connectionable conn = new NioConnection(selector,address);
 		
 		OperatorKey key = new OperatorKey("1", "8001");
-		MessageProcessable process = new SingleMessageProcess();
+		MessageProcessable process = new SingleMessageProcess(handlers,pool);
 		Sessionable oc = new Session.Builder(key,selector,process,_configure,null).build();
 		
 		try{
@@ -87,7 +94,7 @@ public class NioConnectionTest {
 		Connectionable conn = new NioConnection(selector,address,10);
 		
 		OperatorKey key = new OperatorKey("1", "8001");
-		MessageProcessable process = new SingleMessageProcess();
+		MessageProcessable process = new SingleMessageProcess(handlers,pool);
 		Sessionable oc = new Session.Builder(key,selector,process,_configure,null).build();
 		
 		try{

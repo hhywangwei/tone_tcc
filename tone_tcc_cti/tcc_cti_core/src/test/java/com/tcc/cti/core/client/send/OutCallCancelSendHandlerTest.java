@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.OutCallCancelRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -38,7 +39,8 @@ public class OutCallCancelSendHandlerTest {
 		when(generator.next()).thenReturn("1");
 		
 		OutCallCancelRequest request = initRequest();
-		String m = handler.buildMessage(request, generator);
+		OperatorKey key = new OperatorKey("1","2");
+		String m = handler.buildMessage(request,key, generator);
 		Assert.assertNotNull(m);
 		
 		String e = "<msg>outcallcancel</msg><seq>1</seq><CompanyID>1</CompanyID><OPID>2</OPID><CallLeg>11_22_123</CallLeg>";
@@ -48,8 +50,6 @@ public class OutCallCancelSendHandlerTest {
 	private OutCallCancelRequest initRequest(){
 		OutCallCancelRequest request =new OutCallCancelRequest();
 		
-		request.setCompayId("1");
-		request.setOpId("2");
 		request.setCallLeg("11_22_123");
 		return request;
 	}

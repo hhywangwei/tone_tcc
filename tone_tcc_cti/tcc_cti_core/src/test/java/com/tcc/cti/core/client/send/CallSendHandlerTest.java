@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.CallRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -26,17 +27,14 @@ public class CallSendHandlerTest {
 	
 	@Test
 	public void testBuildMessage(){
-		
 		CallRequest request = new CallRequest();
-		request.setCompayId("1");
-		request.setOpId("2");
 		
 		GeneratorSeq generator = mock(GeneratorSeq.class);
 		when(generator.next()).thenReturn("1");
 		
 		CallSendHandler handler = new CallSendHandler();
-		String m = handler.buildMessage(request, generator);
-		
+		OperatorKey key = new OperatorKey("1","2");
+		String m = handler.buildMessage(request,key, generator);
 		String e = "<msg>get_call_info</msg><seq>1</seq><CompanyID>1</CompanyID><OPID>2</OPID>";
 		
 		Assert.assertEquals(e, m);

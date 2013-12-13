@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.GroupMemberRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -28,9 +29,7 @@ public class GroupMemberSendHandlerTest {
 	@Test
 	public void testBuildMessage(){
 		GroupMemberRequest request = new GroupMemberRequest();
-		request.setCompayId("1");
 		request.setGroupId("1");
-		request.setOpId("1");
 		
 		GeneratorSeq generator = mock(GeneratorSeq.class);
 		when(generator.next()).thenReturn("1");
@@ -38,8 +37,9 @@ public class GroupMemberSendHandlerTest {
 		String e = "<msg>worker_number_info</msg><seq>1</seq>"
 				+ "<CompanyID>1</CompanyID><GroupID>1</GroupID>";
 		
-		GroupMemberSendHandler handler = new GroupMemberSendHandler();		
-		String m = handler.buildMessage(request, generator);
+		GroupMemberSendHandler handler = new GroupMemberSendHandler();	
+		OperatorKey key = new OperatorKey("1","2");
+		String m = handler.buildMessage(request,key, generator);
 		Assert.assertEquals(e, m);
 	}
 

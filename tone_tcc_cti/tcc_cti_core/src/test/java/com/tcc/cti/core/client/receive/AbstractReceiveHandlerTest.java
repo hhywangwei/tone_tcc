@@ -1,5 +1,6 @@
 package com.tcc.cti.core.client.receive;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,6 +15,7 @@ import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.client.session.process.MessageProcessable;
 import com.tcc.cti.core.client.session.process.SingleMessageProcess;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
+import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
 import com.tcc.cti.core.message.response.ResponseMessage;
 
 /**
@@ -51,7 +53,8 @@ public class AbstractReceiveHandlerTest {
 		Configure configure = new Configure.
 				Builder("211.136.173.134",9999).
 				build();
-		MessageProcessable process =new SingleMessageProcess();
+		MessageProcessable process =new SingleMessageProcess(
+				new ArrayList<ReceiveHandler>(),new OperatorCtiMessagePool());
 		Sessionable channel = new Session.Builder(key,null,process,configure,null).build();
 		
 		handler.receiveHandler(pool, channel, content);

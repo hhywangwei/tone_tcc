@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.LoginRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -38,15 +39,14 @@ public class LoginSendHandlerTest {
 		LoginSendHandler send = new LoginSendHandler();
 		GeneratorSeq generator = mock(GeneratorSeq.class);
 		when(generator.next()).thenReturn("1");
-		String m = send.buildMessage(login, generator);
+		OperatorKey key = new OperatorKey("1","8001");
+		String m = send.buildMessage(login,key, generator);
 		Assert.assertEquals(MESSAGE, m);
 	}
 	 
 	private LoginRequest initLoginInfo(){
 		
 		LoginRequest login = new LoginRequest();
-		login.setCompayId("1");
-		login.setOpId("8001");
 		login.setOpNumber("8002");
 		login.setPassword("c4ca4238a0b923820dcc509a6f75849b");
 		login.setType("1");

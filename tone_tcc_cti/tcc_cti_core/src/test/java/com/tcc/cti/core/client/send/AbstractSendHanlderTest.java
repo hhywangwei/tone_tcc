@@ -6,6 +6,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.RequestMessage;
 
@@ -41,7 +42,7 @@ public class AbstractSendHanlderTest {
 		}
 
 		@Override
-		protected String buildMessage(RequestMessage message,
+		protected String buildMessage(RequestMessage message,OperatorKey key,
 				GeneratorSeq generator) {
 			//none instance
 			return null;

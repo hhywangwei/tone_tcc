@@ -6,6 +6,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.RecordRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -37,7 +38,8 @@ public class RecordSendHanlderTest {
 		when(generator.next()).thenReturn("1");
 		
 		RecordRequest request = initRequest();
-		String m = handler.buildMessage(request, generator);
+		OperatorKey key = new OperatorKey("1","2");
+		String m = handler.buildMessage(request,key, generator);
 		Assert.assertNotNull(m);
 		
 		String e = "<msg>start_record</msg><seq>1</seq><CompanyID>1</CompanyID><OPID>2</OPID><CallLeg>111-222</CallLeg>";
@@ -47,8 +49,6 @@ public class RecordSendHanlderTest {
 	private RecordRequest initRequest(){
 		RecordRequest request =new RecordRequest();
 		
-		request.setCompayId("1");
-		request.setOpId("2");
 		request.setCallLeg("111-222");
 		return request;
 	}

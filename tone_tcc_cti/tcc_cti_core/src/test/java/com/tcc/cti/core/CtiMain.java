@@ -1,19 +1,19 @@
 package com.tcc.cti.core;
 
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.Configure;
+import com.tcc.cti.core.client.OperatorKey;
+import com.tcc.cti.core.client.session.SessionFactory;
+import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
 import com.tcc.cti.core.message.request.GroupRequest;
 import com.tcc.cti.core.message.request.LoginRequest;
-import com.tcc.cti.core.message.response.ResponseMessage;
 
 /**
  * 整合测试CTI
@@ -23,77 +23,67 @@ import com.tcc.cti.core.message.response.ResponseMessage;
 public class CtiMain {
 	private static final Logger logger= LoggerFactory.getLogger(CtiMain.class);
 	
-//	private final String _opId ;
-//	private final String _companyId;
-//	private final TcpCtiClient _client;
-//	private final CtiMessagePool _pool;
-//	private final Thread _receiveThread ;
-//	
-//	public CtiMain()throws IOException{
-//		_opId = "8002";
-//		_companyId = "1";
-//		_pool = new OperatorCtiMessagePool();
-//		_client = new TcpCtiClient(initConfigure(),_pool);
-//		_receiveThread = new Thread(new ReceiveRunner(_pool,_companyId,_opId,_client));
-//	}
-//	
-//	private Configure initConfigure(){
-//		Configure configure = new Configure.
-//				Builder("211.136.173.132",9999).
-//				setCharsetName("GBK").
-//				build();
-//		
-//		return configure;
-//	}
-//	
-//	public void start()throws Exception{	
-//		_client.start();
-//		logger.debug("Start tcp client ...");
-//		_client.register(_companyId, _opId);
-//		logger.debug("Register company's {} and operator's {}",
-//				_companyId,_opId);
-//		_receiveThread.start();
-//		logger.debug("Start receive message");
-//	}
-//	
-//	private void login() throws ClientException{
-//
-//		LoginRequest login = new LoginRequest();
-//		login.setCompayId(_companyId);
-//		login.setOpId(_opId);
-//		login.setOpNumber("8002");
-//		login.setPassword("1");
-//		login.setType("1");
-//
-//		_client.send(login);;
-//	}
-//	
-//	private void getGroups()throws ClientException{
-//		
-//		GroupRequest r = new GroupRequest();
-//		
-//		r.setCompayId(_companyId);
-//		r.setOpId(_opId);
-//		_client.send(r);
-//	}
-//	
-//	public void close()throws ClientException{
-//		_receiveThread.interrupt();
-//	}
-//	
-//	public static void main(String[] args){
-//		try{
-//			CtiMain main = new CtiMain();
-//			main.start();
-//			main.login();
-//			main.getGroups();
-//			
-//			Thread.sleep(2* 60 * 1000);
-//			main.close();
-//		}catch(Exception e){
-//			logger.error("Test Cti is {}",e.toString());
-//		}
-//	}
+	private final String _opId ;
+	private final String _companyId;
+	private final CtiMessagePool _pool;
+	private final SessionFactory _sessionFactory;
+	
+	public CtiMain(String opId,String companyId){
+		_opId = opId;
+		_companyId = companyId;
+		_pool = new OperatorCtiMessagePool();
+		_sessionFactory = SessionFactory.instance(initConfigure());
+	}
+	
+	private Configure initConfigure(){
+		Configure configure = new Configure.
+				Builder("211.136.173.132",9999).
+				setCharsetName("GBK").
+				setHeartbeatTimeout(30).
+				build();
+		
+		return configure;
+	}
+	
+	public Sessionable register(String opId,String companyId)throws Exception{
+		OperatorKey key = new OperatorKey(opId,companyId);
+		Sessionable session = _sessionFactory.getSession(key);
+		return session;
+	}
+	
+	private void login(Sessionable session) throws IOException{
+
+		LoginRequest login = new LoginRequest();
+		login.setOpNumber("8002");
+		login.setPassword("1");
+		login.setType("1");
+
+		session.send(login);;
+	}
+
+	private void getGroups(Sessionable session)throws IOException{
+		GroupRequest r = new GroupRequest();
+		session.send(r);
+	}
+	
+	public void close()throws IOException{
+		_sessionFactory.close();
+	}
+	
+	public static void main(String[] args)throws Exception{
+		String opId = "8002";
+		String companyId = "1";
+		CtiMain main = new CtiMain(opId,companyId);
+		try{
+			Sessionable session = main.register(opId, companyId);
+			main.login(session);
+			Thread.sleep(10 * 1000);
+			main.getGroups(session);
+			Thread.sleep(10 * 1000);
+		}finally{
+			main.close();
+		}
+	}
 //	
 //	private static class ReceiveRunner implements Runnable{
 //		private static final String DEFAULT_MESSAGE_FILE = "cti_message.txt";

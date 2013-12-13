@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.HeartbeatRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -32,7 +33,8 @@ public class HeartbeatSendHandlerTest {
 		GeneratorSeq generator = mock(GeneratorSeq.class);
 		when(generator.next()).thenReturn("1");
 		String charset = "iso-8859-1";
-		byte[] m = handler.getMessage(r, generator, Charset.forName(charset));
+		OperatorKey key = new OperatorKey("1","2");
+		byte[] m = handler.getMessage(r, key, generator, Charset.forName(charset));
 		Assert.assertEquals("<head>00013</head><msg>hb</msg>", new String(m,charset));
 	}
 }

@@ -6,6 +6,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.RequestMessage;
 import com.tcc.cti.core.message.request.OwnRequest;
@@ -34,13 +35,12 @@ public class OwnSendHandlerTest {
 	@Test
 	public void testBuildMessage(){
 		RequestMessage m = new OwnRequest();
-		m.setCompayId("1");
-		m.setOpId("1");
 		GeneratorSeq generator = mock(GeneratorSeq.class);
 		when(generator.next()).thenReturn("1");
 		
 		OwnSendHandler handler = new OwnSendHandler();
-		String message = handler.buildMessage(m, generator);
+		OperatorKey key = new OperatorKey("1","1");
+		String message = handler.buildMessage(m,key, generator);
 		Assert.assertEquals(MESSAGE, message);
 	}
 }
