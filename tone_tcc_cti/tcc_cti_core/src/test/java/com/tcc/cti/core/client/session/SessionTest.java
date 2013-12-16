@@ -30,7 +30,8 @@ public class SessionTest {
 		MessageProcessable process = Mockito.mock(MessageProcessable.class);
 		SendHandler noneHandler = Mockito.mock(SendHandler.class);
 		return  new Session.Builder(key,connection, process,
-				noneHandler, new ScheduledHeartbeatKeep()).
+				 new ScheduledHeartbeatKeep()).
+				 setSendHandler(noneHandler).
 				build();
 	}
 	
@@ -135,8 +136,8 @@ public class SessionTest {
 		OperatorKey key = new OperatorKey("1","8002");
 		MessageProcessable process = Mockito.mock(MessageProcessable.class);
 		SendHandler noneHandler = Mockito.mock(SendHandler.class);
-		return  new Session.Builder(key,connection, process,
-				noneHandler, heartbeatKeep).
+		return  new Session.Builder(key,connection, process,heartbeatKeep).
+				setSendHandler(noneHandler).
 				build();
 	}
 	
@@ -234,7 +235,8 @@ public class SessionTest {
 		sendHandler = Mockito.mock(SendHandler.class);
 		MessageProcessable process = Mockito.mock(MessageProcessable.class);
 		return  new Session.Builder(key,connection, process,
-				sendHandler, new ScheduledHeartbeatKeep()).
+				new ScheduledHeartbeatKeep()).
+				setSendHandler(sendHandler).
 				build();
 	}
 	

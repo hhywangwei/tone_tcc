@@ -10,6 +10,7 @@ import static com.tcc.cti.core.message.MessageType.Login;
  * _opNumber:座席号
  * _password:用户密码使用（sh1）加密传输
  * _type:用户类型 
+ * </pre>
  * 
  * 详细参考{@link LoginSendHandler}
  * 

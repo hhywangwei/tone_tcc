@@ -18,7 +18,10 @@ public enum MessageType {
 	OutCall("outcall","outcall"),
 	OutCallState("","outcallresp"),
 	OutCallCancel("outcallcancel","outcallcancel"),
-	Record("start_record","start_record");
+	Record("start_record","start_record"),
+	MobileNumber("set_mobile_number","set_mobile_number"),
+	MobileNumberCancel("cancel_mobile_number","cancel_mobile_number"),
+	Password("modify_password","modify_password");
 	
 	private final String _request;
 	private final String _response;
