@@ -23,10 +23,10 @@ public class ScheduledHeartbeatKeepTest {
 	public void testStartIndependent()throws Exception{
 		Sessionable session =mock(Sessionable.class);
 		
-		ScheduledHeartbeatKeep keep = new ScheduledHeartbeatKeep(session);
+		ScheduledHeartbeatKeep keep = new ScheduledHeartbeatKeep();
 		Assert.assertTrue(keep.isIndependent());
 		
-		keep.start();
+		keep.start(session);
 		Assert.assertTrue(keep.isStart());
 		keep.shutdown();
 		Assert.assertTrue(keep.getExecutorService().isShutdown());
@@ -38,10 +38,10 @@ public class ScheduledHeartbeatKeepTest {
         Sessionable session =mock(Sessionable.class);
         ScheduledExecutorService executor = 
         		Executors.newSingleThreadScheduledExecutor();
-		ScheduledHeartbeatKeep keep = new ScheduledHeartbeatKeep(session,executor);
+		ScheduledHeartbeatKeep keep = new ScheduledHeartbeatKeep(executor);
         Assert.assertFalse(keep.isIndependent());
 		
-		keep.start();
+		keep.start(session);
 		Assert.assertTrue(keep.isStart());
 		keep.shutdown();
 		Assert.assertTrue(keep.isShutdown());

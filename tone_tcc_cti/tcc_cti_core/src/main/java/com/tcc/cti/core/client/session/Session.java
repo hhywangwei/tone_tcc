@@ -1,30 +1,24 @@
 package com.tcc.cti.core.client.session;
 
 import java.io.IOException;
-import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tcc.cti.core.client.Configure;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.buffer.ByteMessageBuffer;
 import com.tcc.cti.core.client.buffer.MessageBuffer;
 import com.tcc.cti.core.client.connection.Connectionable;
-import com.tcc.cti.core.client.connection.NioConnection;
 import com.tcc.cti.core.client.heartbeat.HeartbeatKeepable;
-import com.tcc.cti.core.client.heartbeat.ScheduledHeartbeatKeep;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.sequence.MemoryGeneratorSeq;
+import com.tcc.cti.core.client.session.handler.SendCollectionHandler;
 import com.tcc.cti.core.client.session.process.MessageProcessable;
 import com.tcc.cti.core.message.MessageType;
-import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.request.RequestMessage;
 
 /**
@@ -37,28 +31,28 @@ public class Session implements Sessionable {
 	
 	public static class Builder{
 		private final OperatorKey _key;
-		private final CtiMessagePool _pool;
-		private final Selector _selector;
-		private final Configure _configure;
+		private final Connectionable _connection;
 		private final MessageProcessable _messageProcess;
-		private List<SendHandler> _sendHandlers = new ArrayList<SendHandler>(); 
-		private GeneratorSeq _generatorSeq ;
-		private HeartbeatKeepable _heartbeatKeep;
-		private Connectionable _connection;
+		private final HeartbeatKeepable _heartbeatKeep;
+		private SendHandler _sendHandler ;
+		private GeneratorSeq _generatorSeq ;		
+		private int _heartbeatTimeout = 65 * 1000;
+		private Charset _charset =Charset.forName("GBK");
 		
-		public Builder(OperatorKey key, Selector selector,
-				MessageProcessable messageProcess,Configure configure,
-				CtiMessagePool pool){
+		public Builder(OperatorKey key, Connectionable connection,
+				MessageProcessable messageProcess,HeartbeatKeepable heartbeatKeep){
 			
 	    	_key = key;
-	    	_selector = selector;
-	    	_configure = configure;
-	    	_pool = pool;
+	    	_connection = connection;
 	    	_messageProcess = messageProcess;
+	    	_heartbeatKeep = heartbeatKeep;
+	    	_sendHandler = new SendCollectionHandler();
+	    	_generatorSeq = new MemoryGeneratorSeq(
+					_key.getCompanyId(), _key.getCompanyId());
 	    }
 		
-		public Builder setSendHandlers(List<SendHandler> sendHandlers){
-			_sendHandlers = sendHandlers;
+		public Builder setSendHandler(SendHandler handler){
+			_sendHandler = handler;
 			return this;
 		}
 		
@@ -67,49 +61,33 @@ public class Session implements Sessionable {
 			return this;
 		}
 		
-		public Builder setHeartbeatKeep(HeartbeatKeepable heartbeatKeep){
-			_heartbeatKeep = heartbeatKeep;
+		public Builder setHeartbeatTimeout(int timeout){
+			_heartbeatTimeout = timeout;
 			return this;
 		}
 		
-		public Builder setConnection(Connectionable connection){
-			_connection = connection;
+		public Builder setCharset(Charset charset){
+			_charset = charset;
 			return this;
 		}
+		
 		
 		public Session build(){
-			_generatorSeq = _generatorSeq != null ?
-					_generatorSeq : defaultGreneratorSeq();
-			_connection = _connection != null ?
-					_connection : defaultConnection();
-			
-			return new Session(_key, _connection, _pool,
-					_sendHandlers,_generatorSeq,_heartbeatKeep,
-					_configure,_messageProcess);
-			
-		}
-		
-		private GeneratorSeq defaultGreneratorSeq(){
-			return new MemoryGeneratorSeq(
-					_key.getCompanyId(), _key.getCompanyId());
-		}
-		
-		private Connectionable defaultConnection(){
-			return new NioConnection(
-					_selector,_configure.getAddress(),
-					_configure.getConnectionTimeout());
+			return new Session(_key, _connection, _messageProcess,
+					_sendHandler,_heartbeatKeep,_generatorSeq,
+					_heartbeatTimeout,_charset);
 		}
 	}
 	
 	private final OperatorKey _key;
 	private final Connectionable _conn; 
-	private final List<SendHandler> _sendHandlers;
-	private final GeneratorSeq _generator;
-	private final HeartbeatKeepable _heartbeatKeep ;
-	private final int _heartbeatTimeout;
-	private final MessageBuffer _messageBuffer;
-	private final Charset _charset;
 	private final MessageProcessable _messageProcess;
+	private final SendHandler _sendHandler;
+	private final HeartbeatKeepable _heartbeatKeep ;
+	private final GeneratorSeq _generator;
+	private final int _heartbeatTimeout;
+	private final Charset _charset;
+	private final MessageBuffer _messageBuffer;
 	private final Object _monitor = new Object();
 	
 	private volatile Status _status = Status.New;
@@ -117,25 +95,20 @@ public class Session implements Sessionable {
 	
 	private SocketChannel _channel;
 
-	protected Session(OperatorKey operatorKey,Connectionable conn,CtiMessagePool pool,
-			List<SendHandler> sendHandlers,GeneratorSeq generator,
-			HeartbeatKeepable heartbeatKeep,Configure configure,
-			MessageProcessable messageProcess){
+	protected Session(OperatorKey operatorKey,Connectionable conn,
+			MessageProcessable messageProcess,SendHandler sendHandler,
+			HeartbeatKeepable heartbeatKeep,GeneratorSeq generator,
+			int heartbeatTimeout,Charset charset){
 		
 		_key = operatorKey;
 		_conn = conn;
-		_generator = generator;
-		_messageBuffer = new ByteMessageBuffer(configure.getCharset());
-		_sendHandlers = sendHandlers;
-		_heartbeatKeep = heartbeatKeep != null ? heartbeatKeep :
-			defaultHeartbeatKeep(configure.getHeartbeatInitDelay(),configure.getHeartbeatDelay());
-		_heartbeatTimeout = configure.getHeartbeatTimeout();
-		_charset = configure.getCharset();
 		_messageProcess = messageProcess;
-	}
-	
-	private HeartbeatKeepable defaultHeartbeatKeep(int heartbeatInitDelay,int heartbeatDelay){
-		return 	new ScheduledHeartbeatKeep(this,heartbeatInitDelay,heartbeatDelay);
+		_sendHandler = sendHandler;
+		_heartbeatKeep = heartbeatKeep;
+		_generator = generator;
+		_charset = charset;
+		_heartbeatTimeout = heartbeatTimeout;
+		_messageBuffer = new ByteMessageBuffer(charset);
 	}
 	
 	/**
@@ -170,7 +143,7 @@ public class Session implements Sessionable {
 		synchronized (_monitor) {
 			if(success && isActive()){
 				_status = Status.Service;
-				_heartbeatKeep.start();	
+				_heartbeatKeep.start(this);	
 				heartbeatTouch();
 			}
 		}
@@ -223,9 +196,7 @@ public class Session implements Sessionable {
 			throw new IOException("Session already closed,not send message.");
 		}
 		if(isAccess(message)){
-			for(SendHandler handler : _sendHandlers){
-				handler.send(_channel,_key, message, _generator,_charset);
-			}	
+			_sendHandler.send(_channel, _key, message, _generator, _charset);
 			heartbeatTouch();
 		}else{
 			logger.debug("{} not access cti server.", _key.toString());

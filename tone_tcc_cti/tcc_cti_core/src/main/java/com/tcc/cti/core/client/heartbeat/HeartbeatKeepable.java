@@ -1,5 +1,7 @@
 package com.tcc.cti.core.client.heartbeat;
 
+import com.tcc.cti.core.client.session.Sessionable;
+
 
 /**
  * 检测与CTI服务器的tcp连接的有效性,客户端每20秒发出该消息，服务器端收到则答复。
@@ -12,8 +14,10 @@ public interface HeartbeatKeepable {
 
 	/**
 	 * 开始心跳
+	 * 
+	 * @param session {@link Sessionable}连接服务端Session对象
 	 */
-	void start();
+	void start(Sessionable session);
 	
 	/**
 	 * 停止心跳

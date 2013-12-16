@@ -1,6 +1,5 @@
 package com.tcc.cti.core.client.receive;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,14 +7,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.tcc.cti.core.client.Configure;
 import com.tcc.cti.core.client.OperatorKey;
-import com.tcc.cti.core.client.session.Session;
 import com.tcc.cti.core.client.session.Sessionable;
-import com.tcc.cti.core.client.session.process.MessageProcessable;
-import com.tcc.cti.core.client.session.process.SingleMessageProcess;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
-import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
 import com.tcc.cti.core.message.response.ResponseMessage;
 
 /**
@@ -49,15 +43,9 @@ public class AbstractReceiveHandlerTest {
 		String companyId = "1";
 		String opId = "1";
 		CtiMessagePool pool = Mockito.mock(CtiMessagePool.class);
-		OperatorKey key = new OperatorKey(companyId, opId);
-		Configure configure = new Configure.
-				Builder("211.136.173.134",9999).
-				build();
-		MessageProcessable process =new SingleMessageProcess(
-				new ArrayList<ReceiveHandler>(),new OperatorCtiMessagePool());
-		Sessionable channel = new Session.Builder(key,null,process,configure,null).build();
-		
-		handler.receiveHandler(pool, channel, content);
+		Sessionable oc = Mockito.mock(Sessionable.class);
+		Mockito.when(oc.getOperatorKey()).thenReturn(new OperatorKey(companyId,opId));
+		handler.receiveHandler(pool, oc, content);
 		Mockito.verify(pool,Mockito.atLeastOnce()).
 		put(Mockito.eq(companyId), Mockito.eq(opId), Mockito.any(ResponseMessage.class));
 	}

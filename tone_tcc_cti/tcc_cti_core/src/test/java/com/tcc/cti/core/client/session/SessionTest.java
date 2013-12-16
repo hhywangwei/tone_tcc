@@ -1,28 +1,20 @@
 package com.tcc.cti.core.client.session;
 
 import java.io.IOException;
-import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.tcc.cti.core.client.Configure;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.connection.Connectionable;
 import com.tcc.cti.core.client.heartbeat.HeartbeatKeepable;
-import com.tcc.cti.core.client.receive.ReceiveHandler;
+import com.tcc.cti.core.client.heartbeat.ScheduledHeartbeatKeep;
 import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.session.process.MessageProcessable;
-import com.tcc.cti.core.client.session.process.SingleMessageProcess;
-import com.tcc.cti.core.message.pool.CtiMessagePool;
-import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
 import com.tcc.cti.core.message.request.CallRequest;
 import com.tcc.cti.core.message.request.LoginRequest;
 import com.tcc.cti.core.message.request.RequestMessage;
@@ -33,31 +25,12 @@ import com.tcc.cti.core.message.request.RequestMessage;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 public class SessionTest {
-	private static Selector _selector;
-	
-	private final List<ReceiveHandler> receiveHandlers =new ArrayList<ReceiveHandler>();
-	private final CtiMessagePool pool =new OperatorCtiMessagePool();
-	
-	@BeforeClass
-	public static void beforeClass()throws IOException{
-		_selector = Selector.open();
-	}
-	
-	public static void afterClass()throws IOException{
-		if(_selector != null && _selector.isOpen()){
-			_selector.close();
-		}
-	}
-
-	private Session createSession(Selector selector,Connectionable connection){
+	private Session createSession(Connectionable connection){
 		OperatorKey key = new OperatorKey("1","8002");
-		Configure configure =  new Configure.
-				Builder("211.136.173.132",9999).
-				build();
-		MessageProcessable process = new SingleMessageProcess(receiveHandlers,pool);
-		return new Session.Builder(key, selector,process, configure, null).
-				setConnection(connection).
-				setSendHandlers(new ArrayList<SendHandler>(0)).
+		MessageProcessable process = Mockito.mock(MessageProcessable.class);
+		SendHandler noneHandler = Mockito.mock(SendHandler.class);
+		return  new Session.Builder(key,connection, process,
+				noneHandler, new ScheduledHeartbeatKeep()).
 				build();
 	}
 	
@@ -67,7 +40,7 @@ public class SessionTest {
 		Session session = null ;
 		try{
 			Connectionable connection = Mockito.mock(Connectionable.class);
-			session = createSession(_selector,connection);
+			session = createSession(connection);
 			Mockito.when(connection.connect(session)).thenThrow(new IOException());
 			session.start();
 			Assert.fail();
@@ -86,7 +59,7 @@ public class SessionTest {
 		SocketChannel channel = SocketChannel.open();
 		try{
 			Connectionable connection = Mockito.mock(Connectionable.class);
-			session = createSession(_selector,connection);
+			session = createSession(connection);
 			Mockito.when(connection.connect(session)).thenReturn(channel);
 			session.start();
 			Assert.assertTrue(session.isActive());
@@ -105,7 +78,7 @@ public class SessionTest {
 		Session session = null ;
 		try{
 			Connectionable connection = Mockito.mock(Connectionable.class);
-			session = createSession(_selector,connection);
+			session = createSession(connection);
 			session.login(false);
 			Assert.assertTrue(session.isNew());
 		}finally{
@@ -121,7 +94,7 @@ public class SessionTest {
 		SocketChannel channel = SocketChannel.open();
 		try{
 			Connectionable connection = Mockito.mock(Connectionable.class);
-			session = createSession(_selector,connection);
+			session = createSession(connection);
 			Mockito.when(connection.connect(session)).thenReturn(channel);
 			session.start();
 			session.login(true);
@@ -142,7 +115,7 @@ public class SessionTest {
 		SocketChannel channel = SocketChannel.open();
 		try{
 			Connectionable connection = Mockito.mock(Connectionable.class);
-			session = createSession(_selector,connection);
+			session = createSession(connection);
 			Mockito.when(connection.connect(session)).thenReturn(channel);
 			session.start();
 			session.close();
@@ -158,15 +131,12 @@ public class SessionTest {
 		}
 	}
 	
-	private Session createSession(Selector selector,Connectionable connection,HeartbeatKeepable heartbeatKeep){
+	private Session createSession(Connectionable connection,HeartbeatKeepable heartbeatKeep){
 		OperatorKey key = new OperatorKey("1","8002");
-		Configure configure =  new Configure.
-				Builder("211.136.173.132",9999).
-				build();
-		MessageProcessable process = new SingleMessageProcess(receiveHandlers,pool);
-		return new Session.Builder(key, selector,process, configure, null).
-				setConnection(connection).
-				setHeartbeatKeep(heartbeatKeep).
+		MessageProcessable process = Mockito.mock(MessageProcessable.class);
+		SendHandler noneHandler = Mockito.mock(SendHandler.class);
+		return  new Session.Builder(key,connection, process,
+				noneHandler, heartbeatKeep).
 				build();
 	}
 	
@@ -177,7 +147,7 @@ public class SessionTest {
 		try{
 			Connectionable connection = Mockito.mock(Connectionable.class);
 			HeartbeatKeepable keep = Mockito.mock(HeartbeatKeepable.class);
-			session = createSession(_selector,connection,keep);
+			session = createSession(connection,keep);
 			Mockito.when(connection.connect(session)).thenReturn(channel);
 			Assert.assertTrue(session.isNew());
 			session.close();
@@ -198,7 +168,7 @@ public class SessionTest {
 		try{
 			Connectionable connection = Mockito.mock(Connectionable.class);
 			HeartbeatKeepable keep = Mockito.mock(HeartbeatKeepable.class);
-			session = createSession(_selector,connection,keep);
+			session = createSession(connection,keep);
 			Mockito.when(connection.connect(session)).thenReturn(channel);
 			session.start();
 			session.login(true);
@@ -220,7 +190,7 @@ public class SessionTest {
 		SocketChannel channel = SocketChannel.open();
 		try{
 			Connectionable connection = Mockito.mock(Connectionable.class);
-			session = createSession(_selector,connection);
+			session = createSession(connection);
 			Mockito.when(connection.connect(session)).thenReturn(channel);
 			LoginRequest r = new LoginRequest();
 			session.send(r);
@@ -241,7 +211,7 @@ public class SessionTest {
 		SocketChannel channel = SocketChannel.open();
 		try{
 			Connectionable connection = Mockito.mock(Connectionable.class);
-			session = createSession(_selector,connection);
+			session = createSession(connection);
 			Mockito.when(connection.connect(session)).thenReturn(channel);
 			session.close();
 			LoginRequest r = new LoginRequest();
@@ -259,18 +229,12 @@ public class SessionTest {
 	
 	private SendHandler sendHandler ;
 	
-	private Session createSessionSendHandlers(Selector selector,Connectionable connection){
+	private Session createSessionSendHandlers(Connectionable connection){
 		OperatorKey key = new OperatorKey("1","8002");
-		Configure configure =  new Configure.
-				Builder("211.136.173.132",9999).
-				build();
 		sendHandler = Mockito.mock(SendHandler.class);
-		List<SendHandler> handlers = new ArrayList<SendHandler>();
-		handlers.add(sendHandler);
-		MessageProcessable process = new SingleMessageProcess(receiveHandlers,pool);
-		return new Session.Builder(key, selector,process, configure, null).
-				setConnection(connection).
-				setSendHandlers(handlers).
+		MessageProcessable process = Mockito.mock(MessageProcessable.class);
+		return  new Session.Builder(key,connection, process,
+				sendHandler, new ScheduledHeartbeatKeep()).
 				build();
 	}
 	
@@ -280,7 +244,7 @@ public class SessionTest {
 		SocketChannel channel = SocketChannel.open();
 		try{
 			Connectionable connection = Mockito.mock(Connectionable.class);
-			session = createSessionSendHandlers(_selector,connection);
+			session = createSessionSendHandlers(connection);
 			Mockito.when(connection.connect(session)).thenReturn(channel);
 			CallRequest r = new CallRequest();
 			session.send(r);
@@ -301,7 +265,7 @@ public class SessionTest {
 		SocketChannel channel = SocketChannel.open();
 		try{
 			Connectionable connection = Mockito.mock(Connectionable.class);
-			session = createSessionSendHandlers(_selector,connection);
+			session = createSessionSendHandlers(connection);
 			Mockito.when(connection.connect(session)).thenReturn(channel);
 			LoginRequest r = new LoginRequest();
 			session.send(r);

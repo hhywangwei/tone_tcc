@@ -10,6 +10,12 @@ import org.junit.Test;
 public class PasswordUtilsTest {
 	
 	@Test
+	public void testEncodeMD5IsNull(){
+		String p = PasswordUtils.encodeMD5(null);
+		Assert.assertNull(p);
+	}
+	
+	@Test
 	public void testEncodeMD5(){
 		String password = "1";
 		

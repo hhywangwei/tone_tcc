@@ -23,7 +23,6 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable, HeartbeatListe
 	private static final int DEFAULT_DELAY = 20;
 	
 	private final Object _monitor = new Object();
-	private final Sessionable _session;
 	private final int _initDelay;
 	private final int _delay;
 	private final boolean _independent;
@@ -36,24 +35,20 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable, HeartbeatListe
 	
 	private HeartbeatEvent _event = new NoneHeartbeatEvent();
 	
-	public ScheduledHeartbeatKeep(Sessionable session){
-		this(session,null,DEFAULT_INIT_DELAY,DEFAULT_DELAY);
+	public ScheduledHeartbeatKeep(){
+		this(null,DEFAULT_INIT_DELAY,DEFAULT_DELAY);
 	}
 	
-	public ScheduledHeartbeatKeep(Sessionable session,
-			ScheduledExecutorService executorService){
+	public ScheduledHeartbeatKeep(ScheduledExecutorService executorService){
 		
-		this(session,executorService,DEFAULT_INIT_DELAY,DEFAULT_DELAY);
+		this(executorService,DEFAULT_INIT_DELAY,DEFAULT_DELAY);
 	}
 	
-	public ScheduledHeartbeatKeep(Sessionable session,int initDelay,int delay){
-		this(session,null,initDelay,delay);
+	public ScheduledHeartbeatKeep(int initDelay,int delay){
+		this(null,initDelay,delay);
 	}
 	
-	public ScheduledHeartbeatKeep(Sessionable session,
-			ScheduledExecutorService executorService,int initDelay,int delay){
-		
-		_session = session;
+	public ScheduledHeartbeatKeep(ScheduledExecutorService executorService,int initDelay,int delay){
 		_initDelay = initDelay;
 		_delay = delay;
 		_independent = (executorService == null);
@@ -61,13 +56,13 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable, HeartbeatListe
 	}
 	
 	@Override
-	public void start() {
+	public void start(Sessionable session) {
 		synchronized (_monitor) {
 			if(_start){
-				logger.debug("{} Already heartbeat", _session.getOperatorKey().toString());
+				logger.debug("{} Already heartbeat", session.getOperatorKey().toString());
 				return ;
 			}
-			HeartbeatSendTask task = new HeartbeatSendTask(_session);
+			HeartbeatSendTask task = new HeartbeatSendTask(session);
 			task.setEvent(_event);
 			_executorService = initExecutorService(_executorService);
 			_future = _executorService.scheduleWithFixedDelay(
