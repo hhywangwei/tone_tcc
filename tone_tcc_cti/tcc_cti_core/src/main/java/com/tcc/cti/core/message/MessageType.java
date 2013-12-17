@@ -21,7 +21,9 @@ public enum MessageType {
 	Record("start_record","start_record"),
 	MobileNumber("set_mobile_number","set_mobile_number"),
 	MobileNumberCancel("cancel_mobile_number","cancel_mobile_number"),
-	Password("modify_password","modify_password");
+	Password("modify_password","modify_password"),
+	Rest("leave","leave"),
+	Resume("come_back","come_back");
 	
 	private final String _request;
 	private final String _response;
