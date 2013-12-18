@@ -23,7 +23,13 @@ public enum MessageType {
 	MobileNumberCancel("cancel_mobile_number","cancel_mobile_number"),
 	Password("modify_password","modify_password"),
 	Rest("leave","leave"),
-	Resume("come_back","come_back");
+	Resume("come_back","come_back"),
+	Silence("silence","silence"),
+	CallHold("call_hold","call_hold"),
+	CallHelp("transfer","transfer"),
+	TransferGroup("transfer_to_group","transfer_to_group"),
+	TransferOne("transfer_to_one","transfer_to_one"),
+	Status("set_status","set_status");
 	
 	private final String _request;
 	private final String _response;
