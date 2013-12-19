@@ -14,7 +14,7 @@ public class Configure {
 		private static final int HEART_POOL_SIZE = 3;
 		private static final int DEFAULT_HEARTBEAT_INIT_DELAY = 0;
 		private static final int DEFAULT_HEARTBEAT_DELAY = 20;
-		private static final int DEFAULT_HEARTBEAT_TIMEOUT = 65;
+		private static final int DEFAULT_HEARTBEAT_TIMEOUT = 65 * 1000;
 		private static final int DEFAULT_CONNECTION_TIMEOUT = 30 * 1000;
 		private static final int DEFAULT_MAX_OPERATOR = 256;
 		private static final Charset DEFAULT_CHARSET = Charset.forName("GBK");

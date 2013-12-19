@@ -10,6 +10,8 @@ import com.tcc.cti.core.client.Configure;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.session.SessionFactory;
 import com.tcc.cti.core.client.session.Sessionable;
+import com.tcc.cti.core.client.session.process.MessageProcessable;
+import com.tcc.cti.core.client.session.process.SingleMessageProcess;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
 import com.tcc.cti.core.message.pool.OperatorCtiMessagePool;
 import com.tcc.cti.core.message.request.GroupRequest;
@@ -26,13 +28,15 @@ public class CtiMain {
 	private final String _opId ;
 	private final String _companyId;
 	private final CtiMessagePool _pool;
+	private final MessageProcessable _process;
 	private final SessionFactory _sessionFactory;
 	
 	public CtiMain(String opId,String companyId){
 		_opId = opId;
 		_companyId = companyId;
 		_pool = new OperatorCtiMessagePool();
-		_sessionFactory = SessionFactory.instance(initConfigure());
+		_process = new SingleMessageProcess(_pool);
+		_sessionFactory =new SessionFactory(initConfigure(),_process);
 	}
 	
 	private Configure initConfigure(){
@@ -46,7 +50,7 @@ public class CtiMain {
 	}
 	
 	public Sessionable register(String opId,String companyId)throws Exception{
-		OperatorKey key = new OperatorKey(opId,companyId);
+		OperatorKey key = new OperatorKey(companyId,opId);
 		Sessionable session = _sessionFactory.getSession(key);
 		return session;
 	}
@@ -68,6 +72,7 @@ public class CtiMain {
 	
 	public void close()throws IOException{
 		_sessionFactory.close();
+		_process.close();
 	}
 	
 	public static void main(String[] args)throws Exception{
@@ -77,9 +82,9 @@ public class CtiMain {
 		try{
 			Sessionable session = main.register(opId, companyId);
 			main.login(session);
-			Thread.sleep(10 * 1000);
+			Thread.sleep(60 * 1000);
 			main.getGroups(session);
-			Thread.sleep(10 * 1000);
+			Thread.sleep(60 * 1000);
 		}finally{
 			main.close();
 		}

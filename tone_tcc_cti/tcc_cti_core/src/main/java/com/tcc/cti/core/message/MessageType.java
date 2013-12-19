@@ -29,7 +29,8 @@ public enum MessageType {
 	CallHelp("transfer","transfer"),
 	TransferGroup("transfer_to_group","transfer_to_group"),
 	TransferOne("transfer_to_one","transfer_to_one"),
-	Status("set_status","set_status");
+	Status("set_status","set_status"),
+	Logout("logout","logout");
 	
 	private final String _request;
 	private final String _response;
