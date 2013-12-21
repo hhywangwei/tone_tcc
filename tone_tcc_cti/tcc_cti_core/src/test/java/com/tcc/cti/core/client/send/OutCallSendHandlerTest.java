@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.OutCallRequest;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.BaseRequest;
 
 /**
  * {@link OutCallSendHandler}单元测试
@@ -24,7 +24,7 @@ public class OutCallSendHandlerTest {
 		OutCallSendHandler handler = new OutCallSendHandler();
 		handler.isSend(null);
 		
-		RequestMessage not = new RequestMessage("not");
+		BaseRequest not = new BaseRequest("not");
 		handler.isSend(not);
 		
 		OutCallRequest request = new OutCallRequest();

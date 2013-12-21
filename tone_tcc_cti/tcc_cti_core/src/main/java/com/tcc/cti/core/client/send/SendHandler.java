@@ -1,17 +1,17 @@
 package com.tcc.cti.core.client.send;
 
 import java.io.IOException;
-import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 
-import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.client.session.Sessionable;
+import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 发送消息到cti服务端处理。
  * 
- * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ * @author <a href="hhywangwei@gmail.com">WangWei</a>
  */
 public interface SendHandler {
 	
@@ -23,14 +23,13 @@ public interface SendHandler {
 	/**
 	 * 根据指定编码发送消息
 	 * 
-	 * @param channel {@link SocketChannel}
-	 * @param key {@link OperatorKey} 操作员Key
-	 * @param message 发送的消息对象
+	 * @param session {@link Sessionable} 连接服务端Session
+	 * @param request 发送的消息对象
 	 * @param generator 生成消息序列号
 	 * @param Charset 发送对象字符集
 	 * @throws IOException
 	 */
-	void send(SocketChannel channel, OperatorKey key, RequestMessage message,
-			GeneratorSeq generator, Charset charset)throws IOException;
+	void send(Sessionable sesion, Requestable<? extends Response> request,
+			GeneratorSeq generator,	Charset charset)throws IOException;
 	
 }

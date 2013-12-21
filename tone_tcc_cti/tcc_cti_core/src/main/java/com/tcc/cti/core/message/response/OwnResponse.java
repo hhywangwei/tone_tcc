@@ -1,6 +1,5 @@
 package com.tcc.cti.core.message.response;
 
-import static com.tcc.cti.core.message.MessageType.Own;
 /**
  * 接收座席信息
  * 
@@ -19,12 +18,9 @@ import static com.tcc.cti.core.message.MessageType.Own;
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class OwnResponse extends ResponseMessage {
+public class OwnResponse extends Response {
 	
 	public static class Builder{
-		private final String _companyId;
-		private final String _opId;
-		private final String _messageType;
 		private final String _seq;
 		private String _workId;
 		private String _name;
@@ -40,10 +36,7 @@ public class OwnResponse extends ResponseMessage {
 		private String _mobileNumber;
 		private String _workModel;
 		
-		public Builder(String companyId,String opId,String seq){
-			_companyId = companyId;
-			_opId = opId;
-			_messageType = Own.response();
+		public Builder(String seq){
 			_seq = seq;
 		}
 		
@@ -113,8 +106,7 @@ public class OwnResponse extends ResponseMessage {
 		}
 		
 		public OwnResponse build(){
-			OwnResponse m = new OwnResponse(
-					_companyId,_opId,_messageType,_seq);
+			OwnResponse m = new OwnResponse(_seq);
 			
 			m.setBindState(_bindState);
 			m.setCallState(_callState);
@@ -148,10 +140,9 @@ public class OwnResponse extends ResponseMessage {
 	private String _mobileNumber;
 	private String _workModel;
 
-	private OwnResponse(String companyId, 
-			String opId, String messageType,String seq) {
+	private OwnResponse(String seq) {
 		
-		super(companyId, opId, messageType,seq);
+		super(seq,SUCCESS_RESULT);
 	}
 
 	public String getWorkId(){
@@ -262,7 +253,7 @@ public class OwnResponse extends ResponseMessage {
 	@Override
 	public String toString() {
 		StringBuilder builder2 = new StringBuilder();
-		builder2.append("SelfInfoReceiveMessage [_workId=");
+		builder2.append("OwnResponse [_workId=");
 		builder2.append(_workId);
 		builder2.append(", _name=");
 		builder2.append(_name);
@@ -288,8 +279,6 @@ public class OwnResponse extends ResponseMessage {
 		builder2.append(_mobileNumber);
 		builder2.append(", _workModel=");
 		builder2.append(_workModel);
-		builder2.append(", toString()=");
-		builder2.append(super.toString());
 		builder2.append("]");
 		return builder2.toString();
 	}

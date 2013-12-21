@@ -3,6 +3,7 @@ package com.tcc.cti.core.message.request;
 import static com.tcc.cti.core.message.MessageType.Password;
 
 import com.tcc.cti.core.common.PasswordUtils;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 请求修改密码对象
@@ -13,11 +14,15 @@ import com.tcc.cti.core.common.PasswordUtils;
  * 
  * @author <a href="hhywangwei@gmail.com">WangWei</a>
  */
-public class PasswordRequest extends RequestMessage{
+public class PasswordRequest extends BaseRequest<Response>{
 	private String _password;
 
 	public PasswordRequest() {
 		super(Password.request());
+	}
+	
+	public PasswordRequest(int timeout){
+		super(Password.request(),timeout);
 	}
 
 	public String getPassword() {
@@ -30,7 +35,14 @@ public class PasswordRequest extends RequestMessage{
 
 	@Override
 	public String toString() {
-		return "PasswordRequest [_password=" + _password + ", _messageType="
-				+ _messageType + "]";
+		StringBuilder builder = new StringBuilder();
+		builder.append("PasswordRequest [_password=");
+		builder.append(_password);
+		builder.append(", _messageType=");
+		builder.append(_messageType);
+		builder.append(", _responses=");
+		builder.append(_responses);
+		builder.append("]");
+		return builder.toString();
 	}
 }

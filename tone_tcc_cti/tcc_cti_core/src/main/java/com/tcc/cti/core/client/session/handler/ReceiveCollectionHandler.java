@@ -21,7 +21,6 @@ import com.tcc.cti.core.client.receive.OutCallStateReceiveHandler;
 import com.tcc.cti.core.client.receive.OwnReceiveHandler;
 import com.tcc.cti.core.client.receive.ParseMessageException;
 import com.tcc.cti.core.client.receive.ReceiveHandler;
-import com.tcc.cti.core.client.receive.RecordReceiveHandler;
 import com.tcc.cti.core.client.receive.RestReceiveHandler;
 import com.tcc.cti.core.client.receive.ResumeReceiveHandler;
 import com.tcc.cti.core.client.receive.SilenceReceiveHandler;
@@ -29,7 +28,7 @@ import com.tcc.cti.core.client.receive.StatusReceiveHandler;
 import com.tcc.cti.core.client.receive.TransferGroupReceiveHanlder;
 import com.tcc.cti.core.client.receive.TransferOneReceiveHandler;
 import com.tcc.cti.core.client.session.Sessionable;
-import com.tcc.cti.core.message.pool.CtiMessagePool;
+import com.tcc.cti.core.client.session.process.Requestsable;
 
 public class ReceiveCollectionHandler implements ReceiveHandler{
 	
@@ -56,7 +55,6 @@ public class ReceiveCollectionHandler implements ReceiveHandler{
 		handlers.add(new OutCallReceiveHandler());
 		handlers.add(new OutCallStateReceiveHandler());
 		handlers.add(new OwnReceiveHandler());
-		handlers.add(new RecordReceiveHandler());
 		handlers.add(new RestReceiveHandler());
 		handlers.add(new ResumeReceiveHandler());
 		handlers.add(new SilenceReceiveHandler());
@@ -66,10 +64,11 @@ public class ReceiveCollectionHandler implements ReceiveHandler{
 	}
 	
 	@Override
-	public void receive(CtiMessagePool pool, Sessionable session, String message)
-			throws ParseMessageException {
+	public void receive(Requestsable requests, Sessionable session,
+			String message) throws ParseMessageException {
+		
 		for(ReceiveHandler handler : _handlers){
-			handler.receive(pool,session, message);	
+			handler.receive(requests,session, message);	
 		}
 	}
 	

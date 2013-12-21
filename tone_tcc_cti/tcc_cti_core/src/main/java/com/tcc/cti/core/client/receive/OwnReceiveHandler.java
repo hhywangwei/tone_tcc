@@ -30,11 +30,16 @@ public class OwnReceiveHandler extends AbstractReceiveHandler{
 	protected boolean isReceive(String msgType) {
 		return Own.isResponse(msgType);
 	}
+	
+	@Override
+	protected String getMessageType() {
+		return Own.request();
+	}
     
 	protected OwnResponse buildMessage(String companyId,String opId,
 			String seq,Map<String,String> content){
 		
-		return	new OwnResponse.Builder(companyId,opId,seq).
+		return	new OwnResponse.Builder(seq).
 				setBindState(content.get(BIND_STATE_PARAMETER)).
 				setCallState(content.get(CALL_STATE_PARAMETER)).
 				setGroupAttribute(content.get(GROUP_ATTRIBUTE_PARAMETER)).

@@ -2,6 +2,9 @@ package com.tcc.cti.core.message.request;
 
 import static com.tcc.cti.core.message.MessageType.Login;
 
+import com.tcc.cti.core.client.send.LoginSendHandler;
+import com.tcc.cti.core.message.response.Response;
+
 
 /**
  * 请求登录信息对象
@@ -16,7 +19,7 @@ import static com.tcc.cti.core.message.MessageType.Login;
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class LoginRequest extends RequestMessage{
+public class LoginRequest extends BaseRequest<Response>{
 	private String _opNumber;
 	private String _password;
 	private String _type;
@@ -25,34 +28,47 @@ public class LoginRequest extends RequestMessage{
 		super(Login.request());
 	}
 	
+	public LoginRequest(int timeout){
+		super(Login.request(),timeout);
+	}
+	
 	public String getOpNumber() {
 		return _opNumber;
 	}
+	
 	public void setOpNumber(String opNumber) {
 		this._opNumber = opNumber;
 	}
+	
 	public String getPassword() {
 		return _password;
 	}
+	
 	public void setPassword(String password) {
 		this._password = password;
 	}
+	
 	public String getType() {
 		return _type;
 	}
+	
 	public void setType(String type) {
 		this._type = type;
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("Login [_opNumber=");
+		builder.append("LoginRequest [_opNumber=");
 		builder.append(_opNumber);
 		builder.append(", _password=");
 		builder.append(_password);
 		builder.append(", _type=");
 		builder.append(_type);
+		builder.append(", _messageType=");
+		builder.append(_messageType);
+		builder.append(", _responses=");
+		builder.append(_responses);
 		builder.append("]");
 		return builder.toString();
 	}

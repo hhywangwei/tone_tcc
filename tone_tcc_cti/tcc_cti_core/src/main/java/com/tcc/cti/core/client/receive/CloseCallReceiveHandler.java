@@ -4,7 +4,7 @@ import static com.tcc.cti.core.message.MessageType.CloseCall;
 import java.util.Map;
 
 import com.tcc.cti.core.message.response.CloseCallResponse;
-import com.tcc.cti.core.message.response.ResponseMessage;
+import com.tcc.cti.core.message.response.Response;
 
 public class CloseCallReceiveHandler extends AbstractReceiveHandler{
 	private static final String GROUP_ID_PARAMETER = "GroupID";
@@ -18,13 +18,17 @@ public class CloseCallReceiveHandler extends AbstractReceiveHandler{
 	protected boolean isReceive(String msgType) {
 		return CloseCall.isResponse(msgType);
 	}
+	
+	@Override
+	protected String getMessageType() {
+		return CloseCall.request();
+	}
 
 	@Override
-	protected ResponseMessage buildMessage(String companyId, String opId,
+	protected Response buildMessage(String companyId, String opId,
 			String seq, Map<String, String> content) {
 		
-		return new CloseCallResponse.
-				Builder(companyId, opId, seq).
+		return new CloseCallResponse.Builder(seq).
 				setGroupId(content.get(GROUP_ID_PARAMETER)).
 				setCalledNumber(content.get(CALLED_NUMBER_PARAMETER)).
 				setCallerNumber(content.get(CALLER_NUMBER_PARAMETER)).

@@ -1,6 +1,5 @@
 package com.tcc.cti.core.message.response;
 
-import static com.tcc.cti.core.message.MessageType.Group;
 
 /**
  * 接受公司分组情况
@@ -14,11 +13,9 @@ import static com.tcc.cti.core.message.MessageType.Group;
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class GroupResponse extends ResponseMessage{
+public class GroupResponse extends Response{
 	
 	public static class Builder{
-		private final String _companyId;
-		private final String _opId;
 		private final String _seq;
 		private String _groupId;
 		private String _groupName;
@@ -26,9 +23,7 @@ public class GroupResponse extends ResponseMessage{
 		private String _groupWorkState;
 		private String _chooseOpType;
 		
-		public Builder(String companyId,String seq){
-			_companyId = companyId;
-			_opId = "-1";
+		public Builder(String seq){
 			_seq = seq;
 		}
 		
@@ -59,8 +54,7 @@ public class GroupResponse extends ResponseMessage{
 		
 		public GroupResponse build(){
 			
-			GroupResponse response = new GroupResponse(
-					_companyId,_opId,Group.response(),_seq);
+			GroupResponse response = new GroupResponse(_seq);
 			response.setGroupId(_groupId);
 			response.setGroupName(_groupName);
 			response.setMaxQueue(_maxQueue);
@@ -77,10 +71,9 @@ public class GroupResponse extends ResponseMessage{
 	private String _groupWorkState;
 	private String _chooseOpType;
 	
-	private GroupResponse(String companyId, String opId,
-			String messageType,String seq) {
+	private GroupResponse(String seq) {
 		
-		super(companyId, opId, messageType, seq);
+		super( seq,SUCCESS_RESULT);
 	}
 	
 	public String getGroupId(){
@@ -136,10 +129,6 @@ public class GroupResponse extends ResponseMessage{
 		builder2.append(_groupWorkState);
 		builder2.append(", _chooseOpType=");
 		builder2.append(_chooseOpType);
-		builder2.append(", _companyId=");
-		builder2.append(_companyId);
-		builder2.append(", _messageType=");
-		builder2.append(_messageType);
 		builder2.append(", _seq=");
 		builder2.append(_seq);
 		builder2.append("]");

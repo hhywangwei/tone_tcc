@@ -2,13 +2,10 @@ package com.tcc.cti.core.client.send;
 
 import static com.tcc.cti.core.message.MessageType.OutCallCancel;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.tcc.cti.core.client.OperatorKey;
-import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.OutCallCancelRequest;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 发送取消外呼消息
@@ -25,32 +22,20 @@ import com.tcc.cti.core.message.request.RequestMessage;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 public class OutCallCancelSendHandler extends AbstractSendHandler{
-	private static final Logger logger = LoggerFactory.getLogger(OutCallCancelSendHandler.class);
 	private static final String CALL_LEG_FORMAT = "<CallLeg>%s</CallLeg>";
 
 	@Override
-	protected boolean isSend(RequestMessage message) {
-		return message != null &&
-				OutCallCancel.isRequest(message.getMessageType());
+	protected boolean isSend(Requestable<? extends Response> request) {
+		return OutCallCancel.isRequest(request.getMessageType());
 	}
 
 	@Override
-	protected String buildMessage(RequestMessage message, OperatorKey key, GeneratorSeq generator) {
+	protected void buildMessage(Requestable<? extends Response> request,
+			OperatorKey key, StringBuilder builder) {
 		
-        OutCallCancelRequest request = (OutCallCancelRequest)message;
-		
-		StringBuilder sb = new StringBuilder(128);
-		sb.append(String.format(MSG_FORMAT, OutCallCancel.request()));
-		sb.append(String.format(SEQ_FORMAT, generator.next()));
-		sb.append(String.format(COMPANY_ID_FORMAT, key.getCompanyId()));
-		sb.append(String.format(OPID_FORMAT, key.getOpId()));
-		sb.append(String.format(CALL_LEG_FORMAT, request.getCallLeg()));
-		
-		String m = sb.toString();
-		
-		logger.debug("Send out call is {}",m);
-		
-		return m;
+        OutCallCancelRequest r = (OutCallCancelRequest)request;
+		buildOperator(key,builder);
+		builder.append(String.format(CALL_LEG_FORMAT, r.getCallLeg()));
 	}
 
 }

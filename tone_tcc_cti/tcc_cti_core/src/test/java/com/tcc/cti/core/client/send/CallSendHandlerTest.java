@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.CallRequest;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.BaseRequest;
 
 public class CallSendHandlerTest {
 
@@ -18,7 +18,7 @@ public class CallSendHandlerTest {
 		CallSendHandler handler = new CallSendHandler();
 
 		Assert.assertFalse(handler.isSend(null));
-		RequestMessage not = new RequestMessage("not");
+		BaseRequest not = new BaseRequest("not");
 		Assert.assertFalse(handler.isSend(not));
 		
 		CallRequest r =new CallRequest();

@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.LoginRequest;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.BaseRequest;
 
 /**
  * 单元测试 {@link LoginSendHandler}
@@ -26,10 +26,10 @@ public class LoginSendHandlerTest {
 	@Test
 	public void testIsSend(){
 		LoginSendHandler handler =new LoginSendHandler();
-		RequestMessage m = new LoginRequest();
+		BaseRequest m = new LoginRequest();
 		Assert.assertTrue(handler.isSend(m));
 		
-		RequestMessage not = new RequestMessage("not");
+		BaseRequest not = new BaseRequest("not");
 		Assert.assertFalse(handler.isSend(not));
 	}
 	

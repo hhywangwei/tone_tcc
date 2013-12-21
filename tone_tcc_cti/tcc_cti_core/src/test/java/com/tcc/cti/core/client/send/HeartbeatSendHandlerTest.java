@@ -11,7 +11,7 @@ import org.junit.Test;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.HeartbeatRequest;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.BaseRequest;
 
 public class HeartbeatSendHandlerTest {
 	@Test
@@ -19,7 +19,7 @@ public class HeartbeatSendHandlerTest {
 		HeartbeatSendHandler handler = new HeartbeatSendHandler();
 
 		Assert.assertFalse(handler.isSend(null));
-		RequestMessage not = new RequestMessage("not");
+		BaseRequest not = new BaseRequest("not");
 		Assert.assertFalse(handler.isSend(not));
 		
 		HeartbeatRequest r =new HeartbeatRequest();

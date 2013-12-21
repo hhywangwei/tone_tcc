@@ -2,10 +2,11 @@ package com.tcc.cti.core.message.request;
 
 import static com.tcc.cti.core.message.MessageType.TransferGroup;
 
-public class TransferGroupRequest extends RequestMessage {
+import com.tcc.cti.core.message.response.Response;
+
+public class TransferGroupRequest extends PhoneStatusRequest<Response> {
 	
 	private String _groupId;
-	private String _callLeg;
 	
 	public TransferGroupRequest() {
 		super(TransferGroup.request());
@@ -18,19 +19,19 @@ public class TransferGroupRequest extends RequestMessage {
 	public String getGroupId(){
 		return _groupId;
 	}
-	
-	public void setCallLeg(String callLeg){
-		_callLeg = callLeg;
-	}
-
-	public String getCallLeg(){
-		return _callLeg;
-	}
 
 	@Override
 	public String toString() {
-		return "TransferGroupRequest [_groupId=" + _groupId + ", _callLeg="
-				+ _callLeg + ", _messageType=" + _messageType + "]";
+		StringBuilder builder = new StringBuilder();
+		builder.append("TransferGroupRequest [_groupId=");
+		builder.append(_groupId);
+		builder.append(", _callLeg=");
+		builder.append(_callLeg);
+		builder.append(", _messageType=");
+		builder.append(_messageType);
+		builder.append(", _responses=");
+		builder.append(_responses);
+		builder.append("]");
+		return builder.toString();
 	}
-	
 }

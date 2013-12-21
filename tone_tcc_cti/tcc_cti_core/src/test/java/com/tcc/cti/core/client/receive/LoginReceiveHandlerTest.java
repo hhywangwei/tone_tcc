@@ -10,7 +10,7 @@ import org.mockito.Mockito;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.message.pool.CtiMessagePool;
-import com.tcc.cti.core.message.response.ResponseMessage;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * {@link LoginReceiveHandler}单元测试
@@ -47,7 +47,7 @@ public class LoginReceiveHandlerTest {
 		handler.receiveHandler(pool, session, m);
 		Mockito.verify(pool, Mockito.atLeast(1)).put(
 				Mockito.anyString(), Mockito.anyString(),
-				Mockito.any(ResponseMessage.class));
+				Mockito.any(Response.class));
 		Mockito.verify(session,Mockito.atLeast(1)).login(false);
 		
 		Assert.assertFalse(session.isService());
@@ -69,7 +69,7 @@ public class LoginReceiveHandlerTest {
 		handler.receiveHandler(pool, session, m);
 		Mockito.verify(pool, Mockito.atLeast(1)).put(
 				Mockito.anyString(), Mockito.anyString(),
-				Mockito.any(ResponseMessage.class));
+				Mockito.any(Response.class));
 		Mockito.verify(session,Mockito.atLeast(1)).login(true);
 		
 		session.close();

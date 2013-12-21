@@ -1,6 +1,5 @@
 package com.tcc.cti.core.message.response;
 
-import static com.tcc.cti.core.message.MessageType.Call;
 
 /**
  * 接受呼叫信息对象
@@ -24,12 +23,9 @@ import static com.tcc.cti.core.message.MessageType.Call;
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class CallResponse extends ResponseMessage{ 
+public class CallResponse extends Response{ 
 	
 	public static class Builder{
-		private final String _companyId;
-		private final String _messageType;
-		private final String _opId;
 		private final String _seq;
 		private String _groupId;
 		private String _callLeg;
@@ -47,11 +43,8 @@ public class CallResponse extends ResponseMessage{
 		private String _preOpName;
 		private String _userInput;
 		
-		public Builder(String companyId,String opId,String seq){
-			_companyId = companyId;
-			_opId = opId;
+		public Builder(String seq){
 			_seq = seq;
-			_messageType = Call.response(); 
 		}
 		
 		public Builder setGroupId(String groupId){
@@ -130,8 +123,7 @@ public class CallResponse extends ResponseMessage{
 		}
 		
 		public CallResponse build(){
-			CallResponse response = new  CallResponse(
-					_companyId,_opId,_messageType,_seq);
+			CallResponse response = new  CallResponse(_seq);
 			
 			response.setGroupId(_groupId);
 			response.setCallLeg(_callLeg);
@@ -153,10 +145,8 @@ public class CallResponse extends ResponseMessage{
 		}
 	}
 
-	private CallResponse(String companyId, String opId,
-			String messageType,String seq) {
-		
-		super(companyId, opId, messageType, seq);
+	private CallResponse(String seq) {
+		super(seq,SUCCESS_RESULT);
 	}
 	
 	private String _groupId;
@@ -298,11 +288,11 @@ public class CallResponse extends ResponseMessage{
 	@Override
 	public String toString() {
 		StringBuilder builder2 = new StringBuilder();
-		builder2.append("PhoneCallResponse [_groupId=");
+		builder2.append("CallResponse [_groupId=");
 		builder2.append(_groupId);
 		builder2.append(", _callLeg=");
 		builder2.append(_callLeg);
-		builder2.append(", _callNumber=");
+		builder2.append(", _callerNumber=");
 		builder2.append(_callerNumber);
 		builder2.append(", _accessNumber=");
 		builder2.append(_accessNumber);
@@ -328,14 +318,6 @@ public class CallResponse extends ResponseMessage{
 		builder2.append(_preOpName);
 		builder2.append(", _userInput=");
 		builder2.append(_userInput);
-		builder2.append(", _companyId=");
-		builder2.append(_companyId);
-		builder2.append(", _opId=");
-		builder2.append(_opId);
-		builder2.append(", _messageType=");
-		builder2.append(_messageType);
-		builder2.append(", _seq=");
-		builder2.append(_seq);
 		builder2.append("]");
 		return builder2.toString();
 	}

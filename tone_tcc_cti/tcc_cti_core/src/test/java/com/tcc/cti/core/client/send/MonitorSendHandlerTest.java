@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.MonitorRequest;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.BaseRequest;
 
 /**
  * {@link MonitorSendHandler}单元测试
@@ -23,7 +23,7 @@ public class MonitorSendHandlerTest {
 		MonitorSendHandler handler = new MonitorSendHandler();
 		
 		Assert.assertFalse(handler.isSend(null));
-		RequestMessage not = new RequestMessage("not");
+		BaseRequest not = new BaseRequest("not");
 		Assert.assertFalse(handler.isSend(not));
 		
 		Assert.assertTrue(handler.isSend(new MonitorRequest()));

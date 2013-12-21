@@ -14,8 +14,6 @@ import com.tcc.cti.core.client.connection.Connectionable;
 import com.tcc.cti.core.client.connection.NioConnection;
 import com.tcc.cti.core.client.heartbeat.HeartbeatKeepable;
 import com.tcc.cti.core.client.heartbeat.ScheduledHeartbeatKeep;
-import com.tcc.cti.core.client.send.SendHandler;
-import com.tcc.cti.core.client.session.handler.SendCollectionHandler;
 import com.tcc.cti.core.client.session.process.MessageProcessable;
 import com.tcc.cti.core.client.session.task.StocketReceiveTask;
 
@@ -35,7 +33,6 @@ public class SessionFactory {
 	private final MessageProcessable _messageProcess ;
 	private final ScheduledExecutorService _heartExcecutorService;
 	
-	private SendHandler _sendHandler = new SendCollectionHandler();
 	private HeartbeatKeepable _heartbeatKeeep ;
 	
 	private static Selector openSelector(){
@@ -83,7 +80,6 @@ public class SessionFactory {
 			Connectionable connection = new NioConnection(_selector,_configure.getAddress());
 			session = new Session.
 					Builder(key,connection,_messageProcess,_heartbeatKeeep).
-					setSendHandler(_sendHandler).
 					setHeartbeatTimeout(_configure.getHeartbeatTimeout()).
 					setCharset(_configure.getCharset()).
 					build();
@@ -110,13 +106,6 @@ public class SessionFactory {
 			_messageProcess.close();
 			_heartExcecutorService.shutdownNow();
 		}
-	}
-	
-	public void setSendHandler(SendHandler handler) {
-		if(handler == null){
-			throw new IllegalArgumentException("Send handler not null");
-		}
-		_sendHandler = handler;			
 	}
 	
 	public void setHeartbeatKeepable(HeartbeatKeepable keep){

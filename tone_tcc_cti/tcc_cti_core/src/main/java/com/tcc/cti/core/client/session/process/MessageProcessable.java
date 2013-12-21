@@ -1,6 +1,12 @@
 package com.tcc.cti.core.client.session.process;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+
+import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.session.Sessionable;
+import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 服务器消息处理接口
@@ -9,6 +15,9 @@ import com.tcc.cti.core.client.session.Sessionable;
  */
 public interface MessageProcessable {
 	
+	void sendProcess(Sessionable session,Requestable<? extends Response> request,
+			GeneratorSeq generator,Charset charset)throws IOException;
+	
 	/**
 	 * 推送接收消息进行处理
 	 * 
@@ -16,7 +25,7 @@ public interface MessageProcessable {
 	 * @param m 接收消息
 	 * @throws InterruptedException
 	 */
-	void put(Sessionable session,String m)throws InterruptedException;
+	void receiveProcess(Sessionable session,String m)throws InterruptedException;
 	
 	/**
 	 * 开始消息处理

@@ -1,5 +1,7 @@
 package com.tcc.cti.core.client.session.process;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -10,9 +12,13 @@ import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.receive.ParseMessageException;
 import com.tcc.cti.core.client.receive.ReceiveHandler;
+import com.tcc.cti.core.client.send.SendHandler;
+import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.session.Sessionable;
 import com.tcc.cti.core.client.session.handler.ReceiveCollectionHandler;
-import com.tcc.cti.core.message.pool.CtiMessagePool;
+import com.tcc.cti.core.client.session.handler.SendCollectionHandler;
+import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 单线程消息处理
@@ -27,39 +33,35 @@ public class SingleMessageProcess implements MessageProcessable {
 	private final BlockingQueue<MessageWapper> _messageQueue;
 	private final int _warringLine ;
 	private final Object _monitor = new Object();
-	private final ReceiveHandler _handler;
-	private final CtiMessagePool _messagePool;
+	private final Requests _requests = new Requests();
 	
+
+	private ReceiveHandler _receiveHandler = new ReceiveCollectionHandler();
+	private SendHandler _sendHandler = new SendCollectionHandler();
 	
 	private volatile boolean _start = false;
 	private volatile ProcessTask _processTask;
 	private volatile Thread _processTaskThread;
 	
-	public SingleMessageProcess(CtiMessagePool pool){
-		this(new ReceiveCollectionHandler(),pool);
+	public SingleMessageProcess(){
+		this(DEFAULT_POOL_SIZE);
 	}
 	
-	public SingleMessageProcess(ReceiveHandler handler,CtiMessagePool pool){
-		this(DEFAULT_POOL_SIZE,handler,pool);
-	}
-	
-	public SingleMessageProcess(int poolSize,ReceiveHandler handler,CtiMessagePool pool){
-		if(handler == null){
-			throw new IllegalArgumentException("Receive handlers not null");
-		}
-		
-		if(pool == null){
-			throw new IllegalArgumentException("Message poll not null");
-		}
-		
+	public SingleMessageProcess(int poolSize){
 		_messageQueue = new ArrayBlockingQueue<MessageWapper>(poolSize);
 		_warringLine = (poolSize * WARRING_LINE_PERCENT) / 100;
-		_handler = handler;
-		_messagePool = pool;
 	}
 	
 	@Override
-	public void put(Sessionable session, String m) throws InterruptedException {
+	public void sendProcess(Sessionable session, Requestable<? extends Response> request,
+			GeneratorSeq generator,	Charset charset)throws IOException {
+		
+		request.regsiterEvent(_requests);
+		_sendHandler.send(session, request, generator, charset);
+	}
+	
+	@Override
+	public void receiveProcess(Sessionable session, String m) throws InterruptedException {
 		if(StringUtils.isBlank(m)){
 			return ;
 		}
@@ -77,8 +79,8 @@ public class SingleMessageProcess implements MessageProcessable {
 		logger.debug("Message process start...");
 		synchronized(_monitor){
 			_processTask = new ProcessTask(
-					_messageQueue, _handler,
-					_messagePool,_warringLine);
+					_messageQueue, _receiveHandler,
+					_requests, _warringLine);
 			_processTaskThread = new Thread(_processTask);
 			_processTaskThread.start();
 			_start = true;
@@ -103,6 +105,20 @@ public class SingleMessageProcess implements MessageProcessable {
 		return _start;
 	}
 	
+	public void setReceiveHandler(ReceiveHandler handler){
+		if(handler == null){
+			throw new IllegalArgumentException("Receive handler not null");
+		}
+		_receiveHandler = handler;
+	}
+	
+	public void setSendHandler(SendHandler handler){
+		if(handler == null){
+			throw new IllegalArgumentException("Send handler not null");
+		}
+		_sendHandler = handler;
+	}
+	
 	protected MessageWapper task()throws InterruptedException{
 		return _messageQueue.take();		
 	}
@@ -116,15 +132,15 @@ public class SingleMessageProcess implements MessageProcessable {
 		
 		private final BlockingQueue<MessageWapper> _messageQueue;
 		private final ReceiveHandler _handler;
-		private final CtiMessagePool _messagePool;
+		private final Requestsable _requests;
 		private final int _warringLine;
 		
 		public ProcessTask(BlockingQueue<MessageWapper> queue,
-				ReceiveHandler handler, CtiMessagePool pool, int warringLine){
+				ReceiveHandler handler, Requestsable requests, int warringLine){
 			
 			_messageQueue = queue;
 			_handler = handler;
-			_messagePool = pool;
+			_requests = requests;
 			_warringLine = warringLine;
 		}
 
@@ -143,7 +159,7 @@ public class SingleMessageProcess implements MessageProcessable {
 						logger.error("{}. have message {} process",now,len);
 					}
 					MessageWapper w = _messageQueue.take();
-					receiveHandle(w.message,_messagePool,w.session,_handler);
+					receiveHandle(w.message, _requests, w.session, _handler);
 				}catch(InterruptedException e){
 					logger.error("Message process is interruped {}",e.getMessage());
 					Thread.currentThread().interrupt();
@@ -151,14 +167,14 @@ public class SingleMessageProcess implements MessageProcessable {
 			}
 		}
 		
-		private void receiveHandle(String m,CtiMessagePool pool,
+		private void receiveHandle(String m,Requestsable requests,
 				Sessionable session,ReceiveHandler handler){
 			
 			if(StringUtils.isBlank(m)){
 				return;
 			}
 			try{
-				handler.receive(pool,session, m);	
+				handler.receive(requests,session, m);	
 			}catch(ParseMessageException e){
 				logger.error("Receive {} handler exception {}", m, e.getMessage());
 			}

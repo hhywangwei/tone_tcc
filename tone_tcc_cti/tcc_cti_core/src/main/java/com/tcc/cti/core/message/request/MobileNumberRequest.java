@@ -1,6 +1,8 @@
 package com.tcc.cti.core.message.request;
 
-import com.tcc.cti.core.message.MessageType;
+import static com.tcc.cti.core.message.MessageType.MobileNumber;
+
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 请求移动座席设置对象
@@ -11,11 +13,15 @@ import com.tcc.cti.core.message.MessageType;
  * 
  * @author <a href="hhywangwei@gmail.com">WangWei</a>
  */
-public class MobileNumberRequest extends RequestMessage {
+public class MobileNumberRequest extends BaseRequest<Response> {
 	private String number;
 	
 	public MobileNumberRequest() {
-		super(MessageType.MobileNumber.request());
+		super(MobileNumber.request());
+	}
+	
+	public MobileNumberRequest(int timeout){
+		super(MobileNumber.request(),timeout);
 	}
 
 	public String getNumber() {
@@ -28,7 +34,14 @@ public class MobileNumberRequest extends RequestMessage {
 
 	@Override
 	public String toString() {
-		return "MobileNumberRequest [number=" + number + ", _messageType="
-				+ _messageType + "]";
+		StringBuilder builder = new StringBuilder();
+		builder.append("MobileNumberRequest [number=");
+		builder.append(number);
+		builder.append(", _messageType=");
+		builder.append(_messageType);
+		builder.append(", _responses=");
+		builder.append(_responses);
+		builder.append("]");
+		return builder.toString();
 	}
 }

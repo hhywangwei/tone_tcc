@@ -1,18 +1,14 @@
 package com.tcc.cti.core.message.response;
 
-import static com.tcc.cti.core.message.MessageType.CloseCall;
-
 /**
  * 接收来电结束信息
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class CloseCallResponse extends ResponseMessage{
+public class CloseCallResponse extends Response{
 	
 	public static class Builder{
 		
-		private final String _companyId;
-		private final String _opId;
 		private final String _seq;
 		private String _groupId;
 		private String _callLeg;
@@ -21,9 +17,7 @@ public class CloseCallResponse extends ResponseMessage{
 		private String _calledNumber;
 		private String _releaseReason;
 		
-		public Builder(String companyId, String opId, String seq) {
-			_companyId = companyId;
-			_opId = opId;
+		public Builder(String seq) {
 			_seq = seq;
 		}
 		
@@ -58,8 +52,7 @@ public class CloseCallResponse extends ResponseMessage{
 		}
 		
 		public CloseCallResponse build(){
-			CloseCallResponse r = new CloseCallResponse(
-					_companyId,_opId,CloseCall.response(),_seq);
+			CloseCallResponse r = new CloseCallResponse(_seq);
 			
 			r.setGroupId(_groupId);
 			r.setCallLeg(_callLeg);
@@ -80,9 +73,8 @@ public class CloseCallResponse extends ResponseMessage{
 	private String _calledNumber;
 	private String _releaseReason;
 	
-	private CloseCallResponse(String companyId, String opId, String messageType,
-			String seq) {
-		super(companyId, opId, messageType, seq);
+	private CloseCallResponse(String seq) {
+		super(seq, SUCCESS_RESULT);
 	}
 	
 	private void setGroupId(String groupId){
@@ -148,12 +140,6 @@ public class CloseCallResponse extends ResponseMessage{
 		builder2.append(_calledNumber);
 		builder2.append(", _releaseReason=");
 		builder2.append(_releaseReason);
-		builder2.append(", _companyId=");
-		builder2.append(_companyId);
-		builder2.append(", _opId=");
-		builder2.append(_opId);
-		builder2.append(", _messageType=");
-		builder2.append(_messageType);
 		builder2.append(", _seq=");
 		builder2.append(_seq);
 		builder2.append("]");

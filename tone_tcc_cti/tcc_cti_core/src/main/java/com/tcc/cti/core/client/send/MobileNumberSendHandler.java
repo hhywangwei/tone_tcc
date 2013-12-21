@@ -3,9 +3,9 @@ package com.tcc.cti.core.client.send;
 import static com.tcc.cti.core.message.MessageType.MobileNumber;
 
 import com.tcc.cti.core.client.OperatorKey;
-import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.MobileNumberRequest;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 实现发送移动座席消息
@@ -16,27 +16,20 @@ import com.tcc.cti.core.message.request.RequestMessage;
  *
  */
 public class MobileNumberSendHandler extends AbstractSendHandler{
-	
 	private static final String NUMBER_FORMAT = "<MobileNumber>%s</MobileNumber>";
 	
 	@Override
-	protected boolean isSend(RequestMessage message) {
-		return MobileNumber.isRequest(message.getMessageType());
+	protected boolean isSend(Requestable<? extends Response> request) {
+		return MobileNumber.isRequest(request.getMessageType());
 	}
 
 	@Override
-	protected String buildMessage(RequestMessage message, OperatorKey key,
-			GeneratorSeq generator) {
+	protected void buildMessage(Requestable<? extends Response> request,
+			OperatorKey key, StringBuilder builder) {
 		
-		MobileNumberRequest request = (MobileNumberRequest)message;
-		StringBuilder sb = new StringBuilder(512);
-		sb.append(String.format(MSG_FORMAT, request.getMessageType()));
-		sb.append(String.format(SEQ_FORMAT, generator.next()));
-		sb.append(String.format(COMPANY_ID_FORMAT,key.getCompanyId()));
-		sb.append(String.format(OPID_FORMAT, key.getOpId()));
-		sb.append(String.format(NUMBER_FORMAT, request.getNumber()));
-		
-		return sb.toString();
+		MobileNumberRequest r = (MobileNumberRequest)request;
+		buildOperator(key,builder);
+		builder.append(String.format(NUMBER_FORMAT, r.getNumber()));
 	}
 
 }

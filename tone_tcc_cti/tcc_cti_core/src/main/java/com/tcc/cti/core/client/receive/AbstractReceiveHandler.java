@@ -18,27 +18,30 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.tcc.cti.core.client.session.Sessionable;
-import com.tcc.cti.core.message.pool.CtiMessagePool;
-import com.tcc.cti.core.message.response.ResponseMessage;
+import com.tcc.cti.core.client.session.process.Requestsable;
+import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 实现消息接受处理，实现了消息处理主要流程。
  * 
- * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ * @author <a href="hhywangwei@gmail.com">WangWei</a>
  */
 public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	private static final Logger logger = LoggerFactory.getLogger(AbstractReceiveHandler.class);
 	private static final String ROOT = "root";
 	private static final String XML_FULL_PATTER = "<?xml version=\"1.0\"?>\n<root>%s</root>";
 	private static final String MESSAGE_TYPE = "msg";
-	
+	 
 	protected static final String COMPANY_ID_PARAMETER = "CompanyID";
 	protected static final String OP_ID_PARAMETER = "OPID";
 	protected static final String WORK_ID_PARAMETER = "WorkID";
 	protected static final String SEQ_PARAMETER = "seq";
+	private static final String RESULT_PARAMETER = "result";
 	
 	@Override
-	public void receive(CtiMessagePool pool,Sessionable channel, String message)throws ParseMessageException{
+	public void receive(Requestsable requests,
+			Sessionable channel, String message)throws ParseMessageException{
 		
 		logger.debug("receive message is \"{}\"",message);
 		
@@ -46,7 +49,7 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 			Map<String,String> content = parseMessage(message);
 			String msgType = content.get(MESSAGE_TYPE);
 			if(StringUtils.isNotBlank(msgType) && isReceive(msgType)){
-				receiveHandler(pool,channel,content);
+				receiveHandler(requests,channel,content);
 			}
 		}catch(SAXException e){
 			throw new ParseMessageException(e);
@@ -98,23 +101,23 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	 * @param session {@link Sessionable}
 	 * @param content 接受消息内容
 	 */
-	protected void receiveHandler(CtiMessagePool pool, Sessionable session,
+	@SuppressWarnings("unchecked")
+	protected void receiveHandler(Requestsable requests, Sessionable session,
 			Map<String, String> content) {
 		
 		String companyId = session.getOperatorKey().getCompanyId();
 		String opId = session.getOperatorKey().getOpId();
 		String seq = content.get(SEQ_PARAMETER);
 		
-		ResponseMessage message = 
-				buildMessage(companyId,opId,seq,content);
-		try{
-			if(message != null){
-				pool.put(companyId, opId, message);				
-			}	
-		}catch(Exception e){
-			//TODO 是整合到Session????? 2013-12-09
+		String messageType = getMessageType();
+		Requestable<Response> request =(Requestable<Response>)requests.get(messageType, seq);
+		if(request != null){
+			Response response = buildMessage(companyId,opId,seq,content);
+			request.receive(response);
 		}
 	}
+	
+	protected abstract String getMessageType();
 	
 	/**
 	 * 通过接收消息构建消息对象
@@ -125,8 +128,12 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	 * @param content   接收类容
 	 * @return
 	 */
-	protected abstract ResponseMessage buildMessage(String companyId,String opId,
-			String seq,Map<String,String> content);
+	protected Response buildMessage(String companyId, String opId,
+			String seq, Map<String, String> content) {
+		String result = content.get(RESULT_PARAMETER);
+		
+		return new Response(seq,result);
+	}
 	
 	/**
 	 * 接受消息解析处理类，使用SAX解析器处理

@@ -2,13 +2,9 @@ package com.tcc.cti.core.client.send;
 
 import static com.tcc.cti.core.message.MessageType.Monitor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.tcc.cti.core.client.OperatorKey;
-import com.tcc.cti.core.client.sequence.GeneratorSeq;
-import com.tcc.cti.core.message.request.MonitorRequest;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.response.Response;
 /**
  * 发送获得班长信息
  * 
@@ -21,26 +17,16 @@ import com.tcc.cti.core.message.request.RequestMessage;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 public class MonitorSendHandler extends AbstractSendHandler{
-	private static final Logger logger = LoggerFactory.getLogger(MonitorSendHandler.class);
 	
 	@Override
-	protected boolean isSend(RequestMessage message) {
-		return message != null && 
-				Monitor.isRequest(message.getMessageType());
+	protected boolean isSend(Requestable<? extends Response> request) {
+		return Monitor.isRequest(request.getMessageType());
 	}
 
 	@Override
-	protected String buildMessage(RequestMessage message, OperatorKey key, GeneratorSeq generator) {
-		MonitorRequest request = (MonitorRequest)message;
+	protected void buildMessage(Requestable<? extends Response> request,
+			OperatorKey key, StringBuilder builder) {
 		
-		StringBuilder sb = new StringBuilder(128);
-		sb.append(String.format(MSG_FORMAT, request.getMessageType()));
-		sb.append(String.format(SEQ_FORMAT, generator.next()));
-		sb.append(String.format(COMPANY_ID_FORMAT, key.getCompanyId()));
-		
-		String m = sb.toString();
-		logger.debug("Send get monitor is {}",m);
-		return m;
+		buildOperator(key,builder);
 	}
-
 }

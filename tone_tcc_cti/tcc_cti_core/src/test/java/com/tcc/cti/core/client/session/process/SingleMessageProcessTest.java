@@ -24,7 +24,7 @@ public class SingleMessageProcessTest {
 	public void testPutButMessageNull()throws InterruptedException{
 		SingleMessageProcess process = new SingleMessageProcess(handler,pool);
 		Sessionable session = Mockito.mock(Sessionable.class);
-		process.put(session, null);
+		process.receiveProcess(session, null);
 		Assert.assertTrue(process.getQueueSize() == 0);
 	}
 	
@@ -32,7 +32,7 @@ public class SingleMessageProcessTest {
 	public void testPut()throws InterruptedException{
 		SingleMessageProcess process = new SingleMessageProcess(handler,pool);
 		Sessionable session = Mockito.mock(Sessionable.class);
-		process.put(session, "test");
+		process.receiveProcess(session, "test");
 		Assert.assertTrue(process.getQueueSize() == 1);
 	}
 	
@@ -55,7 +55,7 @@ public class SingleMessageProcessTest {
 		int len = 11;
 		int i = 0;
 		for(;i < len;i++){
-			process.put(session, "test" + String.valueOf(i));
+			process.receiveProcess(session, "test" + String.valueOf(i));
 		}
 		Assert.assertTrue(i == 11);
 	}

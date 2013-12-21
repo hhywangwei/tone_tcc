@@ -2,13 +2,10 @@ package com.tcc.cti.core.client.send;
 
 import static com.tcc.cti.core.message.MessageType.OutCall;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.tcc.cti.core.client.OperatorKey;
-import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.OutCallRequest;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 发送外呼消息
@@ -25,33 +22,22 @@ import com.tcc.cti.core.message.request.RequestMessage;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 public class OutCallSendHandler extends AbstractSendHandler{
-	private static final Logger logger = LoggerFactory.getLogger(OutCallSendHandler.class);
 	private static final String OP_NUMBER_FORMAT = "<Phone1>%s</Phone1>";
 	private static final String PHONE_FORMAT = "<Phone2>%s</Phone2>";
 	
 	@Override
-	protected boolean isSend(RequestMessage message) {
-		return message != null && 
-				OutCall.isRequest(message.getMessageType());
+	protected boolean isSend(Requestable<? extends Response> request) {
+		return OutCall.isRequest(request.getMessageType());
 	}
 
 	@Override
-	protected String buildMessage(RequestMessage message,OperatorKey key, GeneratorSeq generator) {
+	protected void buildMessage(Requestable<? extends Response> request,
+			OperatorKey key, StringBuilder builder) {
 		
-		OutCallRequest request = (OutCallRequest)message;
+		OutCallRequest r = (OutCallRequest)request;
 		
-		StringBuilder sb = new StringBuilder(128);
-		sb.append(String.format(MSG_FORMAT, OutCall.request()));
-		sb.append(String.format(SEQ_FORMAT, generator.next()));
-		sb.append(String.format(COMPANY_ID_FORMAT, key.getCompanyId()));
-		sb.append(String.format(OPID_FORMAT, key.getOpId()));
-		sb.append(String.format(OP_NUMBER_FORMAT, request.getOpNumber()));
-		sb.append(String.format(PHONE_FORMAT, request.getPhone()));
-		
-		String m = sb.toString();
-		logger.debug("Send out call is {}",m);
-		
-		return m;
+		buildOperator(key,builder);
+		builder.append(String.format(OP_NUMBER_FORMAT, r.getOpNumber()));
+		builder.append(String.format(PHONE_FORMAT, r.getPhone()));
 	}
-
 }

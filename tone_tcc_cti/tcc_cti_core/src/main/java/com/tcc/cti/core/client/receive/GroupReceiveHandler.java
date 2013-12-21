@@ -5,7 +5,7 @@ import static com.tcc.cti.core.message.MessageType.Group;
 import java.util.Map;
 
 import com.tcc.cti.core.message.response.GroupResponse;
-import com.tcc.cti.core.message.response.ResponseMessage;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 接受分组信息
@@ -25,10 +25,15 @@ public class GroupReceiveHandler extends AbstractReceiveHandler{
 	}
 
 	@Override
-	protected ResponseMessage buildMessage(String companyId, String opId,
+	protected String getMessageType() {
+		return Group.request();
+	}
+	
+	@Override
+	protected Response buildMessage(String companyId, String opId,
 			String seq, Map<String, String> content) {
 		
-		return new GroupResponse.Builder(companyId, seq).
+		return new GroupResponse.Builder(seq).
 				setGroupId(content.get(GROUP_ID_PARAMETER)).
 				setGroupName(content.get(GROUP_NAME_PARAMETER)).
 				setMaxQueue(content.get(MAX_QUEUE_PARAMETER)).

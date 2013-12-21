@@ -1,15 +1,31 @@
 package com.tcc.cti.core.message.request;
 
 import static com.tcc.cti.core.message.MessageType.Monitor;
+
+import com.tcc.cti.core.message.response.MonitorResponse;
 /**
  * 获得班长信息
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class MonitorRequest extends RequestMessage{
+public class MonitorRequest extends BaseRequest<MonitorResponse>{
 
 	public MonitorRequest() {
 		super(Monitor.request());
 	}
+	
+	public MonitorRequest(int timeout){
+		super(Monitor.request(),timeout);
+	}
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("MonitorRequest [_messageType=");
+		builder.append(_messageType);
+		builder.append(", _responses=");
+		builder.append(_responses);
+		builder.append("]");
+		return builder.toString();
+	}
 }

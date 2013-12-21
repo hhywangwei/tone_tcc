@@ -5,7 +5,7 @@ import static com.tcc.cti.core.message.MessageType.Call;
 import java.util.Map;
 
 import com.tcc.cti.core.message.response.CallResponse;
-import com.tcc.cti.core.message.response.ResponseMessage;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 接受呼叫信息处理
@@ -33,12 +33,17 @@ public class CallReceiveHandler extends AbstractReceiveHandler{
 	protected boolean isReceive(String msgType) {
 		return Call.isResponse(msgType);
 	}
+	
+	@Override
+	protected String getMessageType() {
+		return Call.request();
+	}
 
 	@Override
-	protected ResponseMessage buildMessage(String companyId, String opId,
+	protected Response buildMessage(String companyId, String opId,
 			String seq, Map<String, String> content) {
 		
-		return new CallResponse.Builder(companyId, opId, seq).
+		return new CallResponse.Builder(seq).
 				setGroupId(content.get(GROUP_ID_PARAMETER)).
 				setCallLeg(content.get(CALL_LEG_PARAMETER)).
 				setCallerNumber(content.get(CALLER_NUMBER_PARAMETER)).
@@ -56,5 +61,4 @@ public class CallReceiveHandler extends AbstractReceiveHandler{
 				setUserInput(content.get(USER_INPUT_PARAMETER)).
 				build();
 	}
-
 }

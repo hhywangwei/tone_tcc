@@ -2,13 +2,10 @@ package com.tcc.cti.core.client.send;
 
 import static com.tcc.cti.core.message.MessageType.GroupMember;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.tcc.cti.core.client.OperatorKey;
-import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.GroupMemberRequest;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 发送获取组成员信息
@@ -22,32 +19,22 @@ import com.tcc.cti.core.message.request.RequestMessage;
  * GroupID:分组编号
  * 
  * {@code 是线程安全类}
- * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ * @author <a href="hhywangwei@gmail.com">WangWei</a>
  */
 public class GroupMemberSendHandler extends AbstractSendHandler{
-	private static final Logger logger = LoggerFactory.getLogger(GroupMemberSendHandler.class);
 	private static final String GROUP_ID_FORMAT = "<GroupID>%s</GroupID>";
 	
 	@Override
-	protected boolean isSend(RequestMessage message) {
-		return message != null && 
-				GroupMember.isRequest(message.getMessageType());
+	protected boolean isSend(Requestable<? extends Response> request) {
+		return 	GroupMember.isRequest(request.getMessageType());
 	}
 
 	@Override
-	protected String buildMessage(RequestMessage message, OperatorKey key, GeneratorSeq generator) {
-		GroupMemberRequest request = (GroupMemberRequest)message;
+	protected void buildMessage(Requestable<? extends Response> request,
+			OperatorKey key, StringBuilder builder) {
 		
-		StringBuilder sb = new StringBuilder(128);
-		sb.append(String.format(MSG_FORMAT, request.getMessageType()));
-		sb.append(String.format(SEQ_FORMAT, generator.next()));
-		sb.append(String.format(COMPANY_ID_FORMAT, key.getCompanyId()));
-		sb.append(String.format(GROUP_ID_FORMAT, request.getGroupId()));	
-		
-		String m = sb.toString();
-		logger.debug("Obtain message send is {}", m);
-		
-		return m;
+		GroupMemberRequest r = (GroupMemberRequest)request;
+		buildOperator(key,builder);
+		builder.append(String.format(GROUP_ID_FORMAT, r.getGroupId()));	
 	}
-
 }

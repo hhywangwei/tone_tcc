@@ -2,14 +2,11 @@ package com.tcc.cti.core.client.send;
 
 import static com.tcc.cti.core.message.MessageType.Login;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.tcc.cti.core.client.OperatorKey;
-import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.common.PasswordUtils;
 import com.tcc.cti.core.message.request.LoginRequest;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 实现发送登录cti消息
@@ -26,38 +23,29 @@ import com.tcc.cti.core.message.request.RequestMessage;
  * AutoLogin：？？？
  * 
  * {@code 是线程安全类}
- * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ * @author <a href="hhywangwei@gmail.com">WangWei</a>
  */
 
 public class LoginSendHandler extends AbstractSendHandler{
-	private static final Logger logger = LoggerFactory.getLogger(LoginSendHandler.class);
-	 
 	private static final String TYPE_FORMAT = "<Type>%s</Type>";
 	private static final String OPNUMBER_FORMAT = "<OPNumber>%s</OPNumber>";
 	private static final String PASSWORD_FORMAT = "<PassWord>%s</PassWord>";
 	
 	@Override
-	protected boolean isSend(RequestMessage message) {
-		return Login.isRequest(message.getMessageType());
+	protected boolean isSend(Requestable<? extends Response> request) {
+		return Login.isRequest(request.getMessageType());
 	}
 
 	@Override
-	protected String buildMessage(RequestMessage message, OperatorKey key, GeneratorSeq generator){
-		LoginRequest request = (LoginRequest)message;
+	protected void buildMessage(Requestable<? extends Response> request,
+			OperatorKey key, StringBuilder builder){
 		
-		StringBuilder sb = new StringBuilder(128);
-		sb.append(String.format(MSG_FORMAT, request.getMessageType()));
-		sb.append(String.format(SEQ_FORMAT, generator.next()));
-		sb.append(String.format(TYPE_FORMAT, request.getType()));
-		sb.append(String.format(COMPANY_ID_FORMAT,key.getCompanyId()));
-		sb.append(String.format(OPID_FORMAT, key.getOpId()));
-		sb.append(String.format(OPNUMBER_FORMAT, request.getOpNumber()));
-		String password = PasswordUtils.encodeMD5(request.getPassword());
-		sb.append(String.format(PASSWORD_FORMAT, password));
-		
-		String m = sb.toString();
-		logger.debug("Build message is {}",m);
-		return m;
+		LoginRequest r = (LoginRequest)request;
+		buildOperator(key,builder);
+		builder.append(String.format(TYPE_FORMAT, r.getType()));
+		builder.append(String.format(OPNUMBER_FORMAT, r.getOpNumber()));
+		String password = PasswordUtils.encodeMD5(r.getPassword());
+		builder.append(String.format(PASSWORD_FORMAT, password));
 	}
 	
 }

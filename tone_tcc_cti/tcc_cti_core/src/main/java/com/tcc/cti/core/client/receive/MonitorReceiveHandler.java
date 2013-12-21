@@ -5,7 +5,7 @@ import static com.tcc.cti.core.message.MessageType.Monitor;
 import java.util.Map;
 
 import com.tcc.cti.core.message.response.MonitorResponse;
-import com.tcc.cti.core.message.response.ResponseMessage;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 接受班长信息
@@ -27,12 +27,17 @@ public class MonitorReceiveHandler extends AbstractReceiveHandler{
 	protected boolean isReceive(String msgType) {
 		return Monitor.isResponse(msgType);
 	}
+	
+	@Override
+	protected String getMessageType() {
+		return Monitor.request();
+	}
 
 	@Override
-	protected ResponseMessage buildMessage(String companyId, String opId,
+	protected Response buildMessage(String companyId, String opId,
 			String seq, Map<String, String> content) {
 		
-		return	new MonitorResponse.Builder(companyId,opId,seq).
+		return	new MonitorResponse.Builder(seq).
 				setBindState(content.get(BIND_STATE_PARAMETER)).
 				setCallState(content.get(CALL_STATE_PARAMETER)).
 				setGroupAttribute(content.get(GROUP_ATTRIBUTE_PARAMETER)).
@@ -45,5 +50,4 @@ public class MonitorReceiveHandler extends AbstractReceiveHandler{
 				setWorkId(content.get(WORK_ID_PARAMETER)).
 				build();
 	}
-
 }

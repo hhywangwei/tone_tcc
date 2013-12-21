@@ -2,24 +2,17 @@ package com.tcc.cti.core.message.request;
 
 import static com.tcc.cti.core.message.MessageType.Silence;
 
-public class SilenceRequest extends RequestMessage {
-	private String _callLeg;
+import com.tcc.cti.core.message.response.Response;
+
+public class SilenceRequest extends PhoneStatusRequest<Response> {
 	private String _flag;
 
 	public SilenceRequest() {
-		this(Silence.request());
+		super(Silence.request());
 	}
 	
-	protected SilenceRequest(String messageType){
-		super(messageType);
-	}
-	
-	public void setCallLeg(String callLeg){
-		_callLeg = callLeg;
-	}
-	
-	public String getCallLeg(){
-		return _callLeg;
+	protected SilenceRequest(int timeout){
+		super(Silence.request(),timeout);
 	}
 	
 	public void setFlag(String flag){
@@ -32,7 +25,16 @@ public class SilenceRequest extends RequestMessage {
 
 	@Override
 	public String toString() {
-		return "SilenceRequest [_callLeg=" + _callLeg + ", _flag=" + _flag
-				+ ", _messageType=" + _messageType + "]";
+		StringBuilder builder = new StringBuilder();
+		builder.append("SilenceRequest [_callLeg=");
+		builder.append(_callLeg);
+		builder.append(", _flag=");
+		builder.append(_flag);
+		builder.append(", _messageType=");
+		builder.append(_messageType);
+		builder.append(", _responses=");
+		builder.append(_responses);
+		builder.append("]");
+		return builder.toString();
 	}
 }

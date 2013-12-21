@@ -1,18 +1,14 @@
 package com.tcc.cti.core.message.response;
 
-import static com.tcc.cti.core.message.MessageType.Monitor;
 
 /**
  * 获得班长信息
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class MonitorResponse extends ResponseMessage{
+public class MonitorResponse extends Response{
 
 	public static class Builder{
-		private final String _companyId;
-		private final String _opId;
-		private final String _messageType;
 		private final String _seq;
 		private String _workId;
 		private String _name;
@@ -25,10 +21,7 @@ public class MonitorResponse extends ResponseMessage{
 		private String _bindState;
 		private String _callState;
 		
-		public Builder(String companyId,String opId,String seq){
-			_companyId = companyId;
-			_opId = opId;
-			_messageType = Monitor.response();
+		public Builder(String seq){
 			_seq = seq;
 		}
 		
@@ -83,8 +76,7 @@ public class MonitorResponse extends ResponseMessage{
 		}
 		
 		public MonitorResponse build(){
-			MonitorResponse m = new MonitorResponse(
-					_companyId,_opId,_messageType,_seq);
+			MonitorResponse m = new MonitorResponse(_seq);
 			
 			m.setBindState(_bindState);
 			m.setCallState(_callState);
@@ -112,9 +104,8 @@ public class MonitorResponse extends ResponseMessage{
 	private String _bindState;
 	private String _callState;
 
-	public MonitorResponse(String companyId, String opId,
-			String messageType,String seq) {
-		super(companyId, opId, messageType, seq);
+	public MonitorResponse(String seq) {
+		super( seq,SUCCESS_RESULT);
 	}
 
 	public String getWorkId(){
@@ -221,12 +212,6 @@ public class MonitorResponse extends ResponseMessage{
 		builder2.append(_bindState);
 		builder2.append(", _callState=");
 		builder2.append(_callState);
-		builder2.append(", _companyId=");
-		builder2.append(_companyId);
-		builder2.append(", _opId=");
-		builder2.append(_opId);
-		builder2.append(", _messageType=");
-		builder2.append(_messageType);
 		builder2.append(", _seq=");
 		builder2.append(_seq);
 		builder2.append("]");

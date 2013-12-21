@@ -2,13 +2,15 @@ package com.tcc.cti.core.message.request;
 
 import static com.tcc.cti.core.message.MessageType.CallHelp;
 
+import com.tcc.cti.core.message.response.Response;
+
 /**
  * 求助需求对象
  * 
  * @author <a href="hhywangwei@gmail.com">WangWei</a>
  */
-public class CallHelpRequest extends RequestMessage{
-	private String _callLeg;
+public class CallHelpRequest extends PhoneStatusRequest<Response>{
+	
 	private String _transferWorkId;
 	private String _transferNumber;
 	private String _status;
@@ -17,12 +19,8 @@ public class CallHelpRequest extends RequestMessage{
 		super(CallHelp.request());
 	}
 	
-	public void setCallLeg(String callLeg){
-		_callLeg = callLeg;
-	}
-	
-	public String getCallLeg(){
-		return _callLeg;
+	public CallHelpRequest(int timeout){
+		super(CallHelp.request(),timeout);
 	}
 	
 	public void setTransferWorkId(String transferWorkID){
@@ -51,9 +49,20 @@ public class CallHelpRequest extends RequestMessage{
 
 	@Override
 	public String toString() {
-		return "CallHelpRequest [_callLeg=" + _callLeg + ", _transferWorkID="
-				+ _transferWorkId + ", _transferNumber=" + _transferNumber
-				+ ", _status=" + _status + ", _messageType=" + _messageType
-				+ "]";
+		StringBuilder builder = new StringBuilder();
+		builder.append("CallHelpRequest [_callLeg=");
+		builder.append(_callLeg);
+		builder.append(", _transferWorkId=");
+		builder.append(_transferWorkId);
+		builder.append(", _transferNumber=");
+		builder.append(_transferNumber);
+		builder.append(", status=");
+		builder.append(_status);
+		builder.append(", _messageType=");
+		builder.append(_messageType);
+		builder.append(", _responses=");
+		builder.append(_responses);
+		builder.append("]");
+		return builder.toString();
 	}
 }

@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.GroupRequest;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.BaseRequest;
 
 public class GroupSendHandlerTest {
 
@@ -19,7 +19,7 @@ public class GroupSendHandlerTest {
 		
 		Assert.assertFalse(handler.isSend(null));
 		
-		RequestMessage not = new RequestMessage("not");
+		BaseRequest not = new BaseRequest("not");
 		Assert.assertFalse(handler.isSend(not));
 		
 		GroupRequest r = new GroupRequest();

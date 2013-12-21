@@ -17,7 +17,7 @@ import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.session.process.MessageProcessable;
 import com.tcc.cti.core.message.request.CallRequest;
 import com.tcc.cti.core.message.request.LoginRequest;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.BaseRequest;
 
 /**
  * {@link Session}单元测试
@@ -272,7 +272,7 @@ public class SessionTest {
 			LoginRequest r = new LoginRequest();
 			session.send(r);
 			Mockito.verify(sendHandler,Mockito.atLeastOnce()).send(
-					Mockito.any(SocketChannel.class),Mockito.any(OperatorKey.class), Mockito.any(RequestMessage.class) ,
+					Mockito.any(SocketChannel.class),Mockito.any(OperatorKey.class), Mockito.any(BaseRequest.class) ,
 					Mockito.any(GeneratorSeq.class), Mockito.any(Charset.class));
 		}finally{
 			if(session != null){

@@ -5,9 +5,7 @@ import static com.tcc.cti.core.message.MessageType.Login;
 import java.util.Map;
 
 import com.tcc.cti.core.client.session.Sessionable;
-import com.tcc.cti.core.message.pool.CtiMessagePool;
-import com.tcc.cti.core.message.response.LoginResponse;
-import com.tcc.cti.core.message.response.ResponseMessage;
+import com.tcc.cti.core.client.session.process.Requestsable;
 
 /**
  * 接受登陆返回信息，登录成功开始发送心跳消息
@@ -22,26 +20,23 @@ public class LoginReceiveHandler extends AbstractReceiveHandler{
 	protected boolean isReceive(String msgType) {
 		return Login.isResponse(msgType);
 	}
+	
+	@Override
+	protected String getMessageType() {
+		return Login.request();
+	}
 
 	@Override
-	protected void receiveHandler(CtiMessagePool pool,
+	protected void receiveHandler(Requestsable requests,
 			Sessionable session, Map<String, String> content) {
 		
 		String result = content.get(RESULT_PARAMETER);
 		boolean success = loginSuccess(result);
 		session.login(success);
-		super.receiveHandler(pool, session, content);
+		super.receiveHandler(requests, session, content);
 	}
 	
 	private boolean loginSuccess(String result){
 		return result.equals(LOGIN_SUCCESS);
-	}
-	
-	@Override
-	protected ResponseMessage buildMessage(String companyId, String opId,
-			String seq, Map<String, String> content) {
-		
-		String result = content.get(RESULT_PARAMETER);
-		return new LoginResponse(companyId,opId,seq,result);
 	}
 }

@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.RecordRequest;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.BaseRequest;
 
 /**
  * {@link RecordSendHandler}单元测试
@@ -23,10 +23,10 @@ public class RecordSendHanlderTest {
 		RecordSendHandler handler = new RecordSendHandler();
 		Assert.assertFalse(handler.isSend(null));
 		
-		RequestMessage not= new RequestMessage("not");
+		BaseRequest not= new BaseRequest("not");
 		Assert.assertFalse(handler.isSend(not));
 		
-		RequestMessage m = new RecordRequest();
+		BaseRequest m = new RecordRequest();
 		Assert.assertTrue(handler.isSend(m));
 	}
 	

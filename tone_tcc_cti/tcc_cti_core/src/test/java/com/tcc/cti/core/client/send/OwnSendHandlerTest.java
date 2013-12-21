@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.BaseRequest;
 import com.tcc.cti.core.message.request.OwnRequest;
 
 /**
@@ -25,16 +25,16 @@ public class OwnSendHandlerTest {
 		OwnSendHandler handler = new OwnSendHandler();
 		Assert.assertFalse(handler.isSend(null));
 		
-		RequestMessage m = new OwnRequest();
+		BaseRequest m = new OwnRequest();
 		Assert.assertTrue(handler.isSend(m));
 		
-		RequestMessage not= new RequestMessage("not");
+		BaseRequest not= new BaseRequest("not");
 		Assert.assertFalse(handler.isSend(not));
 	}
 	
 	@Test
 	public void testBuildMessage(){
-		RequestMessage m = new OwnRequest();
+		BaseRequest m = new OwnRequest();
 		GeneratorSeq generator = mock(GeneratorSeq.class);
 		when(generator.next()).thenReturn("1");
 		

@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.BaseRequest;
 
 /**
  * 单元测试{@link AbstractSendHandler}
@@ -36,13 +36,13 @@ public class AbstractSendHanlderTest {
 	private class SendHandlerImpl extends AbstractSendHandler{
 
 		@Override
-		protected boolean isSend(RequestMessage message) {
+		protected boolean isSend(BaseRequest message) {
 			//none instance
 			return false;
 		}
 
 		@Override
-		protected String buildMessage(RequestMessage message,OperatorKey key,
+		protected String buildMessage(BaseRequest message,OperatorKey key,
 				GeneratorSeq generator) {
 			//none instance
 			return null;

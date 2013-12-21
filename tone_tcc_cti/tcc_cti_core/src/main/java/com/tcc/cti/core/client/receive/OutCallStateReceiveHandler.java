@@ -5,7 +5,7 @@ import static com.tcc.cti.core.message.MessageType.OutCallState;
 import java.util.Map;
 
 import com.tcc.cti.core.message.response.OutCallStateResponse;
-import com.tcc.cti.core.message.response.ResponseMessage;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 接收外呼状态
@@ -21,13 +21,18 @@ public class OutCallStateReceiveHandler extends AbstractReceiveHandler{
 	protected boolean isReceive(String msgType) {
 		return OutCallState.isResponse(msgType);
 	}
+	
+	@Override
+	protected String getMessageType() {
+		return OutCallState.request();
+	}
 
 	@Override
-	protected ResponseMessage buildMessage(String companyId, String opId,
+	protected Response buildMessage(String companyId, String opId,
 			String seq, Map<String, String> content) {
 		String callLeg = content.get(CALL_LEG_PARAMETER);
 		String state = content.get(STATE_PARAMETER);
-		return new OutCallStateResponse(companyId,opId,seq,callLeg,state);
+		return new OutCallStateResponse(seq,callLeg,state);
 	}
 
 }

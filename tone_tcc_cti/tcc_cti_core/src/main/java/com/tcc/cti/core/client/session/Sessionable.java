@@ -1,9 +1,11 @@
 package com.tcc.cti.core.client.session;
 
 import java.io.IOException;
+import java.nio.channels.SocketChannel;
 
 import com.tcc.cti.core.client.OperatorKey;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 建立服务端用户都会产对应的Session对象，保留与服务连接的Channel并接收服务端数据。
@@ -68,7 +70,7 @@ public interface Sessionable {
 	 * @param message 发送消息对象
 	 * @throws IOException
 	 */
-	void send(RequestMessage message)throws IOException;
+	void send(Requestable<? extends Response> message)throws IOException;
 	
 	/**
 	 * 得到操作员key对象
@@ -76,6 +78,13 @@ public interface Sessionable {
 	 * @return
 	 */
 	OperatorKey getOperatorKey();
+	
+	/**
+	 * 连接服务端{@link SocketChannel}
+	 * 
+	 * @return
+	 */
+	SocketChannel getSocketChannel();
 	
 	/**
 	 * 得到Session当前状态{@link Status}

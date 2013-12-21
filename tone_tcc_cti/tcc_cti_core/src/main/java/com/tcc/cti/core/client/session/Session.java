@@ -13,13 +13,12 @@ import com.tcc.cti.core.client.buffer.ByteMessageBuffer;
 import com.tcc.cti.core.client.buffer.MessageBuffer;
 import com.tcc.cti.core.client.connection.Connectionable;
 import com.tcc.cti.core.client.heartbeat.HeartbeatKeepable;
-import com.tcc.cti.core.client.send.SendHandler;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.sequence.MemoryGeneratorSeq;
-import com.tcc.cti.core.client.session.handler.SendCollectionHandler;
 import com.tcc.cti.core.client.session.process.MessageProcessable;
 import com.tcc.cti.core.message.MessageType;
-import com.tcc.cti.core.message.request.RequestMessage;
+import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 每个与CTI服务连接的用户都会创建于服务连接{@link Session},该方法封装了网络连接的复杂度。
@@ -34,7 +33,6 @@ public class Session implements Sessionable {
 		private final Connectionable _connection;
 		private final MessageProcessable _messageProcess;
 		private final HeartbeatKeepable _heartbeatKeep;
-		private SendHandler _sendHandler ;
 		private GeneratorSeq _generatorSeq ;		
 		private int _heartbeatTimeout = 65 * 1000;
 		private Charset _charset =Charset.forName("GBK");
@@ -46,15 +44,9 @@ public class Session implements Sessionable {
 	    	_connection = connection;
 	    	_messageProcess = messageProcess;
 	    	_heartbeatKeep = heartbeatKeep;
-	    	_sendHandler = new SendCollectionHandler();
 	    	_generatorSeq = new MemoryGeneratorSeq(
 					_key.getCompanyId(), _key.getCompanyId());
 	    }
-		
-		public Builder setSendHandler(SendHandler handler){
-			_sendHandler = handler;
-			return this;
-		}
 		
 		public Builder setGeneratorSeq(GeneratorSeq generatorSeq){
 			_generatorSeq = generatorSeq;
@@ -74,15 +66,13 @@ public class Session implements Sessionable {
 		
 		public Session build(){
 			return new Session(_key, _connection, _messageProcess,
-					_sendHandler,_heartbeatKeep,_generatorSeq,
-					_heartbeatTimeout,_charset);
+					_heartbeatKeep,_generatorSeq,_heartbeatTimeout,_charset);
 		}
 	}
 	
 	private final OperatorKey _key;
 	private final Connectionable _conn; 
 	private final MessageProcessable _messageProcess;
-	private final SendHandler _sendHandler;
 	private final HeartbeatKeepable _heartbeatKeep ;
 	private final GeneratorSeq _generator;
 	private final int _heartbeatTimeout;
@@ -96,14 +86,12 @@ public class Session implements Sessionable {
 	private SocketChannel _channel;
 
 	protected Session(OperatorKey operatorKey,Connectionable conn,
-			MessageProcessable messageProcess,SendHandler sendHandler,
-			HeartbeatKeepable heartbeatKeep,GeneratorSeq generator,
-			int heartbeatTimeout,Charset charset){
+			MessageProcessable messageProcess,HeartbeatKeepable heartbeatKeep,
+			GeneratorSeq generator,int heartbeatTimeout,Charset charset){
 		
 		_key = operatorKey;
 		_conn = conn;
 		_messageProcess = messageProcess;
-		_sendHandler = sendHandler;
 		_heartbeatKeep = heartbeatKeep;
 		_generator = generator;
 		_charset = charset;
@@ -180,12 +168,12 @@ public class Session implements Sessionable {
 		_messageBuffer.append(bytes);
 		String m = _messageBuffer.next();
 		if(StringUtils.isNotBlank(m)){
-			_messageProcess.put(this, m);
+			_messageProcess.receiveProcess(this, m);
 		}
 	}
 	
 	@Override
-	public void send(RequestMessage message)throws IOException {
+	public void send(Requestable<? extends Response> request)throws IOException {
 		synchronized (_monitor) {
 			if(isNew()){
 				start();
@@ -195,8 +183,8 @@ public class Session implements Sessionable {
 			logger.debug("{} Send message,but closed",_key.toString());
 			throw new IOException("Session already closed,not send message.");
 		}
-		if(isAccess(message)){
-			_sendHandler.send(_channel, _key, message, _generator, _charset);
+		if(isAccess(request.getMessageType())){
+			_messageProcess.sendProcess(this, request, _generator, _charset);
 			heartbeatTouch();
 		}else{
 			logger.debug("{} not access cti server.", _key.toString());
@@ -204,12 +192,12 @@ public class Session implements Sessionable {
 		}
 	}
 	
-	private boolean isAccess(RequestMessage message){
+	private boolean isAccess(String messageType){
 		boolean access = false;
 		if(isService()){
 			access = true;
 		}
-		if(isActive() && MessageType.Login.isRequest(message.getMessageType())){
+		if(isActive() && MessageType.Login.isRequest(messageType)){
 			access = true;
 		}
 		
@@ -236,6 +224,11 @@ public class Session implements Sessionable {
 		}
 		
 		return _status;
+	}
+	
+	@Override
+	public SocketChannel getSocketChannel() {
+		return _channel;
 	}
 	
 	@Override

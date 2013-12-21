@@ -31,10 +31,15 @@ public class GroupMemberReceiveHandler extends AbstractReceiveHandler{
 		return GroupMember.isResponse(msgType);
 	}
 	
+	@Override
+	protected String getMessageType() {
+		return GroupMember.request();
+	}
+	
 	protected GroupMemberResponse buildMessage(String companyId,String opId,
 			String seq,Map<String,String> content){
 		
-		return	new GroupMemberResponse.Builder(companyId,opId,seq).
+		return	new GroupMemberResponse.Builder(seq).
 				setBindState(content.get(BIND_STATE_PARAMETER)).
 				setCallState(content.get(CALL_STATE_PARAMETER)).
 				setGroupAttribute(content.get(GROUP_ATTRIBUTE_PARAMETER)).
@@ -51,5 +56,4 @@ public class GroupMemberReceiveHandler extends AbstractReceiveHandler{
 				setWorkModel(content.get(WORK_MODEL_PARAMETER)).
 				build();
 	}
-
 }

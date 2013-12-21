@@ -8,8 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tcc.cti.core.client.session.Sessionable;
-import com.tcc.cti.core.message.pool.CtiMessagePool;
-import com.tcc.cti.core.message.response.ResponseMessage;
+import com.tcc.cti.core.client.session.process.Requestsable;
 
 /**
  * 接收服务器心跳信息
@@ -25,18 +24,15 @@ public class HeartbeatReceiveHandler extends AbstractReceiveHandler{
 	}
 	
 	@Override
-	protected void receiveHandler(CtiMessagePool pool, Sessionable session,
+	protected String getMessageType() {
+		return Heartbeat.request();
+	}
+	
+	@Override
+	protected void receiveHandler(Requestsable requests, Sessionable session,
 			Map<String, String> content) {
 		
 		logger.debug("Receive {} hb.....",session.getOperatorKey());
 		session.heartbeatTouch();
 	}
-
-	@Override
-	protected ResponseMessage buildMessage(String companyId, String opId,
-			String seq, Map<String, String> content) {
-		// none instance
-		return null;
-	}
-
 }

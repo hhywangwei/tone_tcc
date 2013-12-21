@@ -1,23 +1,17 @@
 package com.tcc.cti.core.message.response;
 
 import static com.tcc.cti.core.message.response.ResponseCode.InstanceCode;
-import static com.tcc.cti.core.message.MessageType.OutCallState;
 
-public class OutCallStateResponse extends ResponseMessage{
+public class OutCallStateResponse extends Response{
 	private static final String PREFIX_DETAIL_TEMPLATE = "out_call_%s";
 	
 	private final String _callLeg;
 	private final String _state;
-	private final String _detail;
 	
-	public OutCallStateResponse(String companyId, String opId,
-			String seq,String callLeg,String state) {
-		
-		super(companyId, opId, OutCallState.response(), seq);
+	public OutCallStateResponse(String seq,String callLeg,String state) {
+		super(seq,SUCCESS_RESULT);
 		_callLeg = callLeg;
 		_state = state;
-		_detail = InstanceCode.getDetail(
-				String.format(PREFIX_DETAIL_TEMPLATE, state));
 	}
 	
 	public String getCallLeg(){
@@ -28,8 +22,10 @@ public class OutCallStateResponse extends ResponseMessage{
 		return _state;
 	}
 	
+	@Override
 	public String getDetail(){
-		return _detail;
+		String key = String.format(PREFIX_DETAIL_TEMPLATE, _result);
+		return InstanceCode.getDetail(key);
 	}
 
 	@Override
@@ -39,14 +35,6 @@ public class OutCallStateResponse extends ResponseMessage{
 		builder.append(_callLeg);
 		builder.append(", _state=");
 		builder.append(_state);
-		builder.append(", _detail=");
-		builder.append(_detail);
-		builder.append(", _companyId=");
-		builder.append(_companyId);
-		builder.append(", _opId=");
-		builder.append(_opId);
-		builder.append(", _messageType=");
-		builder.append(_messageType);
 		builder.append(", _seq=");
 		builder.append(_seq);
 		builder.append("]");
