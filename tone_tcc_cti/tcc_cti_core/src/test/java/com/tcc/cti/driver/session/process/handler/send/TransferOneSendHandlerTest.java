@@ -1,0 +1,46 @@
+package com.tcc.cti.driver.session.process.handler.send;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.tcc.cti.driver.Operator;
+import com.tcc.cti.driver.message.request.BaseRequest;
+import com.tcc.cti.driver.message.request.Requestable;
+import com.tcc.cti.driver.message.request.TransferOneRequest;
+import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.session.process.handler.send.TransferOneSendHandler;
+
+public class TransferOneSendHandlerTest {
+	@Test
+	public void testIsSend(){
+		TransferOneSendHandler handler = new TransferOneSendHandler();
+		
+		Requestable<? extends Response> not = new BaseRequest<Response>("not");
+		Assert.assertFalse(handler.isSend(not));
+		
+		TransferOneRequest r = new TransferOneRequest();
+		Assert.assertTrue(handler.isSend(r));
+	}
+	
+	@Test
+	public void testBuildMessage(){
+		TransferOneRequest request = initRequest();
+		
+		TransferOneSendHandler handler = new TransferOneSendHandler();
+		StringBuilder builder = new StringBuilder();
+		String e = "<CompanyID>1</CompanyID><OPID>8001</OPID><CallLeg>222-333</CallLeg>"
+				+ "<WorkID>23</WorkID><Number>222</Number>";
+		Operator key = new Operator("1","8001");
+		handler.buildMessage(request,key, builder);
+		Assert.assertEquals(e, builder.toString());
+	}
+	
+	private TransferOneRequest initRequest(){
+		TransferOneRequest request = new TransferOneRequest();
+		request.setCallLeg("222-333");
+		request.setNumber("222");
+		request.setWorkId("23");
+		
+		return request;
+	}
+}
