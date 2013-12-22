@@ -2,7 +2,6 @@ package com.tcc.cti.core.client.session;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -12,26 +11,21 @@ import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.connection.Connectionable;
 import com.tcc.cti.core.client.heartbeat.HeartbeatKeepable;
 import com.tcc.cti.core.client.heartbeat.ScheduledHeartbeatKeep;
-import com.tcc.cti.core.client.send.SendHandler;
-import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.session.process.MessageProcessable;
 import com.tcc.cti.core.message.request.CallRequest;
 import com.tcc.cti.core.message.request.LoginRequest;
-import com.tcc.cti.core.message.request.BaseRequest;
 
 /**
  * {@link Session}单元测试
  * 
- * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ * @author <a href="hhywangwei@gmail.com">WangWei</a>
  */
 public class SessionTest {
 	private Session createSession(Connectionable connection){
 		OperatorKey key = new OperatorKey("1","8002");
 		MessageProcessable process = Mockito.mock(MessageProcessable.class);
-		SendHandler noneHandler = Mockito.mock(SendHandler.class);
 		return  new Session.Builder(key,connection, process,
 				 new ScheduledHeartbeatKeep()).
-				 setSendHandler(noneHandler).
 				build();
 	}
 	
@@ -135,9 +129,7 @@ public class SessionTest {
 	private Session createSession(Connectionable connection,HeartbeatKeepable heartbeatKeep){
 		OperatorKey key = new OperatorKey("1","8002");
 		MessageProcessable process = Mockito.mock(MessageProcessable.class);
-		SendHandler noneHandler = Mockito.mock(SendHandler.class);
 		return  new Session.Builder(key,connection, process,heartbeatKeep).
-				setSendHandler(noneHandler).
 				build();
 	}
 	
@@ -228,15 +220,11 @@ public class SessionTest {
 		}
 	}
 	
-	private SendHandler sendHandler ;
-	
 	private Session createSessionSendHandlers(Connectionable connection){
 		OperatorKey key = new OperatorKey("1","8002");
-		sendHandler = Mockito.mock(SendHandler.class);
 		MessageProcessable process = Mockito.mock(MessageProcessable.class);
 		return  new Session.Builder(key,connection, process,
 				new ScheduledHeartbeatKeep()).
-				setSendHandler(sendHandler).
 				build();
 	}
 	
@@ -261,26 +249,26 @@ public class SessionTest {
 		}
 	}
 	
-	@Test
-	public void testSendAccess()throws IOException{
-		Session session = null ;
-		SocketChannel channel = SocketChannel.open();
-		try{
-			Connectionable connection = Mockito.mock(Connectionable.class);
-			session = createSessionSendHandlers(connection);
-			Mockito.when(connection.connect(session)).thenReturn(channel);
-			LoginRequest r = new LoginRequest();
-			session.send(r);
-			Mockito.verify(sendHandler,Mockito.atLeastOnce()).send(
-					Mockito.any(SocketChannel.class),Mockito.any(OperatorKey.class), Mockito.any(BaseRequest.class) ,
-					Mockito.any(GeneratorSeq.class), Mockito.any(Charset.class));
-		}finally{
-			if(session != null){
-				session.close();
-			}
-			if(channel.isOpen()){
-				channel.close();
-			}
-		}
-	}
+//	@Test
+//	public void testSendAccess()throws IOException{
+//		Session session = null ;
+//		SocketChannel channel = SocketChannel.open();
+//		try{
+//			Connectionable connection = Mockito.mock(Connectionable.class);
+//			session = createSessionSendHandlers(connection);
+//			Mockito.when(connection.connect(session)).thenReturn(channel);
+//			LoginRequest r = new LoginRequest();
+//			session.send(r);
+//			Mockito.verify(sendHandler,Mockito.atLeastOnce()).send(
+//					Mockito.any(SocketChannel.class),Mockito.any(OperatorKey.class), Mockito.any(BaseRequestTest.class) ,
+//					Mockito.any(GeneratorSeq.class), Mockito.any(Charset.class));
+//		}finally{
+//			if(session != null){
+//				session.close();
+//			}
+//			if(channel.isOpen()){
+//				channel.close();
+//			}
+//		}
+//	}
 }

@@ -14,10 +14,6 @@ public class MonitorRequest extends BaseRequest<MonitorResponse>{
 		super(Monitor.request());
 	}
 	
-	public MonitorRequest(int timeout){
-		super(Monitor.request(),timeout);
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();

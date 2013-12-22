@@ -11,10 +11,6 @@ public class SilenceRequest extends PhoneStatusRequest<Response> {
 		super(Silence.request());
 	}
 	
-	protected SilenceRequest(int timeout){
-		super(Silence.request(),timeout);
-	}
-	
 	public void setFlag(String flag){
 		_flag = flag;
 	}

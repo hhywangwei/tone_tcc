@@ -14,6 +14,7 @@ import com.tcc.cti.core.client.connection.Connectionable;
 import com.tcc.cti.core.client.connection.NioConnection;
 import com.tcc.cti.core.client.heartbeat.HeartbeatKeepable;
 import com.tcc.cti.core.client.heartbeat.ScheduledHeartbeatKeep;
+import com.tcc.cti.core.client.session.process.MessageProcess;
 import com.tcc.cti.core.client.session.process.MessageProcessable;
 import com.tcc.cti.core.client.session.task.StocketReceiveTask;
 
@@ -49,6 +50,10 @@ public class SessionFactory {
 		t.start();
 		return t;
 	}
+	
+	public SessionFactory(Configure configure){
+		this(configure,new MessageProcess(configure.getCharset()));
+	}
 
 	public SessionFactory(Configure configure,MessageProcessable messageProcess){
 		_configure = configure;
@@ -56,9 +61,6 @@ public class SessionFactory {
 		_heartExcecutorService = Executors.newScheduledThreadPool(_configure.getHeartPoolSize());
 		_heartbeatKeeep = new ScheduledHeartbeatKeep(_heartExcecutorService,
 				configure.getHeartbeatInitDelay(), _configure.getHeartbeatDelay());
-		if(!messageProcess.isStart()){
-			messageProcess.start();
-		}
 	}
 	
 	public Sessionable getSession(OperatorKey key)throws SessionRegisterException{
@@ -73,10 +75,6 @@ public class SessionFactory {
 		Sessionable session = null;
 		
 		synchronized (_monitor) {
-			if(_messageProcess.isStart()){
-				_messageProcess.start();
-			}
-			
 			Connectionable connection = new NioConnection(_selector,_configure.getAddress());
 			session = new Session.
 					Builder(key,connection,_messageProcess,_heartbeatKeeep).
@@ -103,7 +101,6 @@ public class SessionFactory {
 		synchronized (_monitor) {
 			SessionManager.getManager().close(); 
 			_receiveThread.interrupt();
-			_messageProcess.close();
 			_heartExcecutorService.shutdownNow();
 		}
 	}

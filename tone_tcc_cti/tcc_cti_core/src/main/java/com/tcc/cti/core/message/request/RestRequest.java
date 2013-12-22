@@ -15,10 +15,6 @@ public class RestRequest extends BaseRequest<Response> {
 		super(Rest.request());
 	}
 	
-	public RestRequest(int timeout){
-		super(Rest.request(),timeout);
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();

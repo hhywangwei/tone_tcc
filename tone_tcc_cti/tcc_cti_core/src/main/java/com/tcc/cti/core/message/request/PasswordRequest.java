@@ -21,10 +21,6 @@ public class PasswordRequest extends BaseRequest<Response>{
 		super(Password.request());
 	}
 	
-	public PasswordRequest(int timeout){
-		super(Password.request(),timeout);
-	}
-
 	public String getPassword() {
 		return _password;
 	}

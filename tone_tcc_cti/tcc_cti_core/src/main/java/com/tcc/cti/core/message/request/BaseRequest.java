@@ -3,6 +3,7 @@ package com.tcc.cti.core.message.request;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.tcc.cti.core.message.RequestTimeoutException;
 import com.tcc.cti.core.message.event.NoneRequestEvent;
 import com.tcc.cti.core.message.event.RequestEvent;
 import com.tcc.cti.core.message.response.Response;
@@ -18,29 +19,24 @@ import com.tcc.cti.core.message.response.Response;
  *
  */
 public class BaseRequest<T extends Response> implements Requestable<T>{
-	private static final int DEFAULT_TIMEOUT = 30 * 1000;
+	private static final int DEFAULT_TIMEOUT = 10 * 1000;
+	private static final int RESPONSES_SIZE = 1;
 
 	protected final String _messageType ;
 	protected final List<T> _responses ;
 	protected final Object _monitor ;
-	private final int _timeout ;
-	
+	protected volatile boolean _complete = false;	
 	private volatile RequestEvent _event = new NoneRequestEvent();
 	private volatile String _seq = "";
 	
 	public BaseRequest(String messageType){
-		this(messageType, -1, DEFAULT_TIMEOUT);
+		this(messageType, new ArrayList<T>(RESPONSES_SIZE));
 	}
 	
-	public BaseRequest(String messageType,int size){
-		this(messageType, size, DEFAULT_TIMEOUT);
-	}
-	
-	public BaseRequest(String messageType,int size,int timeout){
-		_responses = (size <= 0) ?  new ArrayList<T>() : new ArrayList<T>(size);
+	protected BaseRequest(String messageType,List<T> responses){
+		_responses = responses;
 		_messageType = messageType;
 		_monitor = new Object();
-		_timeout = timeout;
 	}
 
 	@Override
@@ -53,7 +49,7 @@ public class BaseRequest<T extends Response> implements Requestable<T>{
 	}
 	
 	@Override
-	public void send(String seq){
+	public void notifySend(String seq){
 		synchronized (_monitor) {
 			_event.startRequest(_messageType, seq, this);
 			_seq = seq;
@@ -61,7 +57,7 @@ public class BaseRequest<T extends Response> implements Requestable<T>{
 	}
 	
 	@Override
-	public void sendError(Throwable e){
+	public void notifySendError(Throwable e){
 		synchronized (_monitor) {
 			_event.finishRequest(_messageType, _seq);	
 		}
@@ -70,24 +66,34 @@ public class BaseRequest<T extends Response> implements Requestable<T>{
 	@Override
 	public void receive(T response) {
 		synchronized (_monitor) {
-			boolean complete = isComplete(response);
-			if(!complete){
-				_responses.add(response);	
-				_monitor.notifyAll();
+			_responses.add(response);	
+			_complete = true;
+			_monitor.notifyAll();
+		}
+	}
+	
+
+	@Override
+	public List<T> response() throws InterruptedException, RequestTimeoutException {
+		return response(DEFAULT_TIMEOUT);
+	}
+	
+	@Override
+	public List<T> response(int timeout) throws InterruptedException, RequestTimeoutException {
+		synchronized (_monitor) {
+			_monitor.wait(timeout);
+			_event.finishRequest(_messageType, _seq);
+			if(_complete){
+				return _responses;	
+			}else{
+				throw new RequestTimeoutException(_seq);
 			}
 		}
 	}
 	
-	protected boolean isComplete(T response){
-		return true;
-	}
-
-	@Override
-	public List<T> respone() throws InterruptedException {
+	protected List<T> responseNow(){
 		synchronized (_monitor) {
-			_monitor.wait(_timeout);
-			_event.finishRequest(_messageType, _seq);
-			return _responses; 
+			return _responses;
 		}
 	}
 }

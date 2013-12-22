@@ -16,10 +16,6 @@ public class MobileNumberCancelRequest extends BaseRequest<Response>{
 		super(MobileNumberCancel.request());
 	}
 	
-	public MobileNumberCancelRequest(int timeout){
-		super(MobileNumberCancel.request(),timeout);
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();

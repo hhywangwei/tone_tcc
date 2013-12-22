@@ -19,10 +19,6 @@ public class CallHelpRequest extends PhoneStatusRequest<Response>{
 		super(CallHelp.request());
 	}
 	
-	public CallHelpRequest(int timeout){
-		super(CallHelp.request(),timeout);
-	}
-	
 	public void setTransferWorkId(String transferWorkID){
 		_transferWorkId = transferWorkID;
 	}

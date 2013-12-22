@@ -16,6 +16,7 @@ import com.tcc.cti.core.client.heartbeat.HeartbeatKeepable;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.client.sequence.MemoryGeneratorSeq;
 import com.tcc.cti.core.client.session.process.MessageProcessable;
+import com.tcc.cti.core.client.session.process.handler.receive.ParseMessageException;
 import com.tcc.cti.core.message.MessageType;
 import com.tcc.cti.core.message.request.Requestable;
 import com.tcc.cti.core.message.response.Response;
@@ -76,7 +77,6 @@ public class Session implements Sessionable {
 	private final HeartbeatKeepable _heartbeatKeep ;
 	private final GeneratorSeq _generator;
 	private final int _heartbeatTimeout;
-	private final Charset _charset;
 	private final MessageBuffer _messageBuffer;
 	private final Object _monitor = new Object();
 	
@@ -94,7 +94,6 @@ public class Session implements Sessionable {
 		_messageProcess = messageProcess;
 		_heartbeatKeep = heartbeatKeep;
 		_generator = generator;
-		_charset = charset;
 		_heartbeatTimeout = heartbeatTimeout;
 		_messageBuffer = new ByteMessageBuffer(charset);
 	}
@@ -164,11 +163,15 @@ public class Session implements Sessionable {
 	}
 	
 	@Override
-	public void append(byte[] bytes)throws InterruptedException{
+	public void append(byte[] bytes){
 		_messageBuffer.append(bytes);
 		String m = _messageBuffer.next();
-		if(StringUtils.isNotBlank(m)){
-			_messageProcess.receiveProcess(this, m);
+		try{
+			if(StringUtils.isNotBlank(m)){
+				_messageProcess.receiveProcess(this, m);
+			}	
+		}catch(ParseMessageException e){
+			logger.error("ParseMessage {} is error.",m);
 		}
 	}
 	
@@ -184,7 +187,7 @@ public class Session implements Sessionable {
 			throw new IOException("Session already closed,not send message.");
 		}
 		if(isAccess(request.getMessageType())){
-			_messageProcess.sendProcess(this, request, _generator, _charset);
+			_messageProcess.sendProcess(this, request, _generator);
 			heartbeatTouch();
 		}else{
 			logger.debug("{} not access cti server.", _key.toString());

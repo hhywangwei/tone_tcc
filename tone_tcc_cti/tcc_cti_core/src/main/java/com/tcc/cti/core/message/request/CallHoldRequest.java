@@ -16,10 +16,6 @@ public class CallHoldRequest extends PhoneStatusRequest<Response> {
 		super(CallHold.request());
 	}
 	
-	public CallHoldRequest(int timeout){
-		super(CallHold.request(),timeout);
-	}
-	
 	public void setFlag(String flag){
 		_flag = flag;
 	}

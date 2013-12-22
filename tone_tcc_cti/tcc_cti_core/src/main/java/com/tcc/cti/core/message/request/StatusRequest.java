@@ -13,10 +13,6 @@ public class StatusRequest extends BaseRequest<Response>{
 		super(Status.request());
 	}
 	
-	public StatusRequest(int timeout){
-		super(Status.request(),timeout);
-	}
-	
 	public void setWorkId(String workId){
 		_workId = workId;
 	}

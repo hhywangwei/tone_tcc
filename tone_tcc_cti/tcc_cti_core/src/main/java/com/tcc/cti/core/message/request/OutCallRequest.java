@@ -18,10 +18,6 @@ public class OutCallRequest extends BaseRequest<Response>{
 		super(OutCall.request());
 	}
 	
-	public OutCallRequest(int timeout){
-		super(OutCall.request(),timeout);
-	}
-
 	public String getPhone(){
 		return _phone;
 	}

@@ -2,7 +2,7 @@ package com.tcc.cti.core.message.request;
 
 import static com.tcc.cti.core.message.MessageType.Login;
 
-import com.tcc.cti.core.client.send.LoginSendHandler;
+import com.tcc.cti.core.client.session.process.handler.send.LoginSendHandler;
 import com.tcc.cti.core.message.response.Response;
 
 
@@ -26,10 +26,6 @@ public class LoginRequest extends BaseRequest<Response>{
 	
 	public LoginRequest(){
 		super(Login.request());
-	}
-	
-	public LoginRequest(int timeout){
-		super(Login.request(),timeout);
 	}
 	
 	public String getOpNumber() {

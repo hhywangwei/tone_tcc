@@ -15,10 +15,6 @@ public class CallRequest extends BaseRequest<CallResponse>{
 		super(Call.request());
 	}
 	
-	public CallRequest(int timeout){
-		super(Call.request(),timeout);
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();

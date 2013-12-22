@@ -10,10 +10,6 @@ public class ResumeRequest extends BaseRequest<Response> {
 		super(Resume.request());
 	}
 	
-	public ResumeRequest(int timeout){
-		super(Resume.request(),timeout);
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();

@@ -15,10 +15,6 @@ public class OwnRequest extends BaseRequest<OwnResponse>{
 		super(Own.response());
 	}
 	
-	public OwnRequest(int timeout){
-		super(Own.response(),timeout);
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();

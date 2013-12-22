@@ -16,10 +16,6 @@ public class GroupMemberRequest extends MultiBaseRequest<GroupMemberResponse> {
 		super(GroupMember.request());
 	}
 	
-	public GroupMemberRequest(int timeout){
-		super(GroupMember.request(),timeout);
-	}
-	
 	public void setGroupId(String groupId){
 		_groupId = groupId;
 	}

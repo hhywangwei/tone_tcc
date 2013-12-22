@@ -25,19 +25,13 @@ public class HeartbeatRequest implements Requestable<Response>{
 	}
 
 	@Override
-	public List<Response> respone() throws InterruptedException {
-		//not instance
-		return null;
-	}
-
-	@Override
-	public void send(String seq) {
+	public void notifySend(String seq) {
 		// None instance
 		
 	}
 
 	@Override
-	public void sendError(Throwable e) {
+	public void notifySendError(Throwable e) {
 		// None instance
 		
 	}
@@ -46,5 +40,17 @@ public class HeartbeatRequest implements Requestable<Response>{
 	public void regsiterEvent(RequestEvent event) {
 		// None instance
 		
+	}
+	
+	@Override
+	public List<Response> response() throws InterruptedException {
+		//not instance
+		return null;
+	}
+
+	@Override
+	public List<Response> response(int timeout) throws InterruptedException {
+		// None instance
+		return null;
 	}
 }

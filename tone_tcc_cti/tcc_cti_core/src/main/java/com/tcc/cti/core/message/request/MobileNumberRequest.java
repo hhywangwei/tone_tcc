@@ -20,10 +20,6 @@ public class MobileNumberRequest extends BaseRequest<Response> {
 		super(MobileNumber.request());
 	}
 	
-	public MobileNumberRequest(int timeout){
-		super(MobileNumber.request(),timeout);
-	}
-
 	public String getNumber() {
 		return number;
 	}

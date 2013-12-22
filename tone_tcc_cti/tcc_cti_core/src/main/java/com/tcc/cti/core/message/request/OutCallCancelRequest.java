@@ -17,10 +17,6 @@ public class OutCallCancelRequest extends PhoneStatusRequest<Response>{
 		super(OutCallCancel.request());
 	}
 	
-	public OutCallCancelRequest(int timeout){
-		super(OutCallCancel.request(),timeout);
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();

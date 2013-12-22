@@ -10,10 +10,6 @@ public class LogoutRequest extends BaseRequest<Response> {
 		super(Logout.request());
 	}
 	
-	public LogoutRequest(int timeout){
-		super(Logout.request(),timeout);
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
