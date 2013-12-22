@@ -1,21 +1,21 @@
-package com.tcc.cti.driver.message.response;
+package com.tcc.cti.driver.common;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.tcc.cti.driver.message.response.ResponseCode;
+import com.tcc.cti.driver.common.ResultCode;
 
 /**
- * 单元测试 {@link ResponseCode}
+ * 单元测试 {@link ResultCode}
 
  * @author 《a href="hhywangwei@gmail.com">wangwei</a>
  *
  */
-public class ResponseCodeTest {
+public class ResultCodeTest {
 
 	@Test
 	public void testGetDetail(){
-		ResponseCode code = ResponseCode.InstanceCode;
+		ResultCode code = ResultCode.InstanceCode;
 		
 		String detail = code.getDetail("0");
 		Assert.assertEquals("正常返回", detail);

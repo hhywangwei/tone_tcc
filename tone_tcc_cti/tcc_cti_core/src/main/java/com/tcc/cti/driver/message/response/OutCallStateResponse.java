@@ -1,6 +1,6 @@
 package com.tcc.cti.driver.message.response;
 
-import static com.tcc.cti.driver.message.response.ResponseCode.InstanceCode;
+import static com.tcc.cti.driver.common.ResultCode.InstanceCode;
 
 public class OutCallStateResponse extends Response{
 	private static final String PREFIX_DETAIL_TEMPLATE = "out_call_%s";

@@ -6,8 +6,6 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tcc.cti.driver.Configure;
-import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.request.GroupRequest;
 import com.tcc.cti.driver.message.request.LoginRequest;
 import com.tcc.cti.driver.session.SessionFactory;

@@ -1,6 +1,6 @@
 package com.tcc.cti.driver.message.response;
 
-import static com.tcc.cti.driver.message.response.ResponseCode.InstanceCode;
+import static com.tcc.cti.driver.common.ResultCode.InstanceCode;
 
 /**
  * 接收消息
