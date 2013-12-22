@@ -27,6 +27,7 @@ public class MonitorSendHandler extends AbstractSendHandler{
 	protected void buildMessage(Requestable<? extends Response> request,
 			OperatorKey key, StringBuilder builder) {
 		
-		buildOperator(key,builder);
+		String companyId = String.format(COMPANY_ID_FORMAT, key.getCompanyId());
+		builder.append(companyId);
 	}
 }

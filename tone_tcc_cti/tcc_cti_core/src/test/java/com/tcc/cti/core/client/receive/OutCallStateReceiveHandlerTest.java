@@ -33,12 +33,9 @@ public class OutCallStateReceiveHandlerTest {
 		OutCallStateReceiveHandler handler = new OutCallStateReceiveHandler();
 		
 		OutCallStateResponse r = (OutCallStateResponse) handler.buildMessage("1", "2", "3", content);
-		Assert.assertEquals("1", r.getCompanyId());
-		Assert.assertEquals("2", r.getOpId());
 		Assert.assertEquals("3", r.getSeq());
 		Assert.assertEquals("101", r.getCallLeg());
 		Assert.assertEquals("1", r.getState());
-		Assert.assertEquals(OutCallState.response(), r.getMessageType());
 	}
 	
 	private Map<String,String> initContent(){

@@ -24,13 +24,13 @@ public class HeartbeatReceiveHandler extends AbstractReceiveHandler{
 	}
 	
 	@Override
-	protected String getMessageType() {
+	protected String getRequestMessageType(String msgType) {
 		return Heartbeat.request();
 	}
 	
 	@Override
 	protected void receiveHandler(Requestsable requests, Sessionable session,
-			Map<String, String> content) {
+			String msgType,Map<String, String> content) {
 		
 		logger.debug("Receive {} hb.....",session.getOperatorKey());
 		session.heartbeatTouch();

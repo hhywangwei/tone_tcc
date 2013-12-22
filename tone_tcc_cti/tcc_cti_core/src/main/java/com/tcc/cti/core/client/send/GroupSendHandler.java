@@ -1,6 +1,7 @@
 package com.tcc.cti.core.client.send;
 
 import static com.tcc.cti.core.message.MessageType.Group;
+import static com.tcc.cti.core.message.MessageType.GroupMember;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -14,6 +15,8 @@ import com.tcc.cti.core.message.response.Response;
  *
  * <pre>消息格式如下:
  * {@literal <msg>group_info</msg><seq>2</seq><CompanyID>11</CompanyID><GroupID>0</GroupID>}
+ * {@literal <msg>worker_number_info</msg><seq>21</seq><CompanyID>11</CompanyID><GroupID>0</GroupID>}
+ * 
  * msg:消息类型
  * seq:消息序号，通过该编号可使客户端发送消息和服务端返回信息关联
  * CompanyID:公司编号
@@ -27,7 +30,8 @@ public class GroupSendHandler extends AbstractSendHandler{
 	
 	@Override
 	protected boolean isSend(Requestable<? extends Response> request) {
-		return 	Group.isRequest(request.getMessageType());
+		return 	Group.isRequest(request.getMessageType()) ||
+				GroupMember.isRequest(request.getMessageType());
 	}
 
 	@Override
@@ -35,7 +39,8 @@ public class GroupSendHandler extends AbstractSendHandler{
 			OperatorKey key, StringBuilder builder) {
 		
 		GroupRequest r = (GroupRequest)request;
-		buildOperator(key,builder);
+		String companyId = String.format(COMPANY_ID_FORMAT, key.getCompanyId());
+		builder.append(companyId);
 		if(StringUtils.isNotBlank(r.getGroupId())){
 			builder.append(String.format(GROUP_ID_FORMAT, r.getGroupId()));
 		}

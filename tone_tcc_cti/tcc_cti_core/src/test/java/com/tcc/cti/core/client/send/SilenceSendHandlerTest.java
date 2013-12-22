@@ -5,38 +5,39 @@ import org.junit.Test;
 
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.message.request.BaseRequest;
-import com.tcc.cti.core.message.request.GroupRequest;
 import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.request.SilenceRequest;
 import com.tcc.cti.core.message.response.Response;
 
-public class GroupSendHandlerTest {
-
+public class SilenceSendHandlerTest {
 	@Test
 	public void testIsSend(){
-		GroupSendHandler handler = new GroupSendHandler();
+		SilenceSendHandler handler = new SilenceSendHandler();
 		
 		Requestable<? extends Response> not = new BaseRequest<Response>("not");
 		Assert.assertFalse(handler.isSend(not));
 		
-		GroupRequest r = new GroupRequest();
+		SilenceRequest r = new SilenceRequest();
 		Assert.assertTrue(handler.isSend(r));
 	}
 	
 	@Test
 	public void testBuildMessage(){
-		GroupRequest request = new GroupRequest();
+		SilenceRequest request = initRequest();
 		
-		GroupSendHandler handler = new GroupSendHandler();
+		SilenceSendHandler handler = new SilenceSendHandler();
 		StringBuilder builder = new StringBuilder();
-		String e = "<CompanyID>1</CompanyID>";
-		OperatorKey key = new OperatorKey("1","2");
+		String e = "<CompanyID>1</CompanyID><OPID>8001</OPID><CallLeg>12-33</CallLeg><Flag>1</Flag>";
+		OperatorKey key = new OperatorKey("1","8001");
 		handler.buildMessage(request,key, builder);
 		Assert.assertEquals(e, builder.toString());
+	}
+	
+	private SilenceRequest initRequest(){
+		SilenceRequest request = new SilenceRequest();
+		request.setCallLeg("12-33");
+		request.setFlag("1");
 		
-		builder = new StringBuilder();
-		request.setGroupId("1");
-		e = "<CompanyID>1</CompanyID><GroupID>1</GroupID>";
-		handler.buildMessage(request,key, builder);
-		Assert.assertEquals(e, builder.toString());
+		return request;
 	}
 }

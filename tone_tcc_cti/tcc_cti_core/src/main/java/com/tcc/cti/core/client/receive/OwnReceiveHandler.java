@@ -31,11 +31,6 @@ public class OwnReceiveHandler extends AbstractReceiveHandler{
 		return Own.isResponse(msgType);
 	}
 	
-	@Override
-	protected String getMessageType() {
-		return Own.request();
-	}
-    
 	protected OwnResponse buildMessage(String companyId,String opId,
 			String seq,Map<String,String> content){
 		

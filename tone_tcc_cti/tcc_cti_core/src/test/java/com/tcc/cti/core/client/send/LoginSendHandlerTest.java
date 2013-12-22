@@ -1,15 +1,13 @@
 package com.tcc.cti.core.client.send;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.tcc.cti.core.client.OperatorKey;
-import com.tcc.cti.core.client.sequence.GeneratorSeq;
-import com.tcc.cti.core.message.request.LoginRequest;
 import com.tcc.cti.core.message.request.BaseRequest;
+import com.tcc.cti.core.message.request.LoginRequest;
+import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 单元测试 {@link LoginSendHandler}
@@ -18,30 +16,29 @@ import com.tcc.cti.core.message.request.BaseRequest;
  */
 public class LoginSendHandlerTest {
 	
-	private final String MESSAGE = "<msg>login</msg>"
-			+ "<seq>1</seq><Type>1</Type><CompanyID>1</CompanyID>"
-			+ "<OPID>8001</OPID><OPNumber>8002</OPNumber>"
-			+ "<PassWord>28c8edde3d61a0411511d3b1866f0636</PassWord>"; 
-	
 	@Test
 	public void testIsSend(){
 		LoginSendHandler handler =new LoginSendHandler();
-		BaseRequest m = new LoginRequest();
-		Assert.assertTrue(handler.isSend(m));
 		
-		BaseRequest not = new BaseRequest("not");
+
+		Requestable<? extends Response> not = new BaseRequest<Response>("not");
 		Assert.assertFalse(handler.isSend(not));
+		
+		LoginRequest m = new LoginRequest();
+		Assert.assertTrue(handler.isSend(m));
 	}
 	
 	@Test
 	public void testBuildMessage()throws Exception{
 		LoginRequest login = initLoginInfo();
 		LoginSendHandler send = new LoginSendHandler();
-		GeneratorSeq generator = mock(GeneratorSeq.class);
-		when(generator.next()).thenReturn("1");
 		OperatorKey key = new OperatorKey("1","8001");
-		String m = send.buildMessage(login,key, generator);
-		Assert.assertEquals(MESSAGE, m);
+		StringBuilder builder = new StringBuilder();
+		send.buildMessage(login,key, builder);
+		String message = "<CompanyID>1</CompanyID><OPID>8001</OPID>"
+				+ "<Type>1</Type><OPNumber>8002</OPNumber>"
+				+ "<PassWord>28c8edde3d61a0411511d3b1866f0636</PassWord>"; 
+		Assert.assertEquals(message, builder.toString());
 	}
 	 
 	private LoginRequest initLoginInfo(){

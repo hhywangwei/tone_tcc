@@ -31,8 +31,8 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	private static final Logger logger = LoggerFactory.getLogger(AbstractReceiveHandler.class);
 	private static final String ROOT = "root";
 	private static final String XML_FULL_PATTER = "<?xml version=\"1.0\"?>\n<root>%s</root>";
-	private static final String MESSAGE_TYPE = "msg";
-	 
+	
+	protected static final String MESSAGE_TYPE_PARAMETER = "msg";
 	protected static final String COMPANY_ID_PARAMETER = "CompanyID";
 	protected static final String OP_ID_PARAMETER = "OPID";
 	protected static final String WORK_ID_PARAMETER = "WorkID";
@@ -47,9 +47,9 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 		
 		try{
 			Map<String,String> content = parseMessage(message);
-			String msgType = content.get(MESSAGE_TYPE);
+			String msgType = content.get(MESSAGE_TYPE_PARAMETER);
 			if(StringUtils.isNotBlank(msgType) && isReceive(msgType)){
-				receiveHandler(requests,channel,content);
+				receiveHandler(requests,channel,msgType,content);
 			}
 		}catch(SAXException e){
 			throw new ParseMessageException(e);
@@ -103,13 +103,13 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	 */
 	@SuppressWarnings("unchecked")
 	protected void receiveHandler(Requestsable requests, Sessionable session,
-			Map<String, String> content) {
+			String msgType,Map<String, String> content) {
 		
 		String companyId = session.getOperatorKey().getCompanyId();
 		String opId = session.getOperatorKey().getOpId();
 		String seq = content.get(SEQ_PARAMETER);
 		
-		String messageType = getMessageType();
+		String messageType = getRequestMessageType(msgType);
 		Requestable<Response> request =(Requestable<Response>)requests.get(messageType, seq);
 		if(request != null){
 			Response response = buildMessage(companyId,opId,seq,content);
@@ -117,7 +117,15 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 		}
 	}
 	
-	protected abstract String getMessageType();
+	/**
+	 * 得到消息需求类型，对应请求{@link Requestable}对象
+	 * 
+	 * @param msgType 接收消息类型
+	 * @return
+	 */
+	protected String getRequestMessageType(String msgType){
+		return msgType;
+	}
 	
 	/**
 	 * 通过接收消息构建消息对象
@@ -130,8 +138,9 @@ public abstract class AbstractReceiveHandler implements ReceiveHandler{
 	 */
 	protected Response buildMessage(String companyId, String opId,
 			String seq, Map<String, String> content) {
-		String result = content.get(RESULT_PARAMETER);
 		
+		String result = content.get(RESULT_PARAMETER);
+		result = result == null ? "0" : result;
 		return new Response(seq,result);
 	}
 	

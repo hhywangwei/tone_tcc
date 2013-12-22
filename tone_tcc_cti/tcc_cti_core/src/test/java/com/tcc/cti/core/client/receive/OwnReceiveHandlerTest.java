@@ -1,12 +1,13 @@
 package com.tcc.cti.core.client.receive;
 
+import static com.tcc.cti.core.message.MessageType.Own;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.tcc.cti.core.message.MessageType;
 import com.tcc.cti.core.message.response.OwnResponse;
 
 public class OwnReceiveHandlerTest {
@@ -14,12 +15,13 @@ public class OwnReceiveHandlerTest {
 	@Test
 	public void testIsReceive(){
 		OwnReceiveHandler handler = new OwnReceiveHandler();
+		
 		boolean not=handler.isReceive(null);
 		Assert.assertFalse(not);
 		not = handler.isReceive("login");
 		Assert.assertFalse(not);
 		
-		boolean is = handler.isReceive(MessageType.Own.request());
+		boolean is = handler.isReceive(Own.request());
 		Assert.assertTrue(is);
 	}
 	
@@ -35,9 +37,6 @@ public class OwnReceiveHandlerTest {
 		OwnResponse message = handler.buildMessage(
 				companyId, opId,  seq, content);
 		
-		Assert.assertEquals("1", message.getCompanyId());
-		Assert.assertEquals("1", message.getOpId());
-		Assert.assertEquals("per_worker_info", message.getMessageType());
 		Assert.assertEquals("4", message.getSeq());
 		Assert.assertEquals("0005", message.getWorkId());
 		Assert.assertEquals("0005", message.getName());

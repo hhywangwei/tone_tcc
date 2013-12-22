@@ -1,15 +1,14 @@
 package com.tcc.cti.core.client.send;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import junit.framework.Assert;
 
 import org.junit.Test;
 
 import com.tcc.cti.core.client.OperatorKey;
-import com.tcc.cti.core.client.sequence.GeneratorSeq;
-import com.tcc.cti.core.message.request.MonitorRequest;
 import com.tcc.cti.core.message.request.BaseRequest;
+import com.tcc.cti.core.message.request.MonitorRequest;
+import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * {@link MonitorSendHandler}单元测试
@@ -22,8 +21,7 @@ public class MonitorSendHandlerTest {
 	public void testIsSend(){
 		MonitorSendHandler handler = new MonitorSendHandler();
 		
-		Assert.assertFalse(handler.isSend(null));
-		BaseRequest not = new BaseRequest("not");
+		Requestable<? extends Response> not = new BaseRequest<Response>("not");
 		Assert.assertFalse(handler.isSend(not));
 		
 		Assert.assertTrue(handler.isSend(new MonitorRequest()));
@@ -33,13 +31,11 @@ public class MonitorSendHandlerTest {
 	public void testBuildMessage(){
 		MonitorRequest request = new MonitorRequest();
 		
-		GeneratorSeq generator = mock(GeneratorSeq.class);
-		when(generator.next()).thenReturn("1");
-		
-		String e = "<msg>monitor_info</msg><seq>1</seq><CompanyID>1</CompanyID>";
 		MonitorSendHandler handler = new MonitorSendHandler();	
 		OperatorKey key = new OperatorKey("1","8001");
-		String m = handler.buildMessage(request,key, generator);
-		Assert.assertEquals(e, m);
+		StringBuilder builder = new StringBuilder();
+		handler.buildMessage(request,key, builder);
+		String e = "<CompanyID>1</CompanyID>";
+		Assert.assertEquals(e, builder.toString());
 	}
 }

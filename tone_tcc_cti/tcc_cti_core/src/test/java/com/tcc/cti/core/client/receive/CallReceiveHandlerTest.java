@@ -27,14 +27,17 @@ public class CallReceiveHandlerTest {
 	}
 	
 	@Test
+	public void testRequestMessageType(){
+		CallReceiveHandler handler = new CallReceiveHandler();
+		Call.isRequest(handler.getRequestMessageType(null));
+	}
+	
+	@Test
 	public void testBuildMessage(){
 		CallReceiveHandler handler = new CallReceiveHandler();
 		Map<String,String> content = initContent();
 		CallResponse message = (CallResponse)handler.buildMessage("1", "2", "3", content);
 		
-		Assert.assertEquals("add_call", message.getMessageType());
-		Assert.assertEquals("1", message.getCompanyId());
-		Assert.assertEquals("2", message.getOpId());
 		Assert.assertEquals("3", message.getSeq());
 		Assert.assertEquals("0005", message.getGroupId());
 		Assert.assertEquals("3055_1242013662_1242704147_124", message.getCallLeg());

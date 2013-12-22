@@ -13,7 +13,7 @@ import com.tcc.cti.core.message.response.GroupResponse;
 /**
  * {@link GroupReceiveHandler}单元测试
  * 
- * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ * @author <a href="hhywangwei@gmail.com">WangwWei</a>
  */
 public class GroupReceiveHandlerTest {
 
@@ -27,13 +27,18 @@ public class GroupReceiveHandlerTest {
 	}
 	
 	@Test
+	public void testRequestMessageType(){
+		GroupReceiveHandler handler = new GroupReceiveHandler();
+		Group.isRequest(handler.getRequestMessageType(null));
+	}
+	
+	@Test
 	public void testBuildMessage(){
 		Map<String,String> content = initContent();
 		GroupReceiveHandler handler = new GroupReceiveHandler();
 		
 		GroupResponse r = (GroupResponse) handler.buildMessage("1", "2", "3", content);
 		
-		Assert.assertEquals("1", r.getCompanyId());
 		Assert.assertEquals("3", r.getSeq());
 		Assert.assertEquals("0001", r.getGroupId());
 		Assert.assertEquals("Test Group1", r.getGroupName());

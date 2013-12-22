@@ -20,7 +20,7 @@ public class CloseCallReceiveHandler extends AbstractReceiveHandler{
 	}
 	
 	@Override
-	protected String getMessageType() {
+	protected String getRequestMessageType(String msgType) {
 		return CloseCall.request();
 	}
 

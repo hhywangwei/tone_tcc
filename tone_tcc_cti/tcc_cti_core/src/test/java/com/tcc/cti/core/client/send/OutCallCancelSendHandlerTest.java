@@ -10,6 +10,8 @@ import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.sequence.GeneratorSeq;
 import com.tcc.cti.core.message.request.OutCallCancelRequest;
 import com.tcc.cti.core.message.request.BaseRequest;
+import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * {@link OutCallCancelSendHandler}单元测试
@@ -22,10 +24,9 @@ public class OutCallCancelSendHandlerTest {
 	public void testIsSend(){
 		
 		OutCallCancelSendHandler handler = new OutCallCancelSendHandler();
-		handler.isSend(null);
 		
-		BaseRequest not = new BaseRequest("not");
-		handler.isSend(not);
+		Requestable<? extends Response> not = new BaseRequest<Response>("not");
+		Assert.assertFalse(handler.isSend(not));
 		
 		OutCallCancelRequest request = new OutCallCancelRequest();
 		handler.isSend(request);
@@ -40,11 +41,10 @@ public class OutCallCancelSendHandlerTest {
 		
 		OutCallCancelRequest request = initRequest();
 		OperatorKey key = new OperatorKey("1","2");
-		String m = handler.buildMessage(request,key, generator);
-		Assert.assertNotNull(m);
-		
-		String e = "<msg>outcallcancel</msg><seq>1</seq><CompanyID>1</CompanyID><OPID>2</OPID><CallLeg>11_22_123</CallLeg>";
-		Assert.assertEquals(e,m);
+		StringBuilder builder = new StringBuilder();
+		handler.buildMessage(request,key, builder);
+		String e = "<CompanyID>1</CompanyID><OPID>2</OPID><CallLeg>11_22_123</CallLeg>";
+		Assert.assertEquals(e,builder.toString());
 	}
 	
 	private OutCallCancelRequest initRequest(){

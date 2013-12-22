@@ -9,7 +9,7 @@ import org.mockito.Mockito;
 
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.session.Sessionable;
-import com.tcc.cti.core.message.pool.CtiMessagePool;
+import com.tcc.cti.core.client.session.process.Requestsable;
 import com.tcc.cti.core.message.response.Response;
 
 /**
@@ -42,12 +42,10 @@ public class AbstractReceiveHandlerTest {
 		
 		String companyId = "1";
 		String opId = "1";
-		CtiMessagePool pool = Mockito.mock(CtiMessagePool.class);
+		Requestsable requests = Mockito.mock(Requestsable.class);
 		Sessionable oc = Mockito.mock(Sessionable.class);
 		Mockito.when(oc.getOperatorKey()).thenReturn(new OperatorKey(companyId,opId));
-		handler.receiveHandler(pool, oc, content);
-		Mockito.verify(pool,Mockito.atLeastOnce()).
-		put(Mockito.eq(companyId), Mockito.eq(opId), Mockito.any(Response.class));
+		handler.receiveHandler(requests, oc,"", content);
 	}
 	
 	/**
@@ -68,7 +66,7 @@ public class AbstractReceiveHandlerTest {
 		protected Response buildMessage(String companyId, String opId,
 				String seq, Map<String, String> content) {
 			// none instance
-			return new Response(companyId,opId,"login",seq);
+			return new Response("login",seq);
 		}
 		
 	}

@@ -35,7 +35,7 @@ public class CallReceiveHandler extends AbstractReceiveHandler{
 	}
 	
 	@Override
-	protected String getMessageType() {
+	protected String getRequestMessageType(String msgType) {
 		return Call.request();
 	}
 

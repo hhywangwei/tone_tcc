@@ -29,7 +29,7 @@ public class MonitorReceiveHandler extends AbstractReceiveHandler{
 	}
 	
 	@Override
-	protected String getMessageType() {
+	protected String getRequestMessageType(String msgType) {
 		return Monitor.request();
 	}
 

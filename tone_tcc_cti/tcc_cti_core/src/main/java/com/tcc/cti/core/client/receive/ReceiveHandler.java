@@ -20,5 +20,4 @@ public interface ReceiveHandler {
 	 * @throws ParseMessageException
 	 */
 	void receive(Requestsable requests,	Sessionable session, String message)throws ParseMessageException;
-	
 }

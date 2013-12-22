@@ -26,14 +26,17 @@ public class CloseCallReceiveHandlerTest {
 	}
 	
 	@Test
+	public void testRequestMessageType(){
+		CallReceiveHandler handler = new CallReceiveHandler();
+		CloseCall.isRequest(handler.getRequestMessageType(null));
+	}
+	
+	@Test
 	public void testBuildMessage(){
 		CloseCallReceiveHandler handler = new CloseCallReceiveHandler();
 		Map<String,String> content = initContent();
 		CloseCallResponse message = (CloseCallResponse)handler.buildMessage("1", "2", "3", content);
 		
-		Assert.assertEquals(CloseCall.response(), message.getMessageType());
-		Assert.assertEquals("1", message.getCompanyId());
-		Assert.assertEquals("2", message.getOpId());
 		Assert.assertEquals("3", message.getSeq());
 		Assert.assertEquals("0001", message.getGroupId());
 		Assert.assertEquals("3055_1242013662_1242704147_124", message.getCallLeg());

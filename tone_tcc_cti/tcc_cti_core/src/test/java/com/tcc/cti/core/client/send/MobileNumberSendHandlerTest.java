@@ -5,38 +5,38 @@ import org.junit.Test;
 
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.message.request.BaseRequest;
-import com.tcc.cti.core.message.request.GroupRequest;
+import com.tcc.cti.core.message.request.MobileNumberRequest;
 import com.tcc.cti.core.message.request.Requestable;
 import com.tcc.cti.core.message.response.Response;
 
-public class GroupSendHandlerTest {
-
+public class MobileNumberSendHandlerTest {
 	@Test
 	public void testIsSend(){
-		GroupSendHandler handler = new GroupSendHandler();
+		MobileNumberSendHandler handler = new MobileNumberSendHandler();
 		
 		Requestable<? extends Response> not = new BaseRequest<Response>("not");
 		Assert.assertFalse(handler.isSend(not));
 		
-		GroupRequest r = new GroupRequest();
+		MobileNumberRequest r = new MobileNumberRequest();
 		Assert.assertTrue(handler.isSend(r));
 	}
 	
 	@Test
 	public void testBuildMessage(){
-		GroupRequest request = new GroupRequest();
+		MobileNumberRequest request = initRequest();
 		
-		GroupSendHandler handler = new GroupSendHandler();
+		MobileNumberSendHandler handler = new MobileNumberSendHandler();
 		StringBuilder builder = new StringBuilder();
-		String e = "<CompanyID>1</CompanyID>";
-		OperatorKey key = new OperatorKey("1","2");
+		String e = "<CompanyID>1</CompanyID><OPID>8001</OPID><MobileNumber>2222-333</MobileNumber>";
+		OperatorKey key = new OperatorKey("1","8001");
 		handler.buildMessage(request,key, builder);
 		Assert.assertEquals(e, builder.toString());
+	}
+	
+	private MobileNumberRequest initRequest(){
+		MobileNumberRequest request = new MobileNumberRequest();
+		request.setNumber("2222-333");
 		
-		builder = new StringBuilder();
-		request.setGroupId("1");
-		e = "<CompanyID>1</CompanyID><GroupID>1</GroupID>";
-		handler.buildMessage(request,key, builder);
-		Assert.assertEquals(e, builder.toString());
+		return request;
 	}
 }

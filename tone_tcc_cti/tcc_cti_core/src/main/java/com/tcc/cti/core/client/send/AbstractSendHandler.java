@@ -34,7 +34,7 @@ public abstract class AbstractSendHandler implements SendHandler {
 	public void send(Sessionable session, Requestable<? extends Response> request,
 			GeneratorSeq generator,	Charset charset) throws IOException {
 		
-		if (isSend(request)) {
+		if (request != null && isSend(request)) {
 			try{
 				OperatorKey key = session.getOperatorKey();
 				String seq = generator.next();

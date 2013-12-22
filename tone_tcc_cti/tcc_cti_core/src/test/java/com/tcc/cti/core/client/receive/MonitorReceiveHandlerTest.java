@@ -22,15 +22,18 @@ public class MonitorReceiveHandlerTest {
 	}
 	
 	@Test
+	public void testRequestMessageType(){
+		MonitorReceiveHandler handler = new MonitorReceiveHandler();
+		Monitor.isRequest(handler.getRequestMessageType(null));
+	}
+	
+	@Test
 	public void testBuildMessage(){
 		Map<String,String> content = initContent();
 		
 		MonitorReceiveHandler handler = new MonitorReceiveHandler();
 		MonitorResponse message = (MonitorResponse)handler.buildMessage("1", "2", "3", content);
 		
-		Assert.assertEquals("add_monitor", message.getMessageType());
-		Assert.assertEquals("1", message.getCompanyId());
-		Assert.assertEquals("2", message.getOpId());
 		Assert.assertEquals("3", message.getSeq());
 		Assert.assertEquals("0005", message.getWorkId());
 		Assert.assertEquals("0005", message.getName());

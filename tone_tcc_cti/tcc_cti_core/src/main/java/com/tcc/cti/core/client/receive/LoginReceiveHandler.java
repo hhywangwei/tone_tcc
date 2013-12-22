@@ -22,18 +22,13 @@ public class LoginReceiveHandler extends AbstractReceiveHandler{
 	}
 	
 	@Override
-	protected String getMessageType() {
-		return Login.request();
-	}
-
-	@Override
-	protected void receiveHandler(Requestsable requests,
-			Sessionable session, Map<String, String> content) {
+	protected void receiveHandler(Requestsable requests,Sessionable session,
+			String msgType,Map<String, String> content) {
 		
 		String result = content.get(RESULT_PARAMETER);
 		boolean success = loginSuccess(result);
 		session.login(success);
-		super.receiveHandler(requests, session, content);
+		super.receiveHandler(requests, session,msgType, content);
 	}
 	
 	private boolean loginSuccess(String result){

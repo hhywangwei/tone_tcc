@@ -5,38 +5,39 @@ import org.junit.Test;
 
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.message.request.BaseRequest;
-import com.tcc.cti.core.message.request.GroupRequest;
 import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.request.TransferGroupRequest;
 import com.tcc.cti.core.message.response.Response;
 
-public class GroupSendHandlerTest {
-
+public class TransferGroupSendHanlderTest {
 	@Test
 	public void testIsSend(){
-		GroupSendHandler handler = new GroupSendHandler();
+		TransferGroupSendHanlder handler = new TransferGroupSendHanlder();
 		
 		Requestable<? extends Response> not = new BaseRequest<Response>("not");
 		Assert.assertFalse(handler.isSend(not));
 		
-		GroupRequest r = new GroupRequest();
+		TransferGroupRequest r = new TransferGroupRequest();
 		Assert.assertTrue(handler.isSend(r));
 	}
 	
 	@Test
 	public void testBuildMessage(){
-		GroupRequest request = new GroupRequest();
+		TransferGroupRequest request = initRequest();
 		
-		GroupSendHandler handler = new GroupSendHandler();
+		TransferGroupSendHanlder handler = new TransferGroupSendHanlder();
 		StringBuilder builder = new StringBuilder();
-		String e = "<CompanyID>1</CompanyID>";
-		OperatorKey key = new OperatorKey("1","2");
+		String e = "<CompanyID>1</CompanyID><OPID>8001</OPID><CallLeg>222-333</CallLeg><GroupID>222</GroupID>";
+		OperatorKey key = new OperatorKey("1","8001");
 		handler.buildMessage(request,key, builder);
 		Assert.assertEquals(e, builder.toString());
+	}
+	
+	private TransferGroupRequest initRequest(){
+		TransferGroupRequest request = new TransferGroupRequest();
+		request.setCallLeg("222-333");
+		request.setGroupId("222");
 		
-		builder = new StringBuilder();
-		request.setGroupId("1");
-		e = "<CompanyID>1</CompanyID><GroupID>1</GroupID>";
-		handler.buildMessage(request,key, builder);
-		Assert.assertEquals(e, builder.toString());
+		return request;
 	}
 }

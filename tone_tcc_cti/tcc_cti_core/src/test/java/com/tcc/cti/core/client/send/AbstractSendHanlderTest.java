@@ -7,8 +7,8 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import com.tcc.cti.core.client.OperatorKey;
-import com.tcc.cti.core.client.sequence.GeneratorSeq;
-import com.tcc.cti.core.message.request.BaseRequest;
+import com.tcc.cti.core.message.request.Requestable;
+import com.tcc.cti.core.message.response.Response;
 
 /**
  * 单元测试{@link AbstractSendHandler}
@@ -16,6 +16,25 @@ import com.tcc.cti.core.message.request.BaseRequest;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 public class AbstractSendHanlderTest {
+	
+	@Test
+	public void testBuildHead(){
+		SendHandlerImpl handler = new SendHandlerImpl();
+		StringBuilder builder = new StringBuilder(128);
+		handler.buildHead("login", "111", builder);
+		String msg = "<msg>login</msg><seq>111</seq>";
+		Assert.assertEquals(msg, builder.toString());
+	}
+	
+	@Test
+	public void testBuildOperator(){
+		SendHandlerImpl handler = new SendHandlerImpl();
+		StringBuilder builder = new StringBuilder(128);
+		OperatorKey key = new OperatorKey("11","22");
+		handler.buildOperator(key, builder);
+		String msg = "<CompanyID>11</CompanyID><OPID>22</OPID>";
+		Assert.assertEquals(msg, builder.toString());
+	}
 	
 	@Test
 	public void testGetHeadSegment(){
@@ -36,17 +55,15 @@ public class AbstractSendHanlderTest {
 	private class SendHandlerImpl extends AbstractSendHandler{
 
 		@Override
-		protected boolean isSend(BaseRequest message) {
+		protected boolean isSend(Requestable<? extends Response> message) {
 			//none instance
 			return false;
 		}
 
 		@Override
-		protected String buildMessage(BaseRequest message,OperatorKey key,
-				GeneratorSeq generator) {
+		protected void buildMessage(Requestable<? extends Response> message,OperatorKey key,
+				StringBuilder builder) {
 			//none instance
-			return null;
 		}
-		
 	}
 }

@@ -9,8 +9,7 @@ import org.mockito.Mockito;
 
 import com.tcc.cti.core.client.OperatorKey;
 import com.tcc.cti.core.client.session.Sessionable;
-import com.tcc.cti.core.message.pool.CtiMessagePool;
-import com.tcc.cti.core.message.response.Response;
+import com.tcc.cti.core.client.session.process.Requestsable;
 
 /**
  * {@link LoginReceiveHandler}单元测试
@@ -35,7 +34,7 @@ public class LoginReceiveHandlerTest {
 	@Test
 	public void testReceiveHandlerButLoginFail()throws Exception{
 		LoginReceiveHandler handler = new LoginReceiveHandler();
-		CtiMessagePool pool = Mockito.mock(CtiMessagePool.class);
+		Requestsable requests = Mockito.mock(Requestsable.class);
 		Sessionable session = Mockito.mock(Sessionable.class);
 		Mockito.when(session.isActive()).thenReturn(true);
 		Mockito.when(session.isClose()).thenReturn(false);
@@ -44,10 +43,7 @@ public class LoginReceiveHandlerTest {
 		
 		Map<String,String> m = new HashMap<String,String>();
 		m.put("result", "1");
-		handler.receiveHandler(pool, session, m);
-		Mockito.verify(pool, Mockito.atLeast(1)).put(
-				Mockito.anyString(), Mockito.anyString(),
-				Mockito.any(Response.class));
+		handler.receiveHandler(requests, session,"login", m);
 		Mockito.verify(session,Mockito.atLeast(1)).login(false);
 		
 		Assert.assertFalse(session.isService());
@@ -57,7 +53,7 @@ public class LoginReceiveHandlerTest {
 	@Test
 	public void testReciveHandler()throws Exception{
 		LoginReceiveHandler handler = new LoginReceiveHandler();
-		CtiMessagePool pool = Mockito.mock(CtiMessagePool.class);
+		Requestsable requests = Mockito.mock(Requestsable.class);
 		Sessionable session = Mockito.mock(Sessionable.class);
 		Mockito.when(session.isActive()).thenReturn(true);
 		Mockito.when(session.isClose()).thenReturn(false);
@@ -66,10 +62,7 @@ public class LoginReceiveHandlerTest {
 		
 		Map<String,String> m = new HashMap<String,String>();
 		m.put("result", "0");
-		handler.receiveHandler(pool, session, m);
-		Mockito.verify(pool, Mockito.atLeast(1)).put(
-				Mockito.anyString(), Mockito.anyString(),
-				Mockito.any(Response.class));
+		handler.receiveHandler(requests, session,"login", m);
 		Mockito.verify(session,Mockito.atLeast(1)).login(true);
 		
 		session.close();

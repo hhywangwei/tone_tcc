@@ -1,5 +1,7 @@
 package com.tcc.cti.core.client.receive;
 
+import static com.tcc.cti.core.message.MessageType.GroupMember;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,13 +9,12 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import com.tcc.cti.core.message.MessageType;
 import com.tcc.cti.core.message.response.GroupMemberResponse;
 
 /**
  * 单元测试{@link ObtainMemberHandler}
  * 
- * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ * @author <a href="hhywangwei@gmail.com">WangWei</a>
  */
 public class GroupMemberReceiveHandlerTest {
 
@@ -23,8 +24,13 @@ public class GroupMemberReceiveHandlerTest {
 		
 		Assert.assertFalse(handler.isReceive(null));
 		Assert.assertFalse(handler.isReceive("ddd"));
-		Assert.assertTrue(handler.isReceive(
-				MessageType.GroupMember.response()));
+		Assert.assertTrue(handler.isReceive(GroupMember.response()));
+	}
+	
+	@Test
+	public void testRequestMessageType(){
+		GroupMemberReceiveHandler handler = new GroupMemberReceiveHandler();
+		GroupMember.isRequest(handler.getRequestMessageType(null));
 	}
 	
 	@Test
@@ -39,9 +45,6 @@ public class GroupMemberReceiveHandlerTest {
 		GroupMemberResponse message = handler.buildMessage(
 				companyId, opId,  seq, content);
 		
-		Assert.assertEquals("1", message.getCompanyId());
-		Assert.assertEquals("1", message.getOpId());
-		Assert.assertEquals("add_op", message.getMessageType());
 		Assert.assertEquals("4", message.getSeq());
 		Assert.assertEquals("0005", message.getWorkId());
 		Assert.assertEquals("0005", message.getName());
