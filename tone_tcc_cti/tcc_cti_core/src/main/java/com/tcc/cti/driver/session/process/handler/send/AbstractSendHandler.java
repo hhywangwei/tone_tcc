@@ -37,14 +37,15 @@ public abstract class AbstractSendHandler implements SendHandlerable {
 		
 		if (request != null && isSend(request)) {
 			try{
-				Operator key = session.getOperatorKey();
+				Operator operator = session.getOperator();
 				String seq = generator.next();
-				byte[] m = getMessage(request, key, seq, charset);
+				byte[] m = getMessage(request, operator, seq, charset);
 				ByteBuffer buffer = ByteBuffer.wrap(m);
 				SocketChannel channel = session.getSocketChannel();
-				request.notifySend(seq);
+				request.notifySend(operator,seq);
 				channel.write(buffer);	
 			}catch(IOException e){
+				logger.error("Send {} message is error {}",request.toString(),e.toString());
 				request.notifySendError(e);
 				throw e;
 			}

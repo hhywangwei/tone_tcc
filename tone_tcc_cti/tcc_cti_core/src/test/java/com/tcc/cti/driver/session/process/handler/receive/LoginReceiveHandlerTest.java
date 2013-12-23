@@ -40,11 +40,11 @@ public class LoginReceiveHandlerTest {
 		Mockito.when(session.isActive()).thenReturn(true);
 		Mockito.when(session.isClose()).thenReturn(false);
 		Operator key = new Operator("1", "1");
-		Mockito.when(session.getOperatorKey()).thenReturn(key);
+		Mockito.when(session.getOperator()).thenReturn(key);
 		
 		Map<String,String> m = new HashMap<String,String>();
 		m.put("result", "1");
-		handler.receiveHandler(requests, session,"login", m);
+		handler.receiveHandler(requests, session, m);
 		Mockito.verify(session,Mockito.atLeast(1)).login(false);
 		
 		Assert.assertFalse(session.isService());
@@ -59,11 +59,11 @@ public class LoginReceiveHandlerTest {
 		Mockito.when(session.isActive()).thenReturn(true);
 		Mockito.when(session.isClose()).thenReturn(false);
 		Operator key = new Operator("1", "1");
-		Mockito.when(session.getOperatorKey()).thenReturn(key);
+		Mockito.when(session.getOperator()).thenReturn(key);
 		
 		Map<String,String> m = new HashMap<String,String>();
 		m.put("result", "0");
-		handler.receiveHandler(requests, session,"login", m);
+		handler.receiveHandler(requests, session, m);
 		Mockito.verify(session,Mockito.atLeast(1)).login(true);
 		
 		session.close();

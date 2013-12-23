@@ -208,7 +208,7 @@ public class Session implements Sessionable {
 	}
 	
 	@Override
-	public Operator getOperatorKey() {
+	public Operator getOperator() {
 		return _key;
 	}
 	

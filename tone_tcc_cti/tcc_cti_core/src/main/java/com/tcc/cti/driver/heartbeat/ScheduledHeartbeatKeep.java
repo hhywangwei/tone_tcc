@@ -59,7 +59,7 @@ public class ScheduledHeartbeatKeep implements HeartbeatKeepable, HeartbeatListe
 	public void start(Sessionable session) {
 		synchronized (_monitor) {
 			if(_start){
-				logger.debug("{} Already heartbeat", session.getOperatorKey().toString());
+				logger.debug("{} Already heartbeat", session.getOperator().toString());
 				return ;
 			}
 			HeartbeatSendTask task = new HeartbeatSendTask(session);

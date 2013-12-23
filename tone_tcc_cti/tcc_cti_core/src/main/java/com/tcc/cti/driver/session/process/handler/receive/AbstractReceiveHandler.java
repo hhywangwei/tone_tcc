@@ -50,7 +50,7 @@ public abstract class AbstractReceiveHandler implements ReceiveHandlerable{
 			Map<String,String> content = parseMessage(message);
 			String msgType = content.get(MESSAGE_TYPE_PARAMETER);
 			if(StringUtils.isNotBlank(msgType) && isReceive(msgType)){
-				receiveHandler(requests,channel,msgType,content);
+				receiveHandler(requests,channel,content);
 			}
 		}catch(SAXException e){
 			throw new ParseMessageException(e);
@@ -102,20 +102,15 @@ public abstract class AbstractReceiveHandler implements ReceiveHandlerable{
 	 * @param session {@link Sessionable}
 	 * @param content 接受消息内容
 	 */
-	@SuppressWarnings("unchecked")
 	protected void receiveHandler(Requestsable requests, Sessionable session,
-			String msgType,Map<String, String> content) {
+			Map<String, String> content) {
 		
-		String companyId = session.getOperatorKey().getCompanyId();
-		String opId = session.getOperatorKey().getOpId();
+		String companyId = session.getOperator().getCompanyId();
+		String opId = session.getOperator().getOpId();
 		String seq = content.get(SEQ_PARAMETER);
 		
-		String messageType = getRequestMessageType(msgType);
-		Requestable<Response> request =(Requestable<Response>)requests.get(messageType, seq);
-		if(request != null){
-			Response response = buildMessage(companyId,opId,seq,content);
-			request.receive(response);
-		}
+		Response response = buildMessage(companyId,opId,seq,content);
+		requests.recevie(session.getOperator(), seq, response);
 	}
 	
 	/**

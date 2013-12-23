@@ -34,7 +34,7 @@ public class HeartbeatSendTask implements Runnable{
 			return ;
 		}
 		
-		Operator key = _session.getOperatorKey();
+		Operator key = _session.getOperator();
 		
 		try{
 			_session.send(HB_REQUEST);

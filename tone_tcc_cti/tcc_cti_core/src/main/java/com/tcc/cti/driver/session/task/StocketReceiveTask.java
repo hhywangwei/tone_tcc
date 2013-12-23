@@ -93,7 +93,7 @@ public class StocketReceiveTask implements Runnable {
 		int len = sc.read(buffer);
 		Sessionable session = (Sessionable)sk.attachment();
 		if(len == 0 || len == -1){
-			logger.debug("{} server close...",session.getOperatorKey().toString());
+			logger.debug("{} server close...",session.getOperator().toString());
 			session.close();
 		}else{
 			buffer.flip();

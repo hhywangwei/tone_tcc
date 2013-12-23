@@ -7,10 +7,9 @@ import junit.framework.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.RequestTimeoutException;
 import com.tcc.cti.driver.message.event.RequestEvent;
-import com.tcc.cti.driver.message.request.BaseRequest;
-import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
 
 public class BaseRequestTest {
@@ -27,9 +26,10 @@ public class BaseRequestTest {
 		BaseRequest<Response> request = new BaseRequest<Response>("login");
 		RequestEvent event = Mockito.mock(RequestEvent.class);
 		request.regsiterEvent(event);
-		request.notifySend("1");
-		Mockito.verify(event, Mockito.atLeastOnce()).startRequest(
-				Mockito.anyString(), Mockito.anyString(), Mockito.any(Requestable.class));
+		Operator operator = new Operator("1","8001");
+		request.notifySend(operator,"1");
+		Mockito.verify(event, Mockito.atLeastOnce()).beforeSend(
+				Mockito.any(Operator.class), Mockito.anyString(), Mockito.any(Requestable.class));
 	}
 	
 	@Test
@@ -37,10 +37,11 @@ public class BaseRequestTest {
 		BaseRequest<Response> request = new BaseRequest<Response>("login");
 		RequestEvent event = Mockito.mock(RequestEvent.class);
 		request.regsiterEvent(event);
-		request.notifySend("1");
+		Operator operator = new Operator("1","8001");
+		request.notifySend(operator,"1");
 		request.notifySendError(new Exception());
-		Mockito.verify(event, Mockito.atLeastOnce()).finishRequest(
-				Mockito.anyString(), Mockito.anyString());
+		Mockito.verify(event, Mockito.atLeastOnce()).finishReceive(
+				Mockito.any(Operator.class), Mockito.anyString());
 	}
 	
 	@Test
@@ -55,6 +56,8 @@ public class BaseRequestTest {
 	public void testResponseTimeout()throws InterruptedException{
 		BaseRequest<Response> request = new BaseRequest<Response>("login");
 		try{
+			Operator operator = new Operator("1","8001");
+			request.notifySend(operator,"1");
 			request.response(2*100);
 			Assert.fail();
 		}catch(RequestTimeoutException e){
@@ -65,7 +68,8 @@ public class BaseRequestTest {
 	@Test
 	public void testResponse()throws InterruptedException, RequestTimeoutException{
 		final BaseRequest<Response> request = new BaseRequest<Response>("login");
-		request.notifySend("1");
+		Operator operator = new Operator("1","8001");
+		request.notifySend(operator,"1");
 		Thread t = new Thread(new Runnable(){
 			@Override
 			public void run() {

@@ -3,50 +3,57 @@ package com.tcc.cti.driver.session.process;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.tcc.cti.driver.message.event.RequestEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
 
-public class Requests implements Requestsable,RequestEvent {
+public class Requests implements Requestsable {
+	private static final Logger logger = LoggerFactory.getLogger(Requests.class);
+	
 	private static final int DEFAULT_SIZE = 100;
-	private static final String KEY_TEMPLATE = "%s-%s";
+	private static final String KEY_TEMPLATE = "%s-%s-%s";
 	
 	private final Map<String,Requestable<? extends Response>> requests = 
 			new ConcurrentHashMap<String,Requestable<? extends Response>>(DEFAULT_SIZE); 
 
-	@Override
-	public void put(String messageType, String seq,
-			Requestable<? extends Response> request) {
-		
-		String key = createKey(messageType,seq);
-		requests.put(key, request);
-	}
-
-	private String createKey(String messageType,String seq){
-		return String.format(KEY_TEMPLATE, messageType,seq);
+	private String requestKey(Operator operator,String seq){
+		return String.format(KEY_TEMPLATE, 
+				operator.getCompanyId(),operator.getOpId(),seq);
 	}
 	
-	@Override
-	public Requestable<? extends Response> get(String messageType, String seq) {
-		String key = createKey(messageType,seq);
-		return requests.get(key);
-	}
 
 	@Override
-	public void remove(String messageType, String seq) {
-		String key = createKey(messageType,seq);
-		requests.remove(key);
-	}
-
-	@Override
-	public void startRequest(String messageType, String seq,
+	public void beforeSend(Operator operator, String seq,
 			Requestable<? extends Response> request) {
 		
-		put(messageType,seq,request);
+		String key = requestKey(operator,seq);
+		Requestable<? extends Response> o = requests.put(key, request);
+		if(o != null){
+			logger.error("Request key {} is exist,Request is {}.",key,request.toString());
+		}
 	}
 
 	@Override
-	public void finishRequest(String messageType, String seq) {
-		remove(messageType,seq);
+	public void finishReceive(Operator operator, String seq) {
+		String key = requestKey(operator,seq);
+		Requestable<? extends Response> o = requests.remove(key);
+		if(o == null){
+			logger.error("Request key {} not exist");
+		}
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public void recevie(Operator operator, String seq, Response response) {
+		String key = requestKey(operator,seq);
+		Requestable<Response> o =(Requestable<Response>) requests.get(key);
+		if(o == null){
+			logger.error("Request key {} not exist");
+			return ;
+		}
+		o.receive(response);
 	}
 }

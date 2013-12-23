@@ -1,13 +1,10 @@
 package com.tcc.cti.driver.session.process;
 
-import com.tcc.cti.driver.message.request.Requestable;
+import com.tcc.cti.driver.Operator;
+import com.tcc.cti.driver.message.event.RequestEvent;
 import com.tcc.cti.driver.message.response.Response;
 
-public interface Requestsable {
+public interface Requestsable extends RequestEvent {
 
-	void put(String messageType,String seq,Requestable<? extends Response> request);
-	
-	Requestable<? extends Response> get(String messageType,String seq);
-	
-	void remove(String messageType,String seq);
+	void recevie(Operator operator,String seq,Response response);
 }

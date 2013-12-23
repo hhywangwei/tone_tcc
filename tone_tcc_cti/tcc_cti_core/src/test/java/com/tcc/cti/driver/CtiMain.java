@@ -2,12 +2,15 @@ package com.tcc.cti.driver;
 
 
 import java.io.IOException;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.tcc.cti.driver.message.RequestTimeoutException;
 import com.tcc.cti.driver.message.request.GroupRequest;
 import com.tcc.cti.driver.message.request.LoginRequest;
+import com.tcc.cti.driver.message.response.Response;
 import com.tcc.cti.driver.session.SessionFactory;
 import com.tcc.cti.driver.session.Sessionable;
 
@@ -45,14 +48,17 @@ public class CtiMain {
 		return session;
 	}
 	
-	private void login(Sessionable session) throws IOException{
+	private void login(Sessionable session) throws InterruptedException, IOException, RequestTimeoutException{
 
 		LoginRequest login = new LoginRequest();
 		login.setOpNumber("8002");
 		login.setPassword("1");
 		login.setType("1");
 
-		session.send(login);;
+		session.send(login);
+		
+		List<Response> r = login.response();
+		logger.debug("Login response is {}",r.toString());
 	}
 
 	private void getGroups(Sessionable session)throws IOException{
@@ -71,9 +77,9 @@ public class CtiMain {
 		try{
 			Sessionable session = main.register(opId, companyId);
 			main.login(session);
-			Thread.sleep(60 * 1000);
-			main.getGroups(session);
-			Thread.sleep(60 * 1000);
+//			Thread.sleep(60 * 1000);
+//			main.getGroups(session);
+//			Thread.sleep(60 * 1000);
 		}finally{
 			main.close();
 		}

@@ -64,7 +64,7 @@ public class HeartbeatSendTaskTest {
 		Sessionable session = mock(Sessionable.class);
 		when(session.isActive()).thenReturn(true);
 		Operator key = new Operator("1", "1");
-		when(session.getOperatorKey()).thenReturn(key);
+		when(session.getOperator()).thenReturn(key);
 		return session;
 	}
 	

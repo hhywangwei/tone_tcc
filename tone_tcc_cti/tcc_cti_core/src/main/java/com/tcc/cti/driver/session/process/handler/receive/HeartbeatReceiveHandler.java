@@ -29,10 +29,10 @@ public class HeartbeatReceiveHandler extends AbstractReceiveHandler{
 	}
 	
 	@Override
-	protected void receiveHandler(Requestsable requests, Sessionable session,
-			String msgType,Map<String, String> content) {
+	protected void receiveHandler(Requestsable requests, 
+			Sessionable session,Map<String, String> content) {
 		
-		logger.debug("Receive {} hb.....",session.getOperatorKey());
+		logger.debug("Receive {} hb.....",session.getOperator());
 		session.heartbeatTouch();
 	}
 }

@@ -72,11 +72,11 @@ public interface Sessionable {
 	void send(Requestable<? extends Response> message)throws IOException;
 	
 	/**
-	 * 得到操作员key对象
+	 * 得到操作员对象
 	 * 
 	 * @return
 	 */
-	Operator getOperatorKey();
+	Operator getOperator();
 	
 	/**
 	 * 连接服务端{@link SocketChannel}

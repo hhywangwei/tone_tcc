@@ -4,6 +4,7 @@ import static com.tcc.cti.driver.message.MessageType.Heartbeat;
 
 import java.util.List;
 
+import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.event.RequestEvent;
 import com.tcc.cti.driver.message.response.Response;
 
@@ -25,7 +26,7 @@ public class HeartbeatRequest implements Requestable<Response>{
 	}
 
 	@Override
-	public void notifySend(String seq) {
+	public void notifySend(Operator operator,String seq) {
 		// None instance
 		
 	}

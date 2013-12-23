@@ -2,6 +2,7 @@ package com.tcc.cti.driver.message.request;
 
 import java.util.List;
 
+import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.RequestTimeoutException;
 import com.tcc.cti.driver.message.event.RequestEvent;
 import com.tcc.cti.driver.message.response.Response;
@@ -37,9 +38,10 @@ public interface Requestable<T extends Response> {
 	/**
 	 * 通知发送消息
 	 * 
-	 * @param seq
+	 * @param operator 发送消息操作员
+	 * @param seq      消息序号
 	 */
-	void notifySend(String seq);
+	void notifySend(Operator operator,String seq);
 	
 	/**
 	 * 通知发送错误消息

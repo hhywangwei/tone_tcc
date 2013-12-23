@@ -3,6 +3,7 @@ package com.tcc.cti.driver.message.request;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.RequestTimeoutException;
 import com.tcc.cti.driver.message.event.NoneRequestEvent;
 import com.tcc.cti.driver.message.event.RequestEvent;
@@ -27,6 +28,7 @@ public class BaseRequest<T extends Response> implements Requestable<T>{
 	protected final Object _monitor ;
 	protected volatile boolean _complete = false;	
 	private volatile RequestEvent _event = new NoneRequestEvent();
+	private volatile Operator _operator;
 	private volatile String _seq = "";
 	
 	public BaseRequest(String messageType){
@@ -49,17 +51,27 @@ public class BaseRequest<T extends Response> implements Requestable<T>{
 	}
 	
 	@Override
-	public void notifySend(String seq){
+	public void notifySend(Operator operator,String seq){
 		synchronized (_monitor) {
-			_event.startRequest(_messageType, seq, this);
+			_event.beforeSend(operator, seq, this);
 			_seq = seq;
+			_operator = operator;
 		}
 	}
 	
 	@Override
 	public void notifySendError(Throwable e){
 		synchronized (_monitor) {
-			_event.finishRequest(_messageType, _seq);	
+			if(notSend()){
+				throw new RuntimeException("Request not send,Run notifySend method");
+			}
+			_event.finishReceive(_operator,_seq);
+		}
+	}
+	
+	private boolean notSend(){
+		synchronized (_monitor) {
+			return _operator == null;
 		}
 	}
 	
@@ -81,8 +93,11 @@ public class BaseRequest<T extends Response> implements Requestable<T>{
 	@Override
 	public List<T> response(int timeout) throws InterruptedException, RequestTimeoutException {
 		synchronized (_monitor) {
+			if(notSend()){
+				throw new RuntimeException("Request not send,Run notifySend method");
+			}
 			_monitor.wait(timeout);
-			_event.finishRequest(_messageType, _seq);
+			_event.finishReceive(_operator, _seq);
 			if(_complete){
 				return _responses;	
 			}else{

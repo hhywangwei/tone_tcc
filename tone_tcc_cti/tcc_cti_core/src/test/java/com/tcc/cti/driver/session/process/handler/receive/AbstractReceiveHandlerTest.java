@@ -46,8 +46,8 @@ public class AbstractReceiveHandlerTest {
 		String opId = "1";
 		Requestsable requests = Mockito.mock(Requestsable.class);
 		Sessionable oc = Mockito.mock(Sessionable.class);
-		Mockito.when(oc.getOperatorKey()).thenReturn(new Operator(companyId,opId));
-		handler.receiveHandler(requests, oc,"", content);
+		Mockito.when(oc.getOperator()).thenReturn(new Operator(companyId,opId));
+		handler.receiveHandler(requests, oc, content);
 	}
 	
 	/**

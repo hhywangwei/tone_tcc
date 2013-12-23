@@ -36,7 +36,7 @@ public class HeartbeatReceiveHandlerTest {
 		Sessionable session = Mockito.mock(Sessionable.class);
 		
 		Map<String,String> m = new HashMap<String,String>();
-		handler.receiveHandler(requests, session,"heartbeat", m);
+		handler.receiveHandler(requests, session, m);
 		Mockito.verify(session,Mockito.atLeast(1)).heartbeatTouch();
 		
 		Assert.assertFalse(session.isService());

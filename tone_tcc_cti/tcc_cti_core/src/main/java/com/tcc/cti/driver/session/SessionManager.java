@@ -95,7 +95,7 @@ public class SessionManager {
 		try{
 			session.close();			
 		}catch(IOException e){
-			Operator key = session.getOperatorKey();
+			Operator key = session.getOperator();
 			logger.error("Unregister {} is error:{}",key.toString(),e.toString());
 		}
 	}
