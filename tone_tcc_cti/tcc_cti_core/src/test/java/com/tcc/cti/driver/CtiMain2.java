@@ -19,14 +19,14 @@ import com.tcc.cti.driver.session.Sessionable;
  * 
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
-public class CtiMain {
-	private static final Logger logger= LoggerFactory.getLogger(CtiMain.class);
+public class CtiMain2 {
+	private static final Logger logger= LoggerFactory.getLogger(CtiMain2.class);
 	
 	private final String _opId ;
 	private final String _companyId;
 	private final SessionFactory _sessionFactory;
 	
-	public CtiMain(String opId,String companyId){
+	public CtiMain2(String opId,String companyId){
 		_opId = opId;
 		_companyId = companyId;
 		_sessionFactory =new SessionFactory(initConfigure());
@@ -73,7 +73,7 @@ public class CtiMain {
 	public static void main(String[] args)throws Exception{
 		String opId = "8002";
 		String companyId = "1";
-		CtiMain main = new CtiMain(opId,companyId);
+		CtiMain2 main = new CtiMain2(opId,companyId);
 		try{
 			Sessionable session = main.register(opId, companyId);
 			main.login(session);
@@ -84,57 +84,6 @@ public class CtiMain {
 			main.close();
 		}
 	}
-//	
-//	private static class ReceiveRunner implements Runnable{
-//		private static final String DEFAULT_MESSAGE_FILE = "cti_message.txt";
-//		
-//		private final CtiMessagePool _pool;
-//		private final OutputStream _os;
-//		private final String _companyId;
-//		private final String _opId;
-//		private final TcpCtiClient _client;
-//		
-//		ReceiveRunner(CtiMessagePool pool,String companyId,
-//				String opId,TcpCtiClient client)throws IOException{
-//			_pool = pool;
-//			_companyId = companyId;
-//			_opId = opId;
-//			_client = client;
-//			_os = new FileOutputStream(DEFAULT_MESSAGE_FILE);
-//		}
-//		
-//		
-//		@Override
-//		public void run(){
-//			
-//			while(true){
-//				if(Thread.interrupted()){
-//					try{
-//						logger.debug("Start close ...");
-//						_os.close();	
-//						_client.close();
-//					}catch(Exception e){
-//						logger.error("Close output stream is fail {}",e.toString());
-//					}
-//					return;
-//				}
-//				try {
-//					ResponseMessage m = _pool.poll(_companyId, _opId);
-//					if(m == null){
-//						logger.debug("Message is null");
-//						continue;
-//					}
-//					_os.write(m.toString().getBytes());
-//					_os.write('\n');
-//					_os.flush();
-//					logger.debug("Message is \"{}\"",m.toString());
-//				}catch (InterruptedException e){
-//					logger.error("Writ message InterruptedException");
-//					Thread.currentThread().interrupt();
-//				} catch (Exception e) {
-//					logger.error("Writ message is error {}",e.toString());
-//				}
-//			}
-//		}
-//	}
+	
+	 
 }

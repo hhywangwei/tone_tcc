@@ -93,6 +93,20 @@ public interface Sessionable {
 	Status getStatus();
 	
 	/**
+	 * 更新当前电话状态
+	 * 
+	 * @param callback 更新电话回调处理
+	 */
+	void updatePhone(UpdatePhoneCallBack callback);
+	
+	/**
+	 * 得到电话状态
+	 * 
+	 * @return
+	 */
+	Phone getPhone();
+	
+	/**
 	 * 是初始状态，还未连接到CTI服务器
 	 * 
 	 * @return true 初始状态
@@ -126,4 +140,10 @@ public interface Sessionable {
 	 * @return
 	 */
 	boolean isTimeout();
+	
+	public interface UpdatePhoneCallBack {
+		
+		void update(Phone phone);
+		
+	}
 }

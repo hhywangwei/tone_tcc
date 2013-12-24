@@ -82,6 +82,7 @@ public class Session implements Sessionable {
 	
 	private volatile Status _status = Status.New;
 	private volatile long _lastTime = System.currentTimeMillis();
+	private volatile Phone _phone = new Phone();
 	
 	private SocketChannel _channel;
 
@@ -227,6 +228,19 @@ public class Session implements Sessionable {
 		}
 		
 		return _status;
+	}
+	
+	@Override
+	public void updatePhone(UpdatePhoneCallBack callback) {
+		synchronized (_phone) {
+			callback.update(_phone);
+		}
+	}
+	
+	public Phone getPhone(){
+		synchronized (_phone) {
+			return _phone;
+		}
 	}
 	
 	@Override
