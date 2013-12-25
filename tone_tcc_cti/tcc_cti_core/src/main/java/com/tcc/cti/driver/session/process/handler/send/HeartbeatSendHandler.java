@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.session.Phone;
 
 /**
  * 心跳发送
@@ -22,14 +23,14 @@ public class HeartbeatSendHandler extends AbstractSendHandler {
 	}
 
 	@Override
-	protected byte[] getMessage(Requestable<? extends Response> request,
+	protected byte[] getMessage(Phone phone,Requestable<? extends Response> request,
 			Operator key, String seq, Charset charset) {
 		
 		return HB_MSG.getBytes(charset);
 	}
 
 	@Override
-	protected void buildMessage(Requestable<? extends Response> request,
+	protected void buildMessage(Phone phone,Requestable<? extends Response> request,
 			Operator key, StringBuilder builder) {
 		//None instance
 	}

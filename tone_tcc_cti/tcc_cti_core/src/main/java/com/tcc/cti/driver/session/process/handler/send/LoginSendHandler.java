@@ -7,6 +7,7 @@ import com.tcc.cti.driver.common.PasswordUtils;
 import com.tcc.cti.driver.message.request.LoginRequest;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.session.Phone;
 
 /**
  * 实现发送登录cti消息
@@ -37,7 +38,7 @@ public class LoginSendHandler extends AbstractSendHandler{
 	}
 
 	@Override
-	protected void buildMessage(Requestable<? extends Response> request,
+	protected void buildMessage(Phone phone,Requestable<? extends Response> request,
 			Operator key, StringBuilder builder){
 		
 		LoginRequest r = (LoginRequest)request;

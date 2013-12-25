@@ -4,8 +4,7 @@ import static com.tcc.cti.driver.message.MessageType.TransferGroup;
 
 import com.tcc.cti.driver.message.response.Response;
 
-public class TransferGroupRequest extends PhoneStatusRequest<Response> {
-	
+public class TransferGroupRequest extends BaseRequest<Response> {
 	private String _groupId;
 	
 	public TransferGroupRequest() {
@@ -25,8 +24,6 @@ public class TransferGroupRequest extends PhoneStatusRequest<Response> {
 		StringBuilder builder = new StringBuilder();
 		builder.append("TransferGroupRequest [_groupId=");
 		builder.append(_groupId);
-		builder.append(", _callLeg=");
-		builder.append(_callLeg);
 		builder.append(", _messageType=");
 		builder.append(_messageType);
 		builder.append(", _responses=");

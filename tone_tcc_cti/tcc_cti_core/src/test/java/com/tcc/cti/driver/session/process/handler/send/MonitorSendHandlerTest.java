@@ -9,6 +9,7 @@ import com.tcc.cti.driver.message.request.BaseRequest;
 import com.tcc.cti.driver.message.request.MonitorRequest;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.session.Phone;
 import com.tcc.cti.driver.session.process.handler.send.MonitorSendHandler;
 
 /**
@@ -35,7 +36,8 @@ public class MonitorSendHandlerTest {
 		MonitorSendHandler handler = new MonitorSendHandler();	
 		Operator key = new Operator("1","8001");
 		StringBuilder builder = new StringBuilder();
-		handler.buildMessage(request,key, builder);
+		Phone phone = new Phone();
+		handler.buildMessage(phone,request,key, builder);
 		String e = "<CompanyID>1</CompanyID>";
 		Assert.assertEquals(e, builder.toString());
 	}

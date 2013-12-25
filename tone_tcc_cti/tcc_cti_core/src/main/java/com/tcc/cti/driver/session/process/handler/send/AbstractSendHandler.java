@@ -12,6 +12,7 @@ import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
 import com.tcc.cti.driver.sequence.GeneratorSeq;
+import com.tcc.cti.driver.session.Phone;
 import com.tcc.cti.driver.session.Sessionable;
 import com.tcc.cti.driver.session.process.handler.SendHandlerable;
 
@@ -39,7 +40,8 @@ public abstract class AbstractSendHandler implements SendHandlerable {
 			try{
 				Operator operator = session.getOperator();
 				String seq = generator.next();
-				byte[] m = getMessage(request, operator, seq, charset);
+				Phone phone = session.getPhone();
+				byte[] m = getMessage(phone, request, operator, seq, charset);
 				ByteBuffer buffer = ByteBuffer.wrap(m);
 				SocketChannel channel = session.getSocketChannel();
 				request.notifySend(operator,seq);
@@ -74,12 +76,12 @@ public abstract class AbstractSendHandler implements SendHandlerable {
 	 *            字符集
 	 * @return
 	 */
-	protected byte[] getMessage(Requestable<? extends Response> request,
+	protected byte[] getMessage(Phone phone,Requestable<? extends Response> request,
 			Operator key, String seq, Charset charset) {
 		
 		StringBuilder builder = new StringBuilder(DEFAULT_SIZE);
 		buildHead(request.getMessageType(),seq,builder);
-		buildMessage(request, key, builder);
+		buildMessage(phone,request, key, builder);
 		String m = builder.toString();
 		logger.debug("Send command is {}", m);
 		
@@ -100,11 +102,12 @@ public abstract class AbstractSendHandler implements SendHandlerable {
 	/**
 	 * 构建发送消息
 	 * 
+	 * @param phone 电话状态
 	 * @param request 消息对象
 	 * @param key {@link Operator} 操作员Key
 	 * @param builder 创建发送消息命令
 	 */
-	protected abstract void buildMessage(Requestable<? extends Response> request, Operator key, StringBuilder builder);
+	protected abstract void buildMessage(Phone phone,Requestable<? extends Response> request, Operator key, StringBuilder builder);
 	
 	/**
 	 * 构建操作员信息

@@ -1,63 +1,55 @@
 package com.tcc.cti.driver.session;
 
+import com.tcc.cti.driver.message.response.CallResponse;
+
 public class Phone {
-	
-	public enum CallState{
-		None,Queue,Bell,Connect,Calling,StartCall,OutQueue;
-	}
-	
-	public enum CallType{
-		InCall,HelpCall,TransferGroup,TransferOne,CallInter,CallOut;
-	}
 	
 	private String _callLeg;
 	private String _callerNumber;
 	private String _accessNumber;
 	private String _calledNumber;
-	private CallState _callState;
 	private String _globalCallLeg;
-	private CallType _callType;
 	private String _userInput;
+	private boolean _calling = false;
 	
-	public void setCallLeg(String callLeg){
-		_callLeg = callLeg;
+	public void calling(CallResponse response){
+		_callLeg = response.getCallLeg();
+		_callerNumber = response.getCallerNumber();
+		_accessNumber = response.getAccessNumber();
+		_calledNumber = response.getCalledNumber();
+		_globalCallLeg = response.getGlobalCallLeg();
+		_userInput = response.getUserInput();
+		_calling = true;
+	}
+	
+	public void closeCall(String callLeg){
+		if(_callLeg.equals(callLeg)){
+			_callLeg = null;
+			_callerNumber = null;
+			_accessNumber = null;
+			_calledNumber = null;
+			_globalCallLeg = null;
+			_userInput = null;
+			_calling = false;	
+		}
 	}
 	
 	public String getCallLeg(){
 		return _callLeg;
 	}
 	
-	public void setCallerNumber(String callerNumber){
-		_callerNumber =  callerNumber;
-	}
-	
 	public String getCallerNumber(){
 		return _callerNumber;
-	}
-	
-	public void setAccessNumber(String accessNumber){
-		_accessNumber = accessNumber;
 	}
 	
 	public String getAccessNumber(){
 		return _accessNumber;
 	}
 	
-	public void setCalledNumber(String calledNumber){
-		_calledNumber = calledNumber;
-	}
-	
 	public String getCalledNumber(){
 		return _calledNumber;
 	}
 	
-	public void setCallState(CallState callState){
-		_callState =  callState;
-	}
-	
-	public CallState getCallState(){
-		return _callState;
-	}
 	
 	public void setGlobalCallLeg(String globalCallLeg){
 		_globalCallLeg = globalCallLeg;
@@ -67,20 +59,16 @@ public class Phone {
 		return _globalCallLeg;
 	}
 	
-	public void setCallType(CallType callType){
-		_callType = callType;
-	}
-	
-	public CallType getCallType(){
-		return _callType;
-	}
-	
 	public void setUserInput(String userInput){
 		_userInput = userInput;
 	}
 	
 	public String getUserInput(){
 		return _userInput;
+	}
+
+	public boolean isCalling(){
+		return _calling;
 	}
 
 	@Override
@@ -94,16 +82,13 @@ public class Phone {
 		builder.append(_accessNumber);
 		builder.append(", _calledNumber=");
 		builder.append(_calledNumber);
-		builder.append(", _callState=");
-		builder.append(_callState);
 		builder.append(", _globalCallLeg=");
 		builder.append(_globalCallLeg);
-		builder.append(", _callType=");
-		builder.append(_callType);
 		builder.append(", _userInput=");
 		builder.append(_userInput);
+		builder.append(", _calling=");
+		builder.append(_calling);
 		builder.append("]");
 		return builder.toString();
 	}
-	
 }

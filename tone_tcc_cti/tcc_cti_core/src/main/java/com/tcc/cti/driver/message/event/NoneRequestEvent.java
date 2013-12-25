@@ -14,7 +14,7 @@ public class NoneRequestEvent implements RequestEvent{
 	}
 
 	@Override
-	public void finishReceive(Operator operator, String seq) {
+	public void finishReceive(Operator operator, String seq,String messageType) {
 		
 		// None instance
 	}

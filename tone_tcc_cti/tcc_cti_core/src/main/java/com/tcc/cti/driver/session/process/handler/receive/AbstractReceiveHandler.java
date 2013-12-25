@@ -108,9 +108,10 @@ public abstract class AbstractReceiveHandler implements ReceiveHandlerable{
 		String companyId = session.getOperator().getCompanyId();
 		String opId = session.getOperator().getOpId();
 		String seq = content.get(SEQ_PARAMETER);
+		String msgType =getRequestMessageType(content.get(MESSAGE_TYPE_PARAMETER));
 		
 		Response response = buildMessage(companyId,opId,seq,content);
-		requests.recevie(session.getOperator(), seq, response);
+		requests.recevie(session.getOperator(), seq, msgType, response);
 	}
 	
 	/**

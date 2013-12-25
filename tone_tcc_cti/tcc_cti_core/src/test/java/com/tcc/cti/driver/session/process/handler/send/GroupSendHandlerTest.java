@@ -8,7 +8,7 @@ import com.tcc.cti.driver.message.request.BaseRequest;
 import com.tcc.cti.driver.message.request.GroupRequest;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
-import com.tcc.cti.driver.session.process.handler.send.GroupSendHandler;
+import com.tcc.cti.driver.session.Phone;
 
 public class GroupSendHandlerTest {
 
@@ -31,13 +31,14 @@ public class GroupSendHandlerTest {
 		StringBuilder builder = new StringBuilder();
 		String e = "<CompanyID>1</CompanyID>";
 		Operator key = new Operator("1","2");
-		handler.buildMessage(request,key, builder);
+		Phone phone = new Phone();
+		handler.buildMessage(phone,request,key, builder);
 		Assert.assertEquals(e, builder.toString());
 		
 		builder = new StringBuilder();
 		request.setGroupId("1");
 		e = "<CompanyID>1</CompanyID><GroupID>1</GroupID>";
-		handler.buildMessage(request,key, builder);
+		handler.buildMessage(phone,request,key, builder);
 		Assert.assertEquals(e, builder.toString());
 	}
 }

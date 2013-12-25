@@ -6,6 +6,7 @@ import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.request.CallHelpRequest;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.session.Phone;
 
 public class CallHelpSendHandler extends AbstractSendHandler{
 	private static final String CALLLEG_FORMAT = "<CallLeg>%s</CallLeg>";
@@ -19,12 +20,12 @@ public class CallHelpSendHandler extends AbstractSendHandler{
 	}
 
 	@Override
-	protected void buildMessage(Requestable<? extends Response> request,
+	protected void buildMessage(Phone phone,Requestable<? extends Response> request,
 			Operator key,StringBuilder builder) {
 		
 		CallHelpRequest r = (CallHelpRequest)request;
 		buildOperator(key,builder);
-		builder.append(String.format(CALLLEG_FORMAT, r.getCallLeg()));
+		builder.append(String.format(CALLLEG_FORMAT, phone.getCallLeg()));
 		builder.append(String.format(TRANSFER_WORKID_FORMAT,r.getTransferWorkId()));
 		builder.append(String.format(TRANSFER_NUMBER_FORMAT, r.getTransferNumber()));
 		builder.append(String.format(STATUS_FORMAT, r.getStatus()));

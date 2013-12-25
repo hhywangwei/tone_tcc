@@ -65,7 +65,7 @@ public class BaseRequest<T extends Response> implements Requestable<T>{
 			if(notSend()){
 				throw new RuntimeException("Request not send,Run notifySend method");
 			}
-			_event.finishReceive(_operator,_seq);
+			_event.finishReceive(_operator,_seq,_messageType);
 		}
 	}
 	
@@ -97,7 +97,7 @@ public class BaseRequest<T extends Response> implements Requestable<T>{
 				throw new RuntimeException("Request not send,Run notifySend method");
 			}
 			_monitor.wait(timeout);
-			_event.finishReceive(_operator, _seq);
+			_event.finishReceive(_operator, _seq,_messageType);
 			if(_complete){
 				return _responses;	
 			}else{

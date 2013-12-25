@@ -6,6 +6,7 @@ import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.request.StatusRequest;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.session.Phone;
 
 public class StatusSendHandler extends AbstractSendHandler{
 	private static final String WORKID_FORMAT = "<WorkID>%s</WorkID>";
@@ -17,7 +18,7 @@ public class StatusSendHandler extends AbstractSendHandler{
 	}
 
 	@Override
-	protected void buildMessage(Requestable<? extends Response> request,
+	protected void buildMessage(Phone phone,Requestable<? extends Response> request,
 			Operator key, StringBuilder builder) {
 		
 		StatusRequest r = (StatusRequest)request;

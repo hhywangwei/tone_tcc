@@ -5,6 +5,7 @@ import static com.tcc.cti.driver.message.MessageType.Own;
 import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.session.Phone;
 
 /**
  * 发送读取本座席信息
@@ -27,7 +28,7 @@ public class OwnSendHandler extends AbstractSendHandler{
 	}
 
 	@Override
-	protected void buildMessage(Requestable<? extends Response> request,
+	protected void buildMessage(Phone phone,Requestable<? extends Response> request,
 			Operator key, StringBuilder builder) {
 		
 		builder.append(WORK_ID_FORMAT);

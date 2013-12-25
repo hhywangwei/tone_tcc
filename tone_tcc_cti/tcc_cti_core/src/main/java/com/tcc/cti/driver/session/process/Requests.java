@@ -14,14 +14,14 @@ public class Requests implements Requestsable {
 	private static final Logger logger = LoggerFactory.getLogger(Requests.class);
 	
 	private static final int DEFAULT_SIZE = 100;
-	private static final String KEY_TEMPLATE = "%s-%s-%s";
+	private static final String KEY_TEMPLATE = "%s-%s-%s-%s";
 	
 	private final Map<String,Requestable<? extends Response>> requests = 
 			new ConcurrentHashMap<String,Requestable<? extends Response>>(DEFAULT_SIZE); 
 
-	private String requestKey(Operator operator,String seq){
+	private String requestKey(Operator operator,String seq,String messageType){
 		return String.format(KEY_TEMPLATE, 
-				operator.getCompanyId(),operator.getOpId(),seq);
+				operator.getCompanyId(),operator.getOpId(),seq,messageType);
 	}
 	
 
@@ -29,7 +29,7 @@ public class Requests implements Requestsable {
 	public void beforeSend(Operator operator, String seq,
 			Requestable<? extends Response> request) {
 		
-		String key = requestKey(operator,seq);
+		String key = requestKey(operator,seq,request.getMessageType());
 		Requestable<? extends Response> o = requests.put(key, request);
 		if(o != null){
 			logger.error("Request key {} is exist,Request is {}.",key,request.toString());
@@ -37,8 +37,8 @@ public class Requests implements Requestsable {
 	}
 
 	@Override
-	public void finishReceive(Operator operator, String seq) {
-		String key = requestKey(operator,seq);
+	public void finishReceive(Operator operator, String seq,String messageType) {
+		String key = requestKey(operator,seq,messageType);
 		Requestable<? extends Response> o = requests.remove(key);
 		if(o == null){
 			logger.error("Request key {} not exist");
@@ -47,8 +47,8 @@ public class Requests implements Requestsable {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void recevie(Operator operator, String seq, Response response) {
-		String key = requestKey(operator,seq);
+	public void recevie(Operator operator, String seq,String messageType, Response response) {
+		String key = requestKey(operator,seq,messageType);
 		Requestable<Response> o =(Requestable<Response>) requests.get(key);
 		if(o == null){
 			logger.error("Request key {} not exist");

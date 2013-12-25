@@ -3,9 +3,9 @@ package com.tcc.cti.driver.session.process.handler.send;
 import static com.tcc.cti.driver.message.MessageType.OutCallCancel;
 
 import com.tcc.cti.driver.Operator;
-import com.tcc.cti.driver.message.request.OutCallCancelRequest;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.session.Phone;
 
 /**
  * 发送取消外呼消息
@@ -30,12 +30,11 @@ public class OutCallCancelSendHandler extends AbstractSendHandler{
 	}
 
 	@Override
-	protected void buildMessage(Requestable<? extends Response> request,
+	protected void buildMessage(Phone phone,Requestable<? extends Response> request,
 			Operator key, StringBuilder builder) {
 		
-        OutCallCancelRequest r = (OutCallCancelRequest)request;
 		buildOperator(key,builder);
-		builder.append(String.format(CALL_LEG_FORMAT, r.getCallLeg()));
+		builder.append(String.format(CALL_LEG_FORMAT, phone.getCallLeg()));
 	}
 
 }

@@ -41,7 +41,7 @@ public class BaseRequestTest {
 		request.notifySend(operator,"1");
 		request.notifySendError(new Exception());
 		Mockito.verify(event, Mockito.atLeastOnce()).finishReceive(
-				Mockito.any(Operator.class), Mockito.anyString());
+				Mockito.any(Operator.class), Mockito.anyString(), Mockito.anyString());
 	}
 	
 	@Test

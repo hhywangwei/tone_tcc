@@ -5,6 +5,7 @@ import static com.tcc.cti.driver.message.MessageType.Monitor;
 import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.session.Phone;
 /**
  * 发送获得班长信息
  * 
@@ -24,7 +25,7 @@ public class MonitorSendHandler extends AbstractSendHandler{
 	}
 
 	@Override
-	protected void buildMessage(Requestable<? extends Response> request,
+	protected void buildMessage(Phone phone,Requestable<? extends Response> request,
 			Operator key, StringBuilder builder) {
 		
 		String companyId = String.format(COMPANY_ID_FORMAT, key.getCompanyId());

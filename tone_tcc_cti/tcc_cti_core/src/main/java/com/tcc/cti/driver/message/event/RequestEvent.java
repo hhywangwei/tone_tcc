@@ -23,8 +23,9 @@ public interface RequestEvent {
 	/**
 	 * 接收服务端消息完成回调函数
 	 * 
-	 * @param operator 操作用户
-	 * @param seq      消息编号
+	 * @param operator    操作用户
+	 * @param seq         消息编号
+	 * @param messageType 消息类型
 	 */
-	void finishReceive(Operator operator,String seq);
+	void finishReceive(Operator operator,String seq,String messageType);
 }

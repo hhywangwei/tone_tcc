@@ -1,7 +1,6 @@
 package com.tcc.cti.driver.message.request;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.tcc.cti.driver.message.request.MultiBaseRequest;

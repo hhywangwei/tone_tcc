@@ -8,7 +8,7 @@ import com.tcc.cti.driver.message.request.BaseRequest;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.request.StatusRequest;
 import com.tcc.cti.driver.message.response.Response;
-import com.tcc.cti.driver.session.process.handler.send.StatusSendHandler;
+import com.tcc.cti.driver.session.Phone;
 
 public class StatusSendHandlerTest {
 	@Test
@@ -30,7 +30,8 @@ public class StatusSendHandlerTest {
 		StringBuilder builder = new StringBuilder();
 		String e = "<CompanyID>1</CompanyID><OPID>8001</OPID><WorkID>1111</WorkID><Status>1</Status>";
 		Operator key = new Operator("1","8001");
-		handler.buildMessage(request,key, builder);
+		Phone phone = new Phone();
+		handler.buildMessage(phone,request,key, builder);
 		Assert.assertEquals(e, builder.toString());
 	}
 	

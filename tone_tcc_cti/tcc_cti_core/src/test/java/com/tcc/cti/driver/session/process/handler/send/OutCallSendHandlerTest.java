@@ -8,7 +8,7 @@ import com.tcc.cti.driver.message.request.BaseRequest;
 import com.tcc.cti.driver.message.request.OutCallRequest;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
-import com.tcc.cti.driver.session.process.handler.send.OutCallSendHandler;
+import com.tcc.cti.driver.session.Phone;
 
 /**
  * {@link OutCallSendHandler}单元测试
@@ -36,7 +36,8 @@ public class OutCallSendHandlerTest {
 		OutCallRequest request = initRequest();
 		Operator key = new Operator("1","2");
 		StringBuilder builder = new StringBuilder();
-		handler.buildMessage(request,key, builder);
+		Phone phone = new Phone();
+		handler.buildMessage(phone,request,key, builder);
 		String e = "<CompanyID>1</CompanyID><OPID>2</OPID><Phone1>10</Phone1><Phone2>13879201178</Phone2>";
 		Assert.assertEquals(e,builder.toString());
 	}

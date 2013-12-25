@@ -4,7 +4,7 @@ import static com.tcc.cti.driver.message.MessageType.TransferOne;
 
 import com.tcc.cti.driver.message.response.Response;
 
-public class TransferOneRequest extends PhoneStatusRequest<Response> {
+public class TransferOneRequest extends BaseRequest<Response> {
 	private String _workId;
 	private String _number;
 
@@ -35,8 +35,6 @@ public class TransferOneRequest extends PhoneStatusRequest<Response> {
 		builder.append(_workId);
 		builder.append(", _number=");
 		builder.append(_number);
-		builder.append(", _callLeg=");
-		builder.append(_callLeg);
 		builder.append(", _messageType=");
 		builder.append(_messageType);
 		builder.append(", _responses=");

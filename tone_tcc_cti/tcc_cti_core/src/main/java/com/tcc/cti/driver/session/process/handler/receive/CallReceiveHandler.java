@@ -6,11 +6,15 @@ import java.util.Map;
 
 import com.tcc.cti.driver.message.response.CallResponse;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.session.Phone;
+import com.tcc.cti.driver.session.Sessionable;
+import com.tcc.cti.driver.session.Sessionable.UpdatePhoneCallBack;
+import com.tcc.cti.driver.session.process.Requestsable;
 
 /**
  * 接受呼叫信息处理
  * 
- * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ * @author <a href="hhywangwei@gmail.com">WangWei</a>
  */
 public class CallReceiveHandler extends AbstractReceiveHandler{
 	private static final String GROUP_ID_PARAMETER = "GroupID";
@@ -28,6 +32,10 @@ public class CallReceiveHandler extends AbstractReceiveHandler{
 	private static final String PRE_OP_NUMBER_PARAMETER = "PreOPNumber";
 	private static final String PRE_OP_NAME_PARAMETER = "PreOPName";
 	private static final String USER_INPUT_PARAMETER = "UserInput";
+	
+	private static final String CALL_STATE_BELL = "2";
+	private static final String CALL_STATE_CALLING = "3";
+	private static final String SEQ = "0";
 
 	@Override
 	protected boolean isReceive(String msgType) {
@@ -35,8 +43,40 @@ public class CallReceiveHandler extends AbstractReceiveHandler{
 	}
 	
 	@Override
-	protected String getRequestMessageType(String msgType) {
-		return Call.request();
+	protected void receiveHandler(Requestsable requests, Sessionable session,
+			Map<String, String> content) {
+		
+		String companyId = session.getOperator().getCompanyId();
+		String opId = session.getOperator().getOpId();
+		String seq = content.get(SEQ_PARAMETER);
+		
+		if(isBell(content)){
+			Response response = buildMessage(companyId,opId,seq,content);
+			requests.recevie(session.getOperator(), SEQ, Call.request(), response);
+		}
+		if(isCalling(content)){
+			Response response = buildMessage(companyId,opId,seq,content);
+			calling(session,response);
+		}
+	}
+	
+	private boolean isBell(Map<String,String> content){
+		String s = content.get(CALL_STATE_PARAMETER);
+		return CALL_STATE_BELL.equals(s);
+	}
+	
+	private boolean isCalling(Map<String,String> content){
+		String s = content.get(CALL_STATE_PARAMETER);
+		return CALL_STATE_CALLING.equals(s);
+	}
+	
+	private void calling(Sessionable session,final Response response){
+		 session.updatePhone(new UpdatePhoneCallBack(){
+			@Override
+			public void update(Phone phone) {
+				phone.calling((CallResponse)response);
+			}
+		 });
 	}
 
 	@Override

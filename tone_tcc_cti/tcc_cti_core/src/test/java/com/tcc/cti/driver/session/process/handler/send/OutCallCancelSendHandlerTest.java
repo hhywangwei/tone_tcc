@@ -10,8 +10,10 @@ import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.request.BaseRequest;
 import com.tcc.cti.driver.message.request.OutCallCancelRequest;
 import com.tcc.cti.driver.message.request.Requestable;
+import com.tcc.cti.driver.message.response.CallResponse;
 import com.tcc.cti.driver.message.response.Response;
 import com.tcc.cti.driver.sequence.GeneratorSeq;
+import com.tcc.cti.driver.session.Phone;
 import com.tcc.cti.driver.session.process.handler.send.OutCallCancelSendHandler;
 
 /**
@@ -43,15 +45,24 @@ public class OutCallCancelSendHandlerTest {
 		OutCallCancelRequest request = initRequest();
 		Operator key = new Operator("1","2");
 		StringBuilder builder = new StringBuilder();
-		handler.buildMessage(request,key, builder);
+		Phone phone = initPhone();
+		handler.buildMessage(phone,request,key, builder);
 		String e = "<CompanyID>1</CompanyID><OPID>2</OPID><CallLeg>11_22_123</CallLeg>";
 		Assert.assertEquals(e,builder.toString());
+	}
+	
+	private Phone initPhone(){
+		Phone phone = new Phone();
+		CallResponse r = new CallResponse.Builder("0")
+		.setCallLeg("11_22_123").build();
+		phone.calling(r);
+		
+		return phone;
 	}
 	
 	private OutCallCancelRequest initRequest(){
 		OutCallCancelRequest request =new OutCallCancelRequest();
 		
-		request.setCallLeg("11_22_123");
 		return request;
 	}
 }

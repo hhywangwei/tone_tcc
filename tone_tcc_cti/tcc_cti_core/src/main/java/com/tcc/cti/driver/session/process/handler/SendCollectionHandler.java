@@ -11,6 +11,7 @@ import com.tcc.cti.driver.sequence.GeneratorSeq;
 import com.tcc.cti.driver.session.Sessionable;
 import com.tcc.cti.driver.session.process.handler.send.CallHelpSendHandler;
 import com.tcc.cti.driver.session.process.handler.send.CallHoldSendHandler;
+import com.tcc.cti.driver.session.process.handler.send.CallSendHandler;
 import com.tcc.cti.driver.session.process.handler.send.CommonSendHandler;
 import com.tcc.cti.driver.session.process.handler.send.GroupSendHandler;
 import com.tcc.cti.driver.session.process.handler.send.HeartbeatSendHandler;
@@ -34,6 +35,7 @@ public class SendCollectionHandler implements SendHandlerable{
 
     private void initHandlers(List<SendHandlerable> handlers){
     	
+    	handlers.add(new CallSendHandler());
     	handlers.add(new CallHelpSendHandler());
     	handlers.add(new CallHoldSendHandler());
     	handlers.add(new CommonSendHandler());

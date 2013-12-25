@@ -4,7 +4,7 @@ import static com.tcc.cti.driver.message.MessageType.Silence;
 
 import com.tcc.cti.driver.message.response.Response;
 
-public class SilenceRequest extends PhoneStatusRequest<Response> {
+public class SilenceRequest extends BaseRequest<Response> {
 	private String _flag;
 
 	public SilenceRequest() {
@@ -22,8 +22,7 @@ public class SilenceRequest extends PhoneStatusRequest<Response> {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("SilenceRequest [_callLeg=");
-		builder.append(_callLeg);
+		builder.append("SilenceRequest [_flag=");
 		builder.append(", _flag=");
 		builder.append(_flag);
 		builder.append(", _messageType=");

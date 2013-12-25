@@ -9,7 +9,7 @@ import com.tcc.cti.driver.message.request.BaseRequest;
 import com.tcc.cti.driver.message.request.OwnRequest;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
-import com.tcc.cti.driver.session.process.handler.send.OwnSendHandler;
+import com.tcc.cti.driver.session.Phone;
 
 /**
  * 单元测试{@link SelfInfoSendHanlder}
@@ -36,7 +36,8 @@ public class OwnSendHandlerTest {
 		OwnSendHandler handler = new OwnSendHandler();
 		Operator key = new Operator("1","1");
 		StringBuilder builder = new StringBuilder();
-		handler.buildMessage(m,key, builder);
+		Phone phone = new Phone();
+		handler.buildMessage(phone,m,key, builder);
 		String msg = "<WorkID></WorkID>";
 		Assert.assertEquals(msg, builder.toString());
 	}

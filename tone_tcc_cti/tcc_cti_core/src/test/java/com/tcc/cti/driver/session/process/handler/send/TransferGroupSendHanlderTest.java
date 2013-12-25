@@ -7,7 +7,9 @@ import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.request.BaseRequest;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.request.TransferGroupRequest;
+import com.tcc.cti.driver.message.response.CallResponse;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.session.Phone;
 import com.tcc.cti.driver.session.process.handler.send.TransferGroupSendHanlder;
 
 public class TransferGroupSendHanlderTest {
@@ -30,13 +32,22 @@ public class TransferGroupSendHanlderTest {
 		StringBuilder builder = new StringBuilder();
 		String e = "<CompanyID>1</CompanyID><OPID>8001</OPID><CallLeg>222-333</CallLeg><GroupID>222</GroupID>";
 		Operator key = new Operator("1","8001");
-		handler.buildMessage(request,key, builder);
+		Phone phone = initPhone();
+		handler.buildMessage(phone,request,key, builder);
 		Assert.assertEquals(e, builder.toString());
+	}
+	
+	private Phone initPhone(){
+		Phone phone = new Phone();
+		CallResponse r = new CallResponse.Builder("0")
+		.setCallLeg("222-333").build();
+		phone.calling(r);
+		
+		return phone;
 	}
 	
 	private TransferGroupRequest initRequest(){
 		TransferGroupRequest request = new TransferGroupRequest();
-		request.setCallLeg("222-333");
 		request.setGroupId("222");
 		
 		return request;

@@ -7,7 +7,9 @@ import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.request.BaseRequest;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.request.SilenceRequest;
+import com.tcc.cti.driver.message.response.CallResponse;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.session.Phone;
 import com.tcc.cti.driver.session.process.handler.send.SilenceSendHandler;
 
 public class SilenceSendHandlerTest {
@@ -30,13 +32,22 @@ public class SilenceSendHandlerTest {
 		StringBuilder builder = new StringBuilder();
 		String e = "<CompanyID>1</CompanyID><OPID>8001</OPID><CallLeg>12-33</CallLeg><Flag>1</Flag>";
 		Operator key = new Operator("1","8001");
-		handler.buildMessage(request,key, builder);
+		Phone phone = initPhone();
+		handler.buildMessage(phone,request,key, builder);
 		Assert.assertEquals(e, builder.toString());
+	}
+	
+	private Phone initPhone(){
+		Phone phone = new Phone();
+		CallResponse r = new CallResponse.Builder("0")
+		.setCallLeg("12-33").build();
+		phone.calling(r);
+		
+		return phone;
 	}
 	
 	private SilenceRequest initRequest(){
 		SilenceRequest request = new SilenceRequest();
-		request.setCallLeg("12-33");
 		request.setFlag("1");
 		
 		return request;

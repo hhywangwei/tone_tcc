@@ -9,6 +9,7 @@ import org.junit.Test;
 import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.session.Phone;
 import com.tcc.cti.driver.session.process.handler.send.AbstractSendHandler;
 
 /**
@@ -62,7 +63,7 @@ public class AbstractSendHanlderTest {
 		}
 
 		@Override
-		protected void buildMessage(Requestable<? extends Response> message,Operator key,
+		protected void buildMessage(Phone phone,Requestable<? extends Response> message,Operator key,
 				StringBuilder builder) {
 			//none instance
 		}

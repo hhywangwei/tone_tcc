@@ -7,8 +7,9 @@ import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.request.BaseRequest;
 import com.tcc.cti.driver.message.request.CallHelpRequest;
 import com.tcc.cti.driver.message.request.Requestable;
+import com.tcc.cti.driver.message.response.CallResponse;
 import com.tcc.cti.driver.message.response.Response;
-import com.tcc.cti.driver.session.process.handler.send.CallHelpSendHandler;
+import com.tcc.cti.driver.session.Phone;
 
 public class CallHelpSendHandlerTest {
 	@Test
@@ -32,13 +33,22 @@ public class CallHelpSendHandlerTest {
 				+ "<CallLeg>111-111</CallLeg><TransferWorkID>333</TransferWorkID>"
 				+ "<TransferNumber>222</TransferNumber><Status>2</Status>"; 
 		Operator key = new Operator("1","8001");
-		handler.buildMessage(request,key, builder);
+		Phone phone = initPhone();
+		handler.buildMessage(phone,request,key, builder);
 		Assert.assertEquals(e, builder.toString());
+	}
+	
+	private Phone initPhone(){
+		Phone phone = new Phone();
+		CallResponse r = new CallResponse.Builder("0")
+		.setCallLeg("111-111").build();
+		phone.calling(r);
+		
+		return phone;
 	}
 	
 	private CallHelpRequest initRequest(){
 		CallHelpRequest request = new CallHelpRequest();
-		request.setCallLeg("111-111");
 		request.setStatus("2");
 		request.setTransferNumber("222");
 		request.setTransferWorkId("333");

@@ -9,7 +9,7 @@ import com.tcc.cti.driver.message.response.Response;
  * 
  * @author <a href="hhywangwei@gmail.com">WangWei</a>
  */
-public class CallHelpRequest extends PhoneStatusRequest<Response>{
+public class CallHelpRequest extends BaseRequest<Response>{
 	
 	private String _transferWorkId;
 	private String _transferNumber;
@@ -46,8 +46,7 @@ public class CallHelpRequest extends PhoneStatusRequest<Response>{
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("CallHelpRequest [_callLeg=");
-		builder.append(_callLeg);
+		builder.append("CallHelpRequest [_transferWorkId=");
 		builder.append(", _transferWorkId=");
 		builder.append(_transferWorkId);
 		builder.append(", _transferNumber=");

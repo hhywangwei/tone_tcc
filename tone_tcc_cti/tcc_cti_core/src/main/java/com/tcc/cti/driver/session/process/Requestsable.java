@@ -6,5 +6,5 @@ import com.tcc.cti.driver.message.response.Response;
 
 public interface Requestsable extends RequestEvent {
 
-	void recevie(Operator operator,String seq,Response response);
+	void recevie(Operator operator,String seq,String messageType,Response response);
 }

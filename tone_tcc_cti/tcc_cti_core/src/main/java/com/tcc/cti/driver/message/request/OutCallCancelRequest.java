@@ -10,7 +10,7 @@ import com.tcc.cti.driver.message.response.Response;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  *
  */
-public class OutCallCancelRequest extends PhoneStatusRequest<Response>{
+public class OutCallCancelRequest extends BaseRequest<Response>{
 	private String callLeg;
 
 	public OutCallCancelRequest() {
@@ -22,8 +22,6 @@ public class OutCallCancelRequest extends PhoneStatusRequest<Response>{
 		StringBuilder builder = new StringBuilder();
 		builder.append("OutCallCancelRequest [callLeg=");
 		builder.append(callLeg);
-		builder.append(", _callLeg=");
-		builder.append(_callLeg);
 		builder.append(", _messageType=");
 		builder.append(_messageType);
 		builder.append(", _responses=");

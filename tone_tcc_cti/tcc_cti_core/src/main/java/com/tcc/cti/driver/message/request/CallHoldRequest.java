@@ -9,7 +9,7 @@ import com.tcc.cti.driver.message.response.Response;
  * 
  * @author <a href="hhywangwei@gmail.com">WangWei</a>
  */
-public class CallHoldRequest extends PhoneStatusRequest<Response> {
+public class CallHoldRequest extends BaseRequest<Response> {
 	private String _flag;
 	
 	public CallHoldRequest(){
@@ -29,8 +29,6 @@ public class CallHoldRequest extends PhoneStatusRequest<Response> {
 		StringBuilder builder = new StringBuilder();
 		builder.append("CallHoldRequest [_flag=");
 		builder.append(_flag);
-		builder.append(", _callLeg=");
-		builder.append(_callLeg);
 		builder.append(", _messageType=");
 		builder.append(_messageType);
 		builder.append(", _responses=");

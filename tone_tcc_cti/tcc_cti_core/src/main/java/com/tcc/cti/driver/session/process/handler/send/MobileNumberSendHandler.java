@@ -6,6 +6,7 @@ import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.request.MobileNumberRequest;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.session.Phone;
 
 /**
  * 实现发送移动座席消息
@@ -24,7 +25,7 @@ public class MobileNumberSendHandler extends AbstractSendHandler{
 	}
 
 	@Override
-	protected void buildMessage(Requestable<? extends Response> request,
+	protected void buildMessage(Phone phone,Requestable<? extends Response> request,
 			Operator key, StringBuilder builder) {
 		
 		MobileNumberRequest r = (MobileNumberRequest)request;

@@ -8,6 +8,7 @@ import com.tcc.cti.driver.message.request.BaseRequest;
 import com.tcc.cti.driver.message.request.MobileNumberRequest;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.session.Phone;
 import com.tcc.cti.driver.session.process.handler.send.MobileNumberSendHandler;
 
 public class MobileNumberSendHandlerTest {
@@ -30,7 +31,8 @@ public class MobileNumberSendHandlerTest {
 		StringBuilder builder = new StringBuilder();
 		String e = "<CompanyID>1</CompanyID><OPID>8001</OPID><MobileNumber>2222-333</MobileNumber>";
 		Operator key = new Operator("1","8001");
-		handler.buildMessage(request,key, builder);
+		Phone phone = new Phone();
+		handler.buildMessage(phone,request,key, builder);
 		Assert.assertEquals(e, builder.toString());
 	}
 	

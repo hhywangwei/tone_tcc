@@ -16,7 +16,7 @@ import com.tcc.cti.driver.message.request.RestRequest;
 import com.tcc.cti.driver.message.request.ResumeRequest;
 import com.tcc.cti.driver.message.response.Response;
 import com.tcc.cti.driver.sequence.GeneratorSeq;
-import com.tcc.cti.driver.session.process.handler.send.CommonSendHandler;
+import com.tcc.cti.driver.session.Phone;
 
 public class CommonSendHandlerTest {
 
@@ -27,10 +27,7 @@ public class CommonSendHandlerTest {
 		Requestable<? extends Response> not = new BaseRequest<Response>("not");
 		Assert.assertFalse(handler.isSend(not));
 		
-		Requestable<? extends Response> r =new CallRequest();
-		Assert.assertTrue(handler.isSend(r));
-		
-		r = new LogoutRequest();
+		Requestable<? extends Response>  r = new LogoutRequest();
 		Assert.assertTrue(handler.isSend(r));
 		
 		r = new MobileNumberCancelRequest();
@@ -53,7 +50,7 @@ public class CommonSendHandlerTest {
 		CommonSendHandler handler = new CommonSendHandler();
 		Operator key = new Operator("1","2");
 		StringBuilder builder = new StringBuilder();
-		handler.buildMessage(request,key, builder);
+		handler.buildMessage(new Phone(),request,key, builder);
 		String e = "<CompanyID>1</CompanyID><OPID>2</OPID>";
 		Assert.assertEquals(e, builder.toString());
 	}
