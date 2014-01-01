@@ -24,7 +24,7 @@ public class CtiServerFac implements CtiServerFacable,InitializingBean {
 	private static final Logger logger = LoggerFactory.getLogger(CtiServerFac.class);
 	
 	private static final String DEFAULT_HOST = "211.136.173.132";
-	private static final int DEFAULT_PORT = 21;
+	private static final int DEFAULT_PORT = 9999;
 	
 	private String _host = DEFAULT_HOST;
 	private int _port = DEFAULT_PORT;
