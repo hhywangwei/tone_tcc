@@ -3,6 +3,7 @@ package com.tcc.cti.driver.session.process.handler.send;
 import static com.tcc.cti.driver.message.MessageType.Own;
 
 import com.tcc.cti.driver.Operator;
+import com.tcc.cti.driver.message.request.OwnRequest;
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
 import com.tcc.cti.driver.session.Phone;
@@ -20,7 +21,7 @@ import com.tcc.cti.driver.session.Phone;
  * @author <a href="hhywangwei@gmail.com">wangwei</a>
  */
 public class OwnSendHandler extends AbstractSendHandler{
-	private static final String WORK_ID_FORMAT = "<WorkID></WorkID>";
+	private static final String WORK_ID_FORMAT = "<WorkID>%s</WorkID>";
 	
 	@Override
 	protected boolean isSend(Requestable<? extends Response> request) {
@@ -30,7 +31,9 @@ public class OwnSendHandler extends AbstractSendHandler{
 	@Override
 	protected void buildMessage(Phone phone,Requestable<? extends Response> request,
 			Operator key, StringBuilder builder) {
-		
-		builder.append(WORK_ID_FORMAT);
+		OwnRequest r = (OwnRequest)request;
+		String workId = r.getWorkId() == null ? "" : r.getWorkId();
+		String workCmd = String.format(WORK_ID_FORMAT, workId);
+		builder.append(workCmd);
 	}
 }

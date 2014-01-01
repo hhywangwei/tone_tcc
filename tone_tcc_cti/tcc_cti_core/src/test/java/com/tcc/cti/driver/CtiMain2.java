@@ -77,8 +77,7 @@ public class CtiMain2 {
 		try{
 			Sessionable session = main.register(opId, companyId);
 			main.login(session);
-//			main.getGroups(session);
-			Thread.sleep(200 * 1000);
+			main.getGroups(session);
 		}finally{
 			main.close();
 		}

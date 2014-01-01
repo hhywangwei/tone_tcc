@@ -30,7 +30,7 @@ public class OwnSendHandlerTest {
 	}
 	
 	@Test
-	public void testBuildMessage(){
+	public void testBuildMessageIsWorkIdNull(){
 		OwnRequest m = new OwnRequest();
 		
 		OwnSendHandler handler = new OwnSendHandler();
@@ -39,6 +39,20 @@ public class OwnSendHandlerTest {
 		Phone phone = new Phone();
 		handler.buildMessage(phone,m,key, builder);
 		String msg = "<WorkID></WorkID>";
+		Assert.assertEquals(msg, builder.toString());
+	}
+	
+	@Test
+	public void testBuildMessage(){
+		OwnRequest m = new OwnRequest();
+		m.setWorkId("222");
+		
+		OwnSendHandler handler = new OwnSendHandler();
+		Operator key = new Operator("1","1");
+		StringBuilder builder = new StringBuilder();
+		Phone phone = new Phone();
+		handler.buildMessage(phone,m,key, builder);
+		String msg = "<WorkID>222</WorkID>";
 		Assert.assertEquals(msg, builder.toString());
 	}
 }
