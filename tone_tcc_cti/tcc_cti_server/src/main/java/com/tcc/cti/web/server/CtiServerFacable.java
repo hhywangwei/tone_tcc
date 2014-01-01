@@ -17,17 +17,19 @@ public interface CtiServerFacable {
 	 * @param password 密码
 	 * @param opNumber 登录电话
 	 * @param type 座席类型
+	 * @exception {@link CtiServerException}
 	 * @return 返回消息对象
 	 */
-	Response login(Operator operator,String password,String opNumber,String type);
+	Response login(Operator operator,String password,String opNumber,String type)throws CtiServerException;
 	
 	/**
 	 * 退出CTI服务器
 	 * 
 	 * @param operator 操作员信息
+	 * @exception {@link CtiServerException}
 	 * @return 返回消息对象
 	 */
-	Response logout(Operator operator);
+	Response logout(Operator operator)throws CtiServerException;
 	
 	
 }
