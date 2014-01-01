@@ -23,7 +23,7 @@ import com.tcc.cti.driver.session.Sessionable;
 public class CtiServerFac implements CtiServerFacable,InitializingBean {
 	private static final Logger logger = LoggerFactory.getLogger(CtiServerFac.class);
 	
-	private static final String DEFAULT_HOST = "";
+	private static final String DEFAULT_HOST = "211.136.173.132";
 	private static final int DEFAULT_PORT = 21;
 	
 	private String _host = DEFAULT_HOST;
