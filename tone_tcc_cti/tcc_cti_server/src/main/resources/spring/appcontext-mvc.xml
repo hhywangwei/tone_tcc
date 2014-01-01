@@ -8,9 +8,9 @@ http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
 	
 	<mvc:annotation-driven />
 	<!-- 自动扫描(自动注入) -->
-	<context:component-scan base-package="com.ewin.callcenter.*.service" />
-	<context:component-scan base-package="com.ewin.callcenter.*.controller" />
-	
+	<context:component-scan base-package="com.tcc.cti.web.*.service" />
+	<context:component-scan base-package="com.tcc.cti.web.*.controller" />
+	<context:component-scan base-package="com.tcc.cti.web.server" />
 	<!-- 避免IE执行AJAX时,返回JSON出现下载文件 -->
 	<bean id="mappingJacksonHttpMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
 		<property name="supportedMediaTypes">
