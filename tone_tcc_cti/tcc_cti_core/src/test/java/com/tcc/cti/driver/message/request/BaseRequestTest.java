@@ -11,6 +11,7 @@ import com.tcc.cti.driver.Operator;
 import com.tcc.cti.driver.message.RequestTimeoutException;
 import com.tcc.cti.driver.message.event.RequestEvent;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.message.token.Tokenable;
 
 public class BaseRequestTest {
 
@@ -29,7 +30,7 @@ public class BaseRequestTest {
 		Operator operator = new Operator("1","8001");
 		request.notifySend(operator,"1");
 		Mockito.verify(event, Mockito.atLeastOnce()).beforeSend(
-				Mockito.any(Operator.class), Mockito.anyString(), Mockito.any(Requestable.class));
+				Mockito.any(Tokenable.class), Mockito.any(Requestable.class));
 	}
 	
 	@Test
@@ -40,8 +41,7 @@ public class BaseRequestTest {
 		Operator operator = new Operator("1","8001");
 		request.notifySend(operator,"1");
 		request.notifySendError(new Exception());
-		Mockito.verify(event, Mockito.atLeastOnce()).finishReceive(
-				Mockito.any(Operator.class), Mockito.anyString(), Mockito.anyString());
+		Mockito.verify(event, Mockito.atLeastOnce()).finishReceive(Mockito.any(Tokenable.class));
 	}
 	
 	@Test

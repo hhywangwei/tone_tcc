@@ -30,7 +30,7 @@ public class HeartbeatSendTaskTest {
 	@Test
 	public void testRunSuccess()throws Exception{
 		Sessionable session = initSession();
-		
+		when(session.isService()).thenReturn(true);
 		HeartbeatSendTask t = new HeartbeatSendTask(session);
 		AtomicInteger count =new AtomicInteger(0);
 		AtomicInteger errorCount =new AtomicInteger(0);
@@ -46,7 +46,7 @@ public class HeartbeatSendTaskTest {
 	@Test
 	public void testRunError()throws Exception{
         Sessionable session = initSession();
-        when(session.isActive()).thenReturn(true);
+        when(session.isService()).thenReturn(true);
         HeartbeatSendTask t = new HeartbeatSendTask(session);
 		AtomicInteger count =new AtomicInteger(0);
 		AtomicInteger errorCount =new AtomicInteger(0);

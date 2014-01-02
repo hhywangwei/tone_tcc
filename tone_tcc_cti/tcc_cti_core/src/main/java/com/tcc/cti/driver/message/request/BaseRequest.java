@@ -8,6 +8,8 @@ import com.tcc.cti.driver.message.RequestTimeoutException;
 import com.tcc.cti.driver.message.event.NoneRequestEvent;
 import com.tcc.cti.driver.message.event.RequestEvent;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.message.token.RequestToken;
+import com.tcc.cti.driver.message.token.Tokenable;
 
 /**
  * 发送消息
@@ -28,8 +30,7 @@ public class BaseRequest<T extends Response> implements Requestable<T>{
 	protected final Object _monitor ;
 	protected volatile boolean _complete = false;	
 	private volatile RequestEvent _event = new NoneRequestEvent();
-	private volatile Operator _operator;
-	private volatile String _seq = "";
+	private volatile Tokenable _token;
 	
 	public BaseRequest(String messageType){
 		this(messageType, new ArrayList<T>(RESPONSES_SIZE));
@@ -53,9 +54,8 @@ public class BaseRequest<T extends Response> implements Requestable<T>{
 	@Override
 	public void notifySend(Operator operator,String seq){
 		synchronized (_monitor) {
-			_event.beforeSend(operator, seq, this);
-			_seq = seq;
-			_operator = operator;
+			_token = new RequestToken(operator,seq,_messageType);
+			_event.beforeSend(_token, this);
 		}
 	}
 	
@@ -65,13 +65,13 @@ public class BaseRequest<T extends Response> implements Requestable<T>{
 			if(notSend()){
 				throw new RuntimeException("Request not send,Run notifySend method");
 			}
-			_event.finishReceive(_operator,_seq,_messageType);
+			_event.finishReceive(_token);
 		}
 	}
 	
 	private boolean notSend(){
 		synchronized (_monitor) {
-			return _operator == null;
+			return _token == null;
 		}
 	}
 	
@@ -97,11 +97,11 @@ public class BaseRequest<T extends Response> implements Requestable<T>{
 				throw new RuntimeException("Request not send,Run notifySend method");
 			}
 			_monitor.wait(timeout);
-			_event.finishReceive(_operator, _seq,_messageType);
+			_event.finishReceive(_token);
 			if(_complete){
 				return _responses;	
 			}else{
-				throw new RequestTimeoutException(_seq);
+				throw new RequestTimeoutException(_token);
 			}
 		}
 	}

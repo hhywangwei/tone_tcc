@@ -6,6 +6,8 @@ import java.util.Map;
 
 import com.tcc.cti.driver.message.response.CallResponse;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.message.token.RequestToken;
+import com.tcc.cti.driver.message.token.Tokenable;
 import com.tcc.cti.driver.session.Phone;
 import com.tcc.cti.driver.session.Sessionable;
 import com.tcc.cti.driver.session.Sessionable.UpdatePhoneCallBack;
@@ -52,7 +54,8 @@ public class CallReceiveHandler extends AbstractReceiveHandler{
 		
 		if(isBell(content)){
 			Response response = buildMessage(companyId,opId,seq,content);
-			requests.recevie(session.getOperator(), SEQ, Call.request(), response);
+			Tokenable token = new RequestToken(session.getOperator(),SEQ,Call.request());
+			requests.recevie(token, response);
 		}
 		if(isCalling(content)){
 			Response response = buildMessage(companyId,opId,seq,content);

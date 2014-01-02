@@ -19,6 +19,8 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
+import com.tcc.cti.driver.message.token.RequestToken;
+import com.tcc.cti.driver.message.token.Tokenable;
 import com.tcc.cti.driver.session.Sessionable;
 import com.tcc.cti.driver.session.process.Requestsable;
 import com.tcc.cti.driver.session.process.handler.ReceiveHandlerable;
@@ -111,7 +113,10 @@ public abstract class AbstractReceiveHandler implements ReceiveHandlerable{
 		String msgType =getRequestMessageType(content.get(MESSAGE_TYPE_PARAMETER));
 		
 		Response response = buildMessage(companyId,opId,seq,content);
-		requests.recevie(session.getOperator(), seq, msgType, response);
+		if(response != null){
+			Tokenable token = new RequestToken(session.getOperator(),seq,msgType);
+			requests.recevie(token, response);	
+		}
 	}
 	
 	/**

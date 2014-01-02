@@ -39,13 +39,7 @@ public class CloseCallReceiveHandlerTest {
 		Map<String,String> content = initContent();
 		CloseCallResponse message = (CloseCallResponse)handler.buildMessage("1", "2", "3", content);
 		
-		Assert.assertEquals("3", message.getSeq());
-		Assert.assertEquals("0001", message.getGroupId());
-		Assert.assertEquals("3055_1242013662_1242704147_124", message.getCallLeg());
-		Assert.assertEquals("9527", message.getCallerNumber());
-		Assert.assertEquals("17920", message.getAccessNumber());
-		Assert.assertEquals("8622", message.getCalledNumber());
-		Assert.assertEquals("0", message.getReleaseReason());
+		Assert.assertNull(message);
 	}
 	
 	private Map<String,String> initContent(){

@@ -129,7 +129,7 @@ public class CtiServerFac implements CtiServerFacable,InitializingBean {
 		Sessionable session = getSession(operator);
 		CallRequest r = new CallRequest();
 		send(session,r);
-		return response(r);
+		return response(r,30 * 1000);
 	}
 
 	@Override
@@ -304,6 +304,21 @@ public class CtiServerFac implements CtiServerFacable,InitializingBean {
 	private List<Response> response(Requestable<? extends Response> request)throws CtiServerException{
 		try{
 			return (List<Response>)request.response();
+		}catch(RequestTimeoutException e){
+			logger.debug("{} request timeout,Error is {}",
+					request.toString(),e.toString());
+			throw new CtiServerException(e);
+		}catch(InterruptedException e){
+			logger.debug("{} interrupted exception,Error is {}",
+					request.toString(),e.toString());
+			throw new CtiServerException(e);
+		}
+	}
+	
+	@SuppressWarnings("unchecked" )
+	private List<Response> response(Requestable<? extends Response> request,int timeout)throws CtiServerException{
+		try{
+			return (List<Response>)request.response(timeout);
 		}catch(RequestTimeoutException e){
 			logger.debug("{} request timeout,Error is {}",
 					request.toString(),e.toString());
