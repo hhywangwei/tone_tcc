@@ -2,8 +2,6 @@ package com.tcc.cti.driver.session.task;
 
 import org.junit.Test;
 
-import com.tcc.cti.driver.session.task.StocketReceiveTask;
-
 /**
  * {@link StocketReceiveTask}单元测试
  * 

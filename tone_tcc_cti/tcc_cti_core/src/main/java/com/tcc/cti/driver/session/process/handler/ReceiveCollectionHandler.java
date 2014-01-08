@@ -17,54 +17,59 @@ import com.tcc.cti.driver.session.process.handler.receive.OutCallStateReceiveHan
 import com.tcc.cti.driver.session.process.handler.receive.OwnReceiveHandler;
 import com.tcc.cti.driver.session.process.handler.receive.ParseMessageException;
 
-public class ReceiveCollectionHandler implements ReceiveHandlerable{
-	
-	private List<ReceiveHandlerable> _handlers = new ArrayList<>();
-	
-	public ReceiveCollectionHandler(){
-		initHandlers(_handlers);
-	}
+/**
+ * 把接收消息处理类聚合在一起，简化客户调用
+ * 
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ */
+public class ReceiveCollectionHandler implements ReceiveHandlerable {
 
-	private void initHandlers(List<ReceiveHandlerable> handlers){
-		handlers.add(new CommonReceiveHandler());
-		handlers.add(new CallReceiveHandler());
-		handlers.add(new CloseCallReceiveHandler());
-		handlers.add(new GroupMemberReceiveHandler());
-		handlers.add(new GroupReceiveHandler());
-		handlers.add(new HeartbeatReceiveHandler());
-		handlers.add(new LoginReceiveHandler());
-		handlers.add(new MonitorReceiveHandler());
-		handlers.add(new OutCallStateReceiveHandler());
-		handlers.add(new OwnReceiveHandler());
-	}
-	
-	@Override
-	public void receive(Requestsable requests, Sessionable session,
-			String message) throws ParseMessageException {
-		
-		for(ReceiveHandlerable handler : _handlers){
-			handler.receive(requests,session, message);	
-		}
-	}
-	
-	public void addHandler(ReceiveHandlerable handler){
-		if(handler == null){
-			throw new IllegalArgumentException("Receive handler is not null");
-		}
-		_handlers.add(handler);
-	}
-	
-	public void addHandlers(List<ReceiveHandlerable> handlers){
-		if(handlers == null){
-			throw new IllegalArgumentException("Receive handlers is not null");
-		}
-		_handlers.addAll(handlers);
-	}
-	
-	public void setHandlers(List<ReceiveHandlerable> handlers){
-		if(handlers == null){
-			throw new IllegalArgumentException("Receive handlers is not null");
-		}
-		_handlers =handlers;
-	}
+    private List<ReceiveHandlerable> _handlers = new ArrayList<>();
+
+    public ReceiveCollectionHandler() {
+        initHandlers(_handlers);
+    }
+
+    private void initHandlers(List<ReceiveHandlerable> handlers) {
+        handlers.add(new CommonReceiveHandler());
+        handlers.add(new CallReceiveHandler());
+        handlers.add(new CloseCallReceiveHandler());
+        handlers.add(new GroupMemberReceiveHandler());
+        handlers.add(new GroupReceiveHandler());
+        handlers.add(new HeartbeatReceiveHandler());
+        handlers.add(new LoginReceiveHandler());
+        handlers.add(new MonitorReceiveHandler());
+        handlers.add(new OutCallStateReceiveHandler());
+        handlers.add(new OwnReceiveHandler());
+    }
+
+    @Override
+    public void receive(Requestsable requests, Sessionable session,
+        String message) throws ParseMessageException {
+
+        for (ReceiveHandlerable handler : _handlers) {
+            handler.receive(requests, session, message);
+        }
+    }
+
+    public void addHandler(ReceiveHandlerable handler) {
+        if (handler == null) {
+            throw new IllegalArgumentException("Receive handler is not null");
+        }
+        _handlers.add(handler);
+    }
+
+    public void addHandlers(List<ReceiveHandlerable> handlers) {
+        if (handlers == null) {
+            throw new IllegalArgumentException("Receive handlers is not null");
+        }
+        _handlers.addAll(handlers);
+    }
+
+    public void setHandlers(List<ReceiveHandlerable> handlers) {
+        if (handlers == null) {
+            throw new IllegalArgumentException("Receive handlers is not null");
+        }
+        _handlers = handlers;
+    }
 }

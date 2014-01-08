@@ -4,6 +4,12 @@ import java.util.ArrayList;
 
 import com.tcc.cti.driver.message.response.Response;
 
+/**
+ * 请求返回多消息类型
+ * 
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ * @param <T> 返回消息类型
+ */
 public class MultiBaseRequest<T extends Response> extends BaseRequest<T> {
 	private static final String COMPLETE_PREFIX = "-";
 	public MultiBaseRequest(String messageType) {

@@ -10,21 +10,26 @@ import com.tcc.cti.driver.message.request.Requestable;
 import com.tcc.cti.driver.message.response.Response;
 import com.tcc.cti.driver.session.Phone;
 
-public class CommonSendHandler extends AbstractSendHandler{
+/**
+ * 通用消息发送消息处理类
+ * 
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ */
+public class CommonSendHandler extends AbstractSendHandler {
 
-	@Override
-	protected boolean isSend(Requestable<? extends Response> request) {
-		return	Logout.isRequest(request.getMessageType()) ||
-				MobileNumberCancel.isRequest(request.getMessageType()) ||
-				Rest.isRequest(request.getMessageType()) ||
-				Resume.isRequest(request.getMessageType());
-	}
+    @Override
+    protected boolean isSend(Requestable<? extends Response> request) {
+        return Logout.isRequest(request.getMessageType())
+            || MobileNumberCancel.isRequest(request.getMessageType())
+            || Rest.isRequest(request.getMessageType())
+            || Resume.isRequest(request.getMessageType());
+    }
 
-	@Override
-	protected void buildMessage(Phone phone,Requestable<? extends Response> request,
-			Operator key, StringBuilder builder) {
-		
-		buildOperator(key,builder);
-	}
+    @Override
+    protected void buildMessage(Phone phone, Requestable<? extends Response> request,
+        Operator key, StringBuilder builder) {
+
+        buildOperator(key, builder);
+    }
 
 }

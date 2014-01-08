@@ -11,7 +11,7 @@ import com.tcc.cti.driver.session.Phone;
 
 /**
  * 实现发送登录cti消息
- * 
+ *
  * <pre>消息格式如下:
  * {@literal <msg>login</msg><seq>2</seq><Type>1</Type><CompanyID>1</CompanyID><OPID>8001</OPID><OPNumber>8002</OPNumber><PassWord>md5加密</PassWord><AutoLogin>0</AutoLogin>}
  * msg:消息类型
@@ -22,31 +22,31 @@ import com.tcc.cti.driver.session.Phone;
  * OPNumber：座席号
  * PassWord：登录密码 32位
  * AutoLogin：？？？
- * 
+ *
  * {@code 是线程安全类}
  * @author <a href="hhywangwei@gmail.com">WangWei</a>
  */
+public class LoginSendHandler extends AbstractSendHandler {
 
-public class LoginSendHandler extends AbstractSendHandler{
-	private static final String TYPE_FORMAT = "<Type>%s</Type>";
-	private static final String OPNUMBER_FORMAT = "<OPNumber>%s</OPNumber>";
-	private static final String PASSWORD_FORMAT = "<PassWord>%s</PassWord>";
-	
-	@Override
-	protected boolean isSend(Requestable<? extends Response> request) {
-		return Login.isRequest(request.getMessageType());
-	}
+    private static final String TYPE_FORMAT = "<Type>%s</Type>";
+    private static final String OPNUMBER_FORMAT = "<OPNumber>%s</OPNumber>";
+    private static final String PASSWORD_FORMAT = "<PassWord>%s</PassWord>";
 
-	@Override
-	protected void buildMessage(Phone phone,Requestable<? extends Response> request,
-			Operator key, StringBuilder builder){
-		
-		LoginRequest r = (LoginRequest)request;
-		buildOperator(key,builder);
-		builder.append(String.format(TYPE_FORMAT, r.getType()));
-		builder.append(String.format(OPNUMBER_FORMAT, r.getOpNumber()));
-		String password = PasswordUtils.encodeMD5(r.getPassword());
-		builder.append(String.format(PASSWORD_FORMAT, password));
-	}
-	
+    @Override
+    protected boolean isSend(Requestable<? extends Response> request) {
+        return Login.isRequest(request.getMessageType());
+    }
+
+    @Override
+    protected void buildMessage(Phone phone, Requestable<? extends Response> request,
+        Operator key, StringBuilder builder) {
+
+        LoginRequest r = (LoginRequest) request;
+        buildOperator(key, builder);
+        builder.append(String.format(TYPE_FORMAT, r.getType()));
+        builder.append(String.format(OPNUMBER_FORMAT, r.getOpNumber()));
+        String password = PasswordUtils.encodeMD5(r.getPassword());
+        builder.append(String.format(PASSWORD_FORMAT, password));
+    }
+
 }

@@ -14,22 +14,27 @@ import static com.tcc.cti.driver.message.MessageType.Status;
 import static com.tcc.cti.driver.message.MessageType.TransferGroup;
 import static com.tcc.cti.driver.message.MessageType.TransferOne;
 
-public class CommonReceiveHandler extends AbstractReceiveHandler{
+/**
+ * 通用接收消息处理
+ * 
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ */
+public class CommonReceiveHandler extends AbstractReceiveHandler {
 
-	@Override
-	protected boolean isReceive(String msgType) {
-		return CallHelp.isResponse(msgType) ||
-				CallHold.isResponse(msgType) ||
-				Logout.isResponse(msgType) ||
-				MobileNumberCancel.isResponse(msgType) ||
-				MobileNumber.isResponse(msgType) ||
-				OutCallCancel.isResponse(msgType) ||
-				OutCall.isResponse(msgType) ||
-				Rest.isResponse(msgType) ||
-				Resume.isResponse(msgType) ||
-				Silence.isResponse(msgType) ||
-				Status.isResponse(msgType) ||
-				TransferGroup.isResponse(msgType) ||
-				TransferOne.isResponse(msgType);
-	}
+    @Override
+    protected boolean isReceive(String msgType) {
+        return CallHelp.isResponse(msgType)
+            || CallHold.isResponse(msgType)
+            || Logout.isResponse(msgType)
+            || MobileNumberCancel.isResponse(msgType)
+            || MobileNumber.isResponse(msgType)
+            || OutCallCancel.isResponse(msgType)
+            || OutCall.isResponse(msgType)
+            || Rest.isResponse(msgType)
+            || Resume.isResponse(msgType)
+            || Silence.isResponse(msgType)
+            || Status.isResponse(msgType)
+            || TransferGroup.isResponse(msgType)
+            || TransferOne.isResponse(msgType);
+    }
 }

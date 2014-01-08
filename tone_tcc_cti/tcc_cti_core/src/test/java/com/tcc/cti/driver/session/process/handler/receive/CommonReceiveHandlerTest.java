@@ -17,8 +17,11 @@ import static com.tcc.cti.driver.message.MessageType.TransferOne;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.tcc.cti.driver.session.process.handler.receive.CommonReceiveHandler;
-
+/**
+ * {@link CommonReceiveHandler}单元测试
+ * 
+ * @author <a href="hhywangwei@gmail.com">wangwei</a>
+ */
 public class CommonReceiveHandlerTest {
 	
 	@Test

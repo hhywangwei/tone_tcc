@@ -12,27 +12,28 @@ import com.tcc.cti.driver.session.process.Requestsable;
 
 /**
  * 接收服务器心跳信息
- * 
+ *
  * @author <a href="hhywangwei@gmail.com">WangWei</a>
  */
-public class HeartbeatReceiveHandler extends AbstractReceiveHandler{
-	private static final Logger logger = LoggerFactory.getLogger(HeartbeatReceiveHandler.class);
+public class HeartbeatReceiveHandler extends AbstractReceiveHandler {
 
-	@Override
-	protected boolean isReceive(String msgType) {
-		return Heartbeat.isRequest(msgType);
-	}
-	
-	@Override
-	protected String getRequestMessageType(String msgType) {
-		return Heartbeat.request();
-	}
-	
-	@Override
-	protected void receiveHandler(Requestsable requests, 
-			Sessionable session,Map<String, String> content) {
-		
-		logger.debug("Receive {} hb.....",session.getOperator());
-		session.heartbeatTouch();
-	}
+    private static final Logger logger = LoggerFactory.getLogger(HeartbeatReceiveHandler.class);
+
+    @Override
+    protected boolean isReceive(String msgType) {
+        return Heartbeat.isRequest(msgType);
+    }
+
+    @Override
+    protected String getRequestMessageType(String msgType) {
+        return Heartbeat.request();
+    }
+
+    @Override
+    protected void receiveHandler(Requestsable requests,
+        Sessionable session, Map<String, String> content) {
+
+        logger.debug("Receive {} hb.....", session.getOperator());
+        session.heartbeatTouch();
+    }
 }
